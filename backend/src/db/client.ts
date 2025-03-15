@@ -11,7 +11,7 @@ const config = {
     port: parseInt(process.env.PG_PORT || "5432")
 }
 
-console.log("Logging into postgres with following config:", config);
+console.log("Logging into postgres with following config:", { ...config, password: "***REDACTED***" });
 
 const pool: Pool = new Pool({
     user: config.user,
