@@ -19,6 +19,13 @@ export const createRecipe = async (name: string, description: string): Promise<R
     ).then(results => results[0]);
 };
 
+export const updateRecipe = async (id: number, name: string, description: string): Promise<Recipe> => {
+    return queryDatabase<Recipe>(
+        'UPDATE Recipes SET Name = $1, Description = $2 WHERE ID = $3 RETURNING *',
+        [name, description, id]
+    ).then(results => results[0]);
+};
+
 export const deleteRecipe = async (id: number): Promise<void> => {
     await queryDatabase<Recipe>(
         'DELETE FROM Recipes WHERE ID = $1',
