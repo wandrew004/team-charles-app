@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from "express";
 import cors from "cors";
+import * as dotenv from "dotenv";
 import { RecipeFormData } from "./src/types/recipeFormData";
 import { 
     getIngredients, createIngredient, deleteIngredient,
@@ -9,8 +10,10 @@ import {
     getRecipeSteps, addStepToRecipe
 } from "controllers";
 
+dotenv.config();
+
 const app: Express = express();
-const port: number = 3001;
+const port: number = parseInt(process.env.PORT || "3001");
 
 app.use(express.json());
 app.use(cors());
