@@ -9,7 +9,7 @@ import Grid from "@mui/material/Grid2";
 type RecipeFormData = {
     name: string;
     description: string;
-    ingredients: { name: string; quantity: string; unit: string }[];
+    ingredients: { name: string; quantity: number; unit: string }[];
     steps: { stepNumber: number; stepText: string }[];
 };
 
@@ -134,7 +134,7 @@ const RecipeForm = () => {
                     </Grid>
                 ))}
                 <Button
-                    onClick={() => addIngredient({ name: "", quantity: "", unit: "" })}
+                    onClick={() => addIngredient({ name: "", quantity: 0, unit: "" })}
                     startIcon={<AddIcon />}
                     color="primary"
                     sx={{ marginTop: 1 }}
