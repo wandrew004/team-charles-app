@@ -13,7 +13,7 @@ type RecipeFormData = {
     steps: { stepNumber: number; stepText: string }[];
 };
 
-const API_ENDPOINT = "";
+const API_ENDPOINT = "http://localhost:3001/recipes";
 
 // handles form submission
 const useSubmitRecipe = () => {
@@ -21,6 +21,9 @@ const useSubmitRecipe = () => {
         mutationFn: async (data: RecipeFormData) => {
             const response = await fetch(API_ENDPOINT, {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify(data),
             });
 
