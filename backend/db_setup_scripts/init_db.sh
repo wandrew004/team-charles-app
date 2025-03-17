@@ -24,4 +24,4 @@ psql -U "$USERNAME" -d "$DATABASE" -c "DROP DATABASE IF EXISTS recipehub;"
 psql -U "$USERNAME" -d "$DATABASE" -c "CREATE DATABASE recipehub;"
 
 # Step 2: Now that recipehub exists, connect to it and run the SQL commands
-psql -U "$USERNAME" -d recipehub -f init_db.sql
+psql -U "$USERNAME" -d recipehub -f db_setup_scripts/init_db.sql
