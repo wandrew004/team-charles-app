@@ -1,9 +1,9 @@
-import { queryDatabase } from '@/db/client';
-import { getIngredients, createIngredient, updateIngredient, deleteIngredient } from '@/controllers/ingredient';
-import { Ingredient } from '@/models';
+import { queryDatabase } from '../../src/db/client';
+import { getIngredients, createIngredient, updateIngredient, deleteIngredient } from '../../src/controllers/ingredient';
+import { Ingredient } from '../../src/models';
 
 // Mock the database client
-jest.mock('@/db/client');
+jest.mock('../../src/db/client');
 
 describe('Ingredient Controller', () => {
     beforeEach(() => {
