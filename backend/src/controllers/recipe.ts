@@ -1,5 +1,5 @@
-import { queryDatabase } from "../db/client";
-import { Recipe } from "../models";
+import { queryDatabase } from '../db/client';
+import { Recipe } from '../models';
 
 export const getRecipes = async (): Promise<Recipe[]> => {
     return queryDatabase<Recipe>('SELECT * FROM Recipes');

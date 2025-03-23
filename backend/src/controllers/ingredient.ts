@@ -1,5 +1,5 @@
-import { queryDatabase } from "../db/client";
-import { Ingredient } from "../models";
+import { queryDatabase } from '../db/client';
+import { Ingredient } from '../models';
 
 export const getIngredients = async (): Promise<Ingredient[]> => {
     return queryDatabase<Ingredient>('SELECT * FROM Ingredients');
