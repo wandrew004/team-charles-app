@@ -6,11 +6,13 @@ import RecipeForm from './RecipeForm';
 
 function App() {
   return (
-<Routes>
-  <Route path="/" element={<HomePage />} />
-  <Route path="/recipe/:id" element={<RecipePage />} />
-  <Route path="/create" element={<RecipeForm />} />
-</Routes>
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/recipe/:id" element={<RecipePage />} />
+        <Route path="/create" element={<RecipeForm />} />
+      </Routes>
+    </Router>
   );
 }
 
