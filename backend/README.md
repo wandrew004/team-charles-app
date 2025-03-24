@@ -12,3 +12,6 @@
 # Tests
 Tests created using Jest and Supertest
 1. `npm run test`
+2. `npm run lint`
+3. `npx eslint . --fix`
+    - fixing any style issues
