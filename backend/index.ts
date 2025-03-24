@@ -3,12 +3,12 @@ import cors from 'cors';
 import * as dotenv from 'dotenv';
 import { RecipeFormData } from './src/types/recipeFormData';
 import { 
-    getIngredients, createIngredient, deleteIngredient,
-    getRecipes, getRecipeById, createRecipe, deleteRecipe,
-    getStepsForRecipe, createStep, deleteStep,
-    getRecipeIngredients, addIngredientToRecipe,
-    getRecipeSteps, addStepToRecipe
-} from 'controllers';
+    createIngredient,
+    createRecipe,
+    createStep,
+    addIngredientToRecipe,
+    addStepToRecipe
+} from './src/controllers';
 
 dotenv.config();
 
