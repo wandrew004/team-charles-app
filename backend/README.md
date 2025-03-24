@@ -8,3 +8,7 @@
 3. create and add details to `.env` based on `.env.example`
 4. `npm install`
 5. `npm run start` or `npm run dev`
+
+# Tests
+Tests created using Jest and Supertest
+1. `npm run test`
