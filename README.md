@@ -24,6 +24,17 @@ Navigate to the backend folder, install dependencies, and launch the backend:
 
 ```bash
 cd backend
+```
+Install PostgreSQL https://www.postgresql.org/
+```bash
+sh db_setup_scripts/init_db.sh -U username -d postgres
+```
+username is a user that you set up for postgres, postgres is the default database for management
+create and add details to .env based on .env.example
+npm install
+npm run build
+
+```bash
 npm install
 npm run build
 ```
@@ -40,11 +51,12 @@ npm run build
 
 ### 4. Execute Tests
 
-Make sure you are in the root directory of the repository (i.e., `team-charles-app`) and run the tests with:
-
+Tests created using Jest and Supertest Make sure you are in the root directory of the repository (i.e., `team-charles-app`) and run the tests with:
 ```bash
 cd ..
-npm test
+npm run test
+npm run lint
+npx eslint . --fix
 ```
 
 This command will start the test runner in watch mode and execute all test files.
