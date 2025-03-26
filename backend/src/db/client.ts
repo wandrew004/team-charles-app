@@ -1,17 +1,17 @@
-import { Pool } from "pg";
-import * as dotenv from "dotenv";
+import { Pool } from 'pg';
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 const config = {
-    user: process.env.PG_USER || "",
-    host: process.env.PG_HOST || "localhost",
-    database: process.env.DB_NAME || "recipehub",
-    password: process.env.PG_PASSWORD || "",
-    port: parseInt(process.env.PG_PORT || "5432")
-}
+    user: process.env.PG_USER || '',
+    host: process.env.PG_HOST || 'localhost',
+    database: process.env.DB_NAME || 'recipehub',
+    password: process.env.PG_PASSWORD || '',
+    port: parseInt(process.env.PG_PORT || '5432')
+};
 
-console.log("Logging into postgres with following config:", { ...config, password: "***REDACTED***" });
+console.log('Logging into postgres with following config:', { ...config, password: '***REDACTED***' });
 
 const pool: Pool = new Pool({
     user: config.user,

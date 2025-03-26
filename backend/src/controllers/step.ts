@@ -1,5 +1,5 @@
-import { queryDatabase } from "../db/client";
-import { Step } from "../models";
+import { queryDatabase } from '../db/client';
+import { Step } from '../models';
 
 export const getStepsForRecipe = async (recipeid: number): Promise<Step[]> => {
     return queryDatabase<Step>(

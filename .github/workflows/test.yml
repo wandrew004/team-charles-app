@@ -1,0 +1,29 @@
+name: test
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  jest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Run Frontend Tests
+        working-directory: ./frontend
+        run: |
+          npm install
+          npm test
+      - name: Run Backend Tests
+        working-directory: ./backend
+        run: |
+          npm install
+          npm test
