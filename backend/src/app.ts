@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import { RecipeFormData } from './types/recipeFormData';
 import { 
@@ -17,17 +17,40 @@ app.use(express.json());
 app.use(cors());
 
 /**
+ * @brief middleware handler to log requests
+ */
+app.use((req, res, next) => {
+    console.log(
+        '---------------------------------------------------\n' +
+        `Request received: ${req.method} ${req.originalUrl}\n` +
+        `\t- Params: ${JSON.stringify(req.params)}\n` +
+        `\t- Query: ${JSON.stringify(req.query)}\n` +
+        `\t- Body: ${JSON.stringify(req.body)}`
+    );
+  
+    const start = Date.now();
+  
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.log(
+            '---------------------------------------------------\n' +
+            `Request resolved: ${req.method} ${req.originalUrl} ${res.statusCode} (${duration}ms)`
+        );
+    });
+  
+    next();
+});
+
+
+/**
  * @brief endpoint for getting the ids and names of all recipes
  */
-app.get('/recipes', async (req: Request, res: Response) => {
+app.get('/recipes', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        console.log('Request at /recipes');
         const recipes : Recipe[] = await getRecipes();
         res.status(200).json(recipes);
-        console.log('Request at /recipes resolved');
     } catch (error) {
-        console.error('Error getting recipes at /recipes');
-        res.status(500).json({ error: 'Failed to add recipe' });
+        next(error);
     }
 });
 
@@ -36,10 +59,9 @@ app.get('/recipes', async (req: Request, res: Response) => {
  * 
  * Expects a request in the form of jsonified RecipeFormData
  */
-app.post('/recipes', async (req: Request, res: Response) => {
+app.post('/recipes', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const recipeData: RecipeFormData = req.body;
-        console.log('Recipe received', recipeData);
 
         // Create Recipe
         const recipe = await createRecipe(recipeData.name, recipeData.description);
@@ -65,12 +87,23 @@ app.post('/recipes', async (req: Request, res: Response) => {
             })
         );
 
-        console.log('Recipe added:', recipe.id);
         res.status(200).json({ message: 'Recipe added successfully', recipeId: recipe.id });
     } catch (error) {
-        console.error('Error adding recipe:', error);
-        res.status(500).json({ error: 'Failed to add recipe' });
+        next(error);
     }
+});
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error(
+        '---------------------------------------------------\n' +
+        `Request errored: ${req.method} ${req.originalUrl}\n` +
+        `\t- Params: ${JSON.stringify(req.params)}\n` +
+        `\t- Query: ${JSON.stringify(req.query)}\n` +
+        `\t- Body: ${JSON.stringify(req.body)}\n` +
+        err.stack || err
+    );
+  
+    res.status(500).json({ error: 'Internal Server Error' });
 });
 
 export default app;
