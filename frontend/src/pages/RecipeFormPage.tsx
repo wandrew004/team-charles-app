@@ -13,7 +13,7 @@ type RecipeFormData = {
     steps: { stepNumber: number; stepText: string }[];
 };
 
-const API_ENDPOINT = "http://localhost:3001/recipes";
+const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}/recipes`;
 
 // handles form submission
 const useSubmitRecipe = () => {
