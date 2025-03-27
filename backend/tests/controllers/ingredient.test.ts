@@ -1,6 +1,7 @@
 import { queryDatabase } from '../../src/db/client';
-import { getIngredients, createIngredient, updateIngredient, deleteIngredient, getIngredientById } from '../../src/controllers/ingredient';
+import { getIngredients, createIngredient, updateIngredient, deleteIngredient, getIngredientById, getIngredientsForRecipe } from '../../src/controllers/ingredient';
 import { Ingredient } from '../../src/models';
+import { IngredientQuantity } from 'types/ingredientQuantity';
 
 // Mock the database client
 jest.mock('../../src/db/client');
@@ -65,6 +66,37 @@ describe('Ingredient Controller', () => {
                 [999]
             );
             expect(result).toBeNull();
+        });
+    });
+
+    describe('getIngredientsForRecipe', () => {
+        it('should return a list of ingredients for a valid recipe ID', async () => {
+            const mockIngredients: IngredientQuantity[] = [
+                { name: 'Flour', quantity: 2, unit: 'cups' },
+                { name: 'Sugar', quantity: 1, unit: 'cup' }
+            ];
+    
+            (queryDatabase as jest.Mock).mockResolvedValue(mockIngredients);
+    
+            const result = await getIngredientsForRecipe(1);
+    
+            expect(queryDatabase).toHaveBeenCalledWith(
+                'SELECT i.name,  FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
+                [1]
+            );
+            expect(result).toEqual(mockIngredients);
+        });
+    
+        it('should return an empty array when no ingredients are found for the recipe ID', async () => {
+            (queryDatabase as jest.Mock).mockResolvedValue([]);
+    
+            const result = await getIngredientsForRecipe(999);
+    
+            expect(queryDatabase).toHaveBeenCalledWith(
+                'SELECT i.name,  FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
+                [999]
+            );
+            expect(result).toEqual([]);
         });
     });
     

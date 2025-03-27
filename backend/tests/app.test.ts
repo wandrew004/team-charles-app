@@ -9,8 +9,7 @@ import {
     getRecipes,
     getRecipeById,
     getStepsForRecipe,
-    getIngredientById,
-    getRecipeIngredients
+    getIngredientsForRecipe
 } from '../src/controllers';
 
 jest.mock('../src/controllers');
@@ -64,15 +63,9 @@ describe('/recipes API endpoints', () => {
                 description: 'Fluffy pancakes'
             });
     
-            (getRecipeIngredients as jest.Mock).mockResolvedValue([
-                { ingredientid: 1, quantity: 2, unit: 'cups' }
+            (getIngredientsForRecipe as jest.Mock).mockResolvedValue([
+                { name: 'Flour', quantity: 2, unit: 'cups' }
             ]);
-    
-            (getIngredientById as jest.Mock).mockResolvedValue({
-                id: 1,
-                name: 'Flour',
-                description: 'All-purpose flour'
-            });
     
             (getStepsForRecipe as jest.Mock).mockResolvedValue([
                 { id: 1, stepnumber: 1, steptext: 'Mix ingredients' }
@@ -108,26 +101,6 @@ describe('/recipes API endpoints', () => {
     
             expect(res.status).toBe(404);
             expect(res.body).toEqual({ error: 'Recipe not found' });
-        });
-    
-        it('should return 500 if an ingredient is missing', async () => {
-            (getRecipeById as jest.Mock).mockResolvedValue({
-                id: 1,
-                name: 'Pancakes',
-                description: 'Fluffy pancakes'
-            });
-    
-            (getRecipeIngredients as jest.Mock).mockResolvedValue([
-                { ingredientid: 1, quantity: 2, unit: 'cups' }
-            ]);
-    
-            (getIngredientById as jest.Mock).mockResolvedValue(null); // triggers error
-    
-            (getStepsForRecipe as jest.Mock).mockResolvedValue([]);
-    
-            const res = await request(app).get('/recipes/1');
-    
-            expect(res.status).toBe(500);
         });
 
         it('should handle errors gracefully', async () => {

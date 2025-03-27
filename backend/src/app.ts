@@ -11,7 +11,8 @@ import {
     getRecipeById,
     getStepsForRecipe,
     getRecipeIngredients,
-    getIngredientById
+    getIngredientById,
+    getIngredientsForRecipe
 } from './controllers';
 import { Ingredient, Recipe, RecipeIngredient, Step } from 'models';
 import { RecipeData } from 'types/recipeData';
@@ -80,35 +81,12 @@ app.get('/recipes/:id', async (req: Request, res: Response, next: NextFunction) 
         }
 
         // get the associated ingredients and steps
-        const recipeIngredients: RecipeIngredient[] = await getRecipeIngredients(recipeId);
-        console.log(recipeIngredients);
-        const ingredients = await Promise.all(
-            recipeIngredients.map(async (recipeIngredient: RecipeIngredient) => {
-                console.log(recipeIngredient);
-                console.log(recipeIngredient.ingredientid);
-                const ingredient: Ingredient | null = await getIngredientById(recipeIngredient.ingredientid);
-
-                if (!ingredient) {
-                    throw new Error(`Ingredient not found for ID: ${recipeIngredient.ingredientid}`);
-                }
-
-                return {
-                    name: ingredient.name,
-                    quantity: recipeIngredient.quantity,
-                    unit: recipeIngredient.unit
-                };
-            })
-        );
-        const steps = await Promise.all(
-            (await getStepsForRecipe(recipeId)).map(async (step: Step) => {
-                console.log(step);
-                return {
-                    stepNumber: step.stepnumber,
-                    stepText: step.steptext
-                };
-            })
-        );
-
+        const ingredients = await getIngredientsForRecipe(recipeId);
+        const steps = (await getStepsForRecipe(recipeId)).map((step: Step) => ({
+            stepNumber: step.stepnumber,
+            stepText: step.steptext
+        }));
+        
         const recipeData: RecipeData = {
             id: recipe.id,
             name: recipe.name,
