@@ -10,11 +10,9 @@ import {
     getRecipes,
     getRecipeById,
     getStepsForRecipe,
-    getRecipeIngredients,
-    getIngredientById,
     getIngredientsForRecipe
 } from './controllers';
-import { Ingredient, Recipe, RecipeIngredient, Step } from 'models';
+import { Recipe, Step } from 'models';
 import { RecipeData } from 'types/recipeData';
 
 const app: Express = express();
@@ -86,7 +84,7 @@ app.get('/recipes/:id', async (req: Request, res: Response, next: NextFunction) 
             stepNumber: step.stepnumber,
             stepText: step.steptext
         }));
-        
+
         const recipeData: RecipeData = {
             id: recipe.id,
             name: recipe.name,
