@@ -81,12 +81,15 @@ app.get('/recipes/:id', async (req: Request, res: Response, next: NextFunction) 
 
         // get the associated ingredients and steps
         const recipeIngredients: RecipeIngredient[] = await getRecipeIngredients(recipeId);
+        console.log(recipeIngredients);
         const ingredients = await Promise.all(
             recipeIngredients.map(async (recipeIngredient: RecipeIngredient) => {
-                const ingredient: Ingredient | null = await getIngredientById(recipeIngredient.ingredient_id);
+                console.log(recipeIngredient);
+                console.log(recipeIngredient.ingredientid);
+                const ingredient: Ingredient | null = await getIngredientById(recipeIngredient.ingredientid);
 
                 if (!ingredient) {
-                    throw new Error(`Ingredient not found for ID: ${recipeIngredient.ingredient_id}`);
+                    throw new Error(`Ingredient not found for ID: ${recipeIngredient.ingredientid}`);
                 }
 
                 return {
@@ -98,9 +101,10 @@ app.get('/recipes/:id', async (req: Request, res: Response, next: NextFunction) 
         );
         const steps = await Promise.all(
             (await getStepsForRecipe(recipeId)).map(async (step: Step) => {
+                console.log(step);
                 return {
-                    stepNumber: step.step_number,
-                    stepText: step.step_text
+                    stepNumber: step.stepnumber,
+                    stepText: step.steptext
                 };
             })
         );

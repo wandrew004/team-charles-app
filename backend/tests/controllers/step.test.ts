@@ -13,8 +13,8 @@ describe('Step Controller', () => {
     describe('getStepsForRecipe', () => {
         it('should return all steps for a recipe', async () => {
             const mockSteps: Step[] = [
-                { id: 1, step_number: 1, step_text: 'First step' },
-                { id: 2, step_number: 2, step_text: 'Second step' }
+                { id: 1, stepnumber: 1, steptext: 'First step' },
+                { id: 2, stepnumber: 2, steptext: 'Second step' }
             ];
 
             (queryDatabase as jest.Mock).mockResolvedValue(mockSteps);
@@ -45,8 +45,8 @@ describe('Step Controller', () => {
         it('should create a new step', async () => {
             const mockStep: Step = {
                 id: 1,
-                step_number: 1,
-                step_text: 'First step'
+                stepnumber: 1,
+                steptext: 'First step'
             };
 
             (queryDatabase as jest.Mock).mockResolvedValue([mockStep]);
@@ -65,8 +65,8 @@ describe('Step Controller', () => {
         it('should update an existing step', async () => {
             const mockStep: Step = {
                 id: 1,
-                step_number: 1,
-                step_text: 'Updated step'
+                stepnumber: 1,
+                steptext: 'Updated step'
             };
 
             (queryDatabase as jest.Mock).mockResolvedValue([mockStep]);

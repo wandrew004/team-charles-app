@@ -65,7 +65,7 @@ describe('/recipes API endpoints', () => {
             });
     
             (getRecipeIngredients as jest.Mock).mockResolvedValue([
-                { ingredient_id: 1, quantity: 2, unit: 'cups' }
+                { ingredientid: 1, quantity: 2, unit: 'cups' }
             ]);
     
             (getIngredientById as jest.Mock).mockResolvedValue({
@@ -75,7 +75,7 @@ describe('/recipes API endpoints', () => {
             });
     
             (getStepsForRecipe as jest.Mock).mockResolvedValue([
-                { id: 1, step_number: 1, step_text: 'Mix ingredients' }
+                { id: 1, stepnumber: 1, steptext: 'Mix ingredients' }
             ]);
     
             const res = await request(app).get('/recipes/1');
@@ -118,7 +118,7 @@ describe('/recipes API endpoints', () => {
             });
     
             (getRecipeIngredients as jest.Mock).mockResolvedValue([
-                { ingredient_id: 1, quantity: 2, unit: 'cups' }
+                { ingredientid: 1, quantity: 2, unit: 'cups' }
             ]);
     
             (getIngredientById as jest.Mock).mockResolvedValue(null); // triggers error
