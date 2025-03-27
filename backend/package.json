@@ -6,7 +6,8 @@
   "author": "",
   "main": "index.ts",
   "scripts": {
-    "test": "jest",
+    "test": "jest --silent",
+    "test:debug": "jest",
     "start": "tsx index.ts",
     "dev": "tsx watch index.ts",
     "lint": "eslint ."
