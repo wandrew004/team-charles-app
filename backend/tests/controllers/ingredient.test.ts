@@ -1,5 +1,5 @@
 import { queryDatabase } from '../../src/db/client';
-import { getIngredients, createIngredient, updateIngredient, deleteIngredient } from '../../src/controllers/ingredient';
+import { getIngredients, createIngredient, updateIngredient, deleteIngredient, getIngredientById } from '../../src/controllers/ingredient';
 import { Ingredient } from '../../src/models';
 
 // Mock the database client
@@ -35,6 +35,39 @@ describe('Ingredient Controller', () => {
             expect(result).toEqual([]);
         });
     });
+
+    describe('getIngredientById', () => {
+        it('should return an ingredient when it exists', async () => {
+            const mockIngredient: Ingredient = {
+                id: 1,
+                name: 'Flour',
+                description: 'All-purpose white flour'
+            };
+    
+            (queryDatabase as jest.Mock).mockResolvedValue([mockIngredient]);
+    
+            const result = await getIngredientById(1);
+    
+            expect(queryDatabase).toHaveBeenCalledWith(
+                'SELECT * FROM Ingredients WHERE ID=$1',
+                [1]
+            );
+            expect(result).toEqual(mockIngredient);
+        });
+    
+        it('should return null when ingredient does not exist', async () => {
+            (queryDatabase as jest.Mock).mockResolvedValue([]);
+    
+            const result = await getIngredientById(999);
+    
+            expect(queryDatabase).toHaveBeenCalledWith(
+                'SELECT * FROM Ingredients WHERE ID=$1',
+                [999]
+            );
+            expect(result).toBeNull();
+        });
+    });
+    
 
     describe('createIngredient', () => {
         it('should create a new ingredient', async () => {

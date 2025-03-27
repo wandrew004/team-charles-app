@@ -7,9 +7,14 @@ import {
     createStep,
     addIngredientToRecipe,
     addStepToRecipe,
-    getRecipes
+    getRecipes,
+    getRecipeById,
+    getStepsForRecipe,
+    getRecipeIngredients,
+    getIngredientById
 } from './controllers';
-import { Recipe } from 'models';
+import { Ingredient, Recipe, RecipeIngredient, Step } from 'models';
+import { RecipeData } from 'types/recipeData';
 
 const app: Express = express();
 
@@ -49,6 +54,65 @@ app.get('/recipes', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const recipes : Recipe[] = await getRecipes();
         res.status(200).json(recipes);
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @brief endpoint for getting a specific recipe
+ */
+app.get('/recipes/:id', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        // get the initial recipe
+        const recipeId = parseInt(req.params.id, 10);
+
+        if (isNaN(recipeId)) {
+            res.status(400).json({ error: 'Invalid recipe ID' });
+            return;
+        }
+
+        const recipe: Recipe | null = await getRecipeById(recipeId);
+
+        if (!recipe) {
+            res.status(404).json({ error: 'Recipe not found' });
+            return;
+        }
+
+        // get the associated ingredients and steps
+        const recipeIngredients: RecipeIngredient[] = await getRecipeIngredients(recipeId);
+        const ingredients = await Promise.all(
+            recipeIngredients.map(async (recipeIngredient: RecipeIngredient) => {
+                const ingredient: Ingredient | null = await getIngredientById(recipeIngredient.ingredient_id);
+
+                if (!ingredient) {
+                    throw new Error(`Ingredient not found for ID: ${recipeIngredient.ingredient_id}`);
+                }
+
+                return {
+                    name: ingredient.name,
+                    quantity: recipeIngredient.quantity,
+                    unit: recipeIngredient.unit
+                };
+            })
+        );
+        const steps = await Promise.all(
+            (await getStepsForRecipe(recipeId)).map(async (step: Step) => {
+                return {
+                    stepNumber: step.step_number,
+                    stepText: step.step_text
+                };
+            })
+        );
+
+        const recipeData: RecipeData = {
+            id: recipe.id,
+            name: recipe.name,
+            description: recipe.description,
+            ingredients: ingredients,
+            steps: steps
+        }
+        res.status(200).json(recipeData);
     } catch (error) {
         next(error);
     }

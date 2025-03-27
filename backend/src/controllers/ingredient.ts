@@ -5,6 +5,13 @@ export const getIngredients = async (): Promise<Ingredient[]> => {
     return queryDatabase<Ingredient>('SELECT * FROM Ingredients');
 };
 
+export const getIngredientById = async (id: number): Promise<Ingredient | null> => {
+    return queryDatabase<Ingredient>(
+        'SELECT * FROM Ingredients WHERE ID=$1',
+        [id]
+    ).then(results => results[0] || null);
+};
+
 export const createIngredient = async (name: string, description: string): Promise<Ingredient> => {
     return queryDatabase<Ingredient>(
         'INSERT INTO Ingredients (Name, Description) VALUES ($1, $2) RETURNING *',
