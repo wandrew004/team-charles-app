@@ -81,7 +81,7 @@ describe('Ingredient Controller', () => {
             const result = await getIngredientsForRecipe(1);
     
             expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT i.name,  FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
+                'SELECT i.name, ri.quantity, ri.unit FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
                 [1]
             );
             expect(result).toEqual(mockIngredients);
@@ -93,7 +93,7 @@ describe('Ingredient Controller', () => {
             const result = await getIngredientsForRecipe(999);
     
             expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT i.name,  FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
+                'SELECT i.name, ri.quantity, ri.unit FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
                 [999]
             );
             expect(result).toEqual([]);
