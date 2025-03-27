@@ -111,7 +111,7 @@ app.get('/recipes/:id', async (req: Request, res: Response, next: NextFunction) 
             description: recipe.description,
             ingredients: ingredients,
             steps: steps
-        }
+        };
         res.status(200).json(recipeData);
     } catch (error) {
         next(error);
@@ -168,7 +168,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     );
   
     res.status(500).json({ error: 'Internal Server Error' });
-    
+
     next();
 });
 
