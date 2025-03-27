@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { RecipeData } from '../types/recipeData';
 
 const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}/recipes`;
 
 const HomePage: React.FC = () => {
-  const [recipes, setRecipes] = useState<any[]>([]);
+  const [recipes, setRecipes] = useState<RecipeData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

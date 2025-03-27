@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { RecipeData } from '../types/recipeData';
 
 const API_BASE = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001';
-
-export type RecipeData = {
-  id: number;
-  name: string;
-  description: string;
-  ingredients: { name: string; quantity: number; unit: string }[];
-  steps: { stepNumber: number; stepText: string }[];
-};
 
 const RecipePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
