@@ -6,16 +6,29 @@ import {
     createRecipe,
     createStep,
     addIngredientToRecipe,
-    addStepToRecipe
+    addStepToRecipe,
+    getRecipes
 } from './controllers';
+import { Recipe } from 'models';
 
 const app: Express = express();
 
 app.use(express.json());
 app.use(cors());
 
+/**
+ * @brief endpoint for getting the ids and names of all recipes
+ */
 app.get('/recipes', async (req: Request, res: Response) => {
-    res.status(200).json({ msg: 'hi' });
+    try {
+        console.log('Request at /recipes');
+        const recipes : Recipe[] = await getRecipes();
+        res.status(200).json(recipes);
+        console.log('Request at /recipes resolved');
+    } catch (error) {
+        console.error('Error getting recipes at /recipes');
+        res.status(500).json({ error: 'Failed to add recipe' });
+    }
 });
 
 /**
