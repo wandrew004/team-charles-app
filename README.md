@@ -25,18 +25,17 @@ Navigate to the backend folder, install dependencies, and launch the backend:
 ```bash
 cd backend
 ```
-Install PostgreSQL https://www.postgresql.org/
+Install PostgreSQL https://www.postgresql.org/, then run the database initialization scripts
 ```bash
 sh db_setup_scripts/init_db.sh -U username -d postgres
 ```
-username is a user that you set up for postgres, postgres is the default database for management
-create and add details to .env based on .env.example
-npm install
-npm run build
+username is a user that you set up for postgres, postgres is the default database for management.
+
+Then, create and add details to .env based on .env.example and run npm install and npm run dev.
 
 ```bash
 npm install
-npm run build
+npm run dev
 ```
 
 ### 3. Install Dependencies and Launch the Frontend
@@ -46,7 +45,7 @@ After completing the backend setup, navigate to the frontend folder, install dep
 ```bash
 cd ../frontend
 npm install
-npm run build
+npm run dev
 ```
 
 ### 4. Execute Tests
