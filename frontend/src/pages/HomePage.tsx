@@ -1,104 +1,83 @@
-import React from "react";
-import { Button, Card, CardContent, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import React from 'react';
+import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
+import { Button, Card } from '@mui/material';
+import { Link } from 'react-router-dom';
+import theme from '../theme';
 
-const HomePage = () => {
+const HomePage: React.FC = () => {
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col space-y-4">
-        <Typography variant="h4" className="text-green-900 font-bold">
-          Hi, User!
-        </Typography>
-        <div className="flex flex-wrap gap-4">
-          <Link to="/add-recipe">
-            <Button variant="contained" className="bg-green-700 text-yellow-300">
-              add recipe
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={theme}>
+        <div className="min-h-screen bg-gray-100 px-8 py-12 font-sans" id="root">
+          <div className="flex flex-wrap gap-8 items-center mb-8">
+            <h1 className="text-5xl font-bold text-[#7B8A64] mr-72">Hi, User!</h1>
+            <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
+              <Link to="/create">add recipe</Link>
             </Button>
-          </Link>
-          <Link to="/profile">
-            <Button variant="contained" className="bg-green-700 text-yellow-300">
-              see profile
+            <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
+              <Link to="#">see profile</Link>
             </Button>
-          </Link>
-          <Link to="/add-ingredient">
-            <Button variant="contained" className="bg-green-700 text-yellow-300">
-              add ingredient
+            <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
+              <Link to="#">add ingredient</Link>
             </Button>
-          </Link>
-          <Link to="/ingredients">
-            <Button variant="contained" className="bg-green-700 text-yellow-300">
-              see ingredients
+            <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
+              <Link to="#">see ingredients</Link>
             </Button>
-          </Link>
-        </div>
-      </div>
+          </div>
 
-      {/* Your Recipes */}
-      <div>
-        <Typography variant="h6" className="text-green-800 mb-2">
-          your recipes
-        </Typography>
-        <div className="flex flex-wrap gap-4">
-          {[1, 2, 3].map((id, i) => (
-            <Card key={i} className="bg-green-100 w-64">
-              <CardContent>
-                <Typography variant="subtitle1" className="font-semibold">
-                  {id === 2 ? "Oven Baked Salmon" : "My Brownie Recipe"}
-                </Typography>
-                <Typography
-                  className={
-                    id === 2 ? "text-green-600" : "text-red-600"
-                  }
-                  variant="body2"
-                >
-                  {id === 2 ? "all ingredients present" : "dont have all ingredients!"}
-                </Typography>
-              </CardContent>
-            </Card>
-          ))}
-          <Button variant="outlined" className="self-center">
-            + see more
-          </Button>
-        </div>
-      </div>
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-[#7B8A64] mb-4">your recipes</h2>
+            <div className="flex flex-wrap gap-6">
+              <Card className="w-80 h-32">
+                <p className="font-medium text-lg">My Brownie Recipe →</p>
+                <p className="text-red-500 text-base mt-3">don't have all ingredients!</p>
+              </Card>
+              <Card className="w-80 h-32">
+                <p className="font-medium text-lg">Oven Baked Salmon →</p>
+                <p className="text-green-600 text-base mt-3">all ingredients present</p>
+              </Card>
+              <Card className="w-80 h-32">
+                <p className="font-medium text-lg">My Brownie Recipe →</p>
+                <p className="text-red-500 text-base mt-3">don't have all ingredients!</p>
+              </Card>
+              <Button className="!bg-gray-300 !text-gray-700 self-center text-lg min-w-[240px] py-3">
+                <Link to="/recipes">+ see more</Link>
+              </Button>
+            </div>
+          </section>
 
-      {/* Your Pantry */}
-      <div>
-        <Typography variant="h6" className="text-green-800 mb-2">
-          your pantry
-        </Typography>
-        <div className="flex flex-wrap gap-4">
-          {["meat and poultry", "produce", "seasoning"].map((category, i) => (
-            <Card key={i} className="bg-green-100 w-64">
-              <CardContent>
-                <Typography variant="subtitle1" className="text-green-900">
-                  {category} →
-                </Typography>
-              </CardContent>
-            </Card>
-          ))}
-          <Button variant="outlined" className="self-center">
-            + see more
-          </Button>
-        </div>
-      </div>
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-[#7B8A64] mb-4">your pantry</h2>
+            <div className="flex flex-wrap gap-6">
+              <Card className="w-80 h-32">
+                <p className="font-medium text-lg">meat and poultry →</p>
+              </Card>
+              <Card className="w-80 h-32">
+                <p className="font-medium text-lg">produce →</p>
+              </Card>
+              <Card className="w-80 h-32">
+                <p className="font-medium text-lg">seasoning →</p>
+              </Card>
+              <Button className="!bg-gray-300 !text-gray-700 self-center text-lg min-w-[240px] py-3">
+                <Link to="#">+ see more</Link>
+              </Button>
+            </div>
+          </section>
 
-      {/* Friends Recipes */}
-      <div>
-        <Typography variant="h6" className="text-gray-400 mb-2">
-          friends recipes
-        </Typography>
-        <div className="flex flex-wrap gap-4">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i} className="bg-gray-300 w-64 h-24" />
-          ))}
-          <Button variant="outlined" className="self-center" disabled>
-            + see more
-          </Button>
+          <section>
+            <h2 className="text-2xl font-semibold text-gray-400 mb-4">friends recipes</h2>
+            <div className="flex flex-wrap gap-6">
+              <Card className="w-80 h-32 bg-gray-300" />
+              <Card className="w-80 h-32 bg-gray-300" />
+              <Card className="w-80 h-32 bg-gray-300" />
+              <Button className="!bg-gray-300 !text-gray-700 self-center text-lg min-w-[240px] py-3">
+                <Link to="#">+ see more</Link>
+              </Button>
+            </div>
+          </section>
         </div>
-      </div>
-    </div>
+      </ThemeProvider>
+    </StyledEngineProvider>
   );
 };
 
