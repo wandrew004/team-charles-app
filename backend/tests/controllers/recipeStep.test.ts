@@ -13,8 +13,8 @@ describe('Recipe Step Controller', () => {
     describe('getRecipeSteps', () => {
         it('should return all steps for a recipe', async () => {
             const mockRecipeSteps: RecipeStep[] = [
-                { recipe_id: 1, step_id: 1 },
-                { recipe_id: 1, step_id: 2 }
+                { recipeid: 1, stepid: 1 },
+                { recipeid: 1, stepid: 2 }
             ];
 
             (queryDatabase as jest.Mock).mockResolvedValue(mockRecipeSteps);
@@ -44,8 +44,8 @@ describe('Recipe Step Controller', () => {
     describe('createRecipeStep', () => {
         it('should create a new recipe step', async () => {
             const mockRecipeStep: RecipeStep = {
-                recipe_id: 1,
-                step_id: 1
+                recipeid: 1,
+                stepid: 1
             };
 
             (queryDatabase as jest.Mock).mockResolvedValue([mockRecipeStep]);

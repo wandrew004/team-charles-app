@@ -3,7 +3,7 @@ import { Step } from '../models';
 
 export const getStepsForRecipe = async (recipeid: number): Promise<Step[]> => {
     return queryDatabase<Step>(
-        'SELECT s.* FROM Steps AS s INNER JOIN RecipeSteps AS rs ON s.ID = rs.ID WHERE rs.ID = $1',
+        'SELECT s.* FROM Steps AS s INNER JOIN RecipeSteps AS rs ON s.id = rs.stepId WHERE rs.recipeId = $1',
         [recipeid]
     );
 };

@@ -13,8 +13,8 @@ describe('Step Controller', () => {
     describe('getStepsForRecipe', () => {
         it('should return all steps for a recipe', async () => {
             const mockSteps: Step[] = [
-                { id: 1, step_number: 1, step_text: 'First step' },
-                { id: 2, step_number: 2, step_text: 'Second step' }
+                { id: 1, stepnumber: 1, steptext: 'First step' },
+                { id: 2, stepnumber: 2, steptext: 'Second step' }
             ];
 
             (queryDatabase as jest.Mock).mockResolvedValue(mockSteps);
@@ -22,7 +22,7 @@ describe('Step Controller', () => {
             const result = await getStepsForRecipe(1);
 
             expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT s.* FROM Steps AS s INNER JOIN RecipeSteps AS rs ON s.ID = rs.ID WHERE rs.ID = $1',
+                'SELECT s.* FROM Steps AS s INNER JOIN RecipeSteps AS rs ON s.id = rs.stepId WHERE rs.recipeId = $1',
                 [1]
             );
             expect(result).toEqual(mockSteps);
@@ -34,7 +34,7 @@ describe('Step Controller', () => {
             const result = await getStepsForRecipe(1);
 
             expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT s.* FROM Steps AS s INNER JOIN RecipeSteps AS rs ON s.ID = rs.ID WHERE rs.ID = $1',
+                'SELECT s.* FROM Steps AS s INNER JOIN RecipeSteps AS rs ON s.id = rs.stepId WHERE rs.recipeId = $1',
                 [1]
             );
             expect(result).toEqual([]);
@@ -45,8 +45,8 @@ describe('Step Controller', () => {
         it('should create a new step', async () => {
             const mockStep: Step = {
                 id: 1,
-                step_number: 1,
-                step_text: 'First step'
+                stepnumber: 1,
+                steptext: 'First step'
             };
 
             (queryDatabase as jest.Mock).mockResolvedValue([mockStep]);
@@ -65,8 +65,8 @@ describe('Step Controller', () => {
         it('should update an existing step', async () => {
             const mockStep: Step = {
                 id: 1,
-                step_number: 1,
-                step_text: 'Updated step'
+                stepnumber: 1,
+                steptext: 'Updated step'
             };
 
             (queryDatabase as jest.Mock).mockResolvedValue([mockStep]);

@@ -13,8 +13,8 @@ describe('Recipe Ingredient Controller', () => {
     describe('getRecipeIngredients', () => {
         it('should return all ingredients for a recipe', async () => {
             const mockRecipeIngredients: RecipeIngredient[] = [
-                { recipe_id: 1, ingredient_id: 1, quantity: 2, unit: 'cups' },
-                { recipe_id: 1, ingredient_id: 2, quantity: 1, unit: 'tbsp' }
+                { recipeid: 1, ingredientid: 1, quantity: 2, unit: 'cups' },
+                { recipeid: 1, ingredientid: 2, quantity: 1, unit: 'tbsp' }
             ];
 
             (queryDatabase as jest.Mock).mockResolvedValue(mockRecipeIngredients);
@@ -44,8 +44,8 @@ describe('Recipe Ingredient Controller', () => {
     describe('createRecipeIngredient', () => {
         it('should create a new recipe ingredient', async () => {
             const mockRecipeIngredient: RecipeIngredient = {
-                recipe_id: 1,
-                ingredient_id: 1,
+                recipeid: 1,
+                ingredientid: 1,
                 quantity: 2,
                 unit: 'cups'
             };
@@ -65,8 +65,8 @@ describe('Recipe Ingredient Controller', () => {
     describe('updateRecipeIngredient', () => {
         it('should update an existing recipe ingredient', async () => {
             const mockRecipeIngredient: RecipeIngredient = {
-                recipe_id: 1,
-                ingredient_id: 1,
+                recipeid: 1,
+                ingredientid: 1,
                 quantity: 3,
                 unit: 'cups'
             };

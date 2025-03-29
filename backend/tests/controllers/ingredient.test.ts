@@ -1,6 +1,7 @@
 import { queryDatabase } from '../../src/db/client';
-import { getIngredients, createIngredient, updateIngredient, deleteIngredient } from '../../src/controllers/ingredient';
+import { getIngredients, createIngredient, updateIngredient, deleteIngredient, getIngredientById, getIngredientsForRecipe } from '../../src/controllers/ingredient';
 import { Ingredient } from '../../src/models';
+import { IngredientQuantity } from 'types/ingredientQuantity';
 
 // Mock the database client
 jest.mock('../../src/db/client');
@@ -35,6 +36,70 @@ describe('Ingredient Controller', () => {
             expect(result).toEqual([]);
         });
     });
+
+    describe('getIngredientById', () => {
+        it('should return an ingredient when it exists', async () => {
+            const mockIngredient: Ingredient = {
+                id: 1,
+                name: 'Flour',
+                description: 'All-purpose white flour'
+            };
+    
+            (queryDatabase as jest.Mock).mockResolvedValue([mockIngredient]);
+    
+            const result = await getIngredientById(1);
+    
+            expect(queryDatabase).toHaveBeenCalledWith(
+                'SELECT * FROM Ingredients WHERE ID=$1',
+                [1]
+            );
+            expect(result).toEqual(mockIngredient);
+        });
+    
+        it('should return null when ingredient does not exist', async () => {
+            (queryDatabase as jest.Mock).mockResolvedValue([]);
+    
+            const result = await getIngredientById(999);
+    
+            expect(queryDatabase).toHaveBeenCalledWith(
+                'SELECT * FROM Ingredients WHERE ID=$1',
+                [999]
+            );
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('getIngredientsForRecipe', () => {
+        it('should return a list of ingredients for a valid recipe ID', async () => {
+            const mockIngredients: IngredientQuantity[] = [
+                { name: 'Flour', quantity: 2, unit: 'cups' },
+                { name: 'Sugar', quantity: 1, unit: 'cup' }
+            ];
+    
+            (queryDatabase as jest.Mock).mockResolvedValue(mockIngredients);
+    
+            const result = await getIngredientsForRecipe(1);
+    
+            expect(queryDatabase).toHaveBeenCalledWith(
+                'SELECT i.name, ri.quantity, ri.unit FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
+                [1]
+            );
+            expect(result).toEqual(mockIngredients);
+        });
+    
+        it('should return an empty array when no ingredients are found for the recipe ID', async () => {
+            (queryDatabase as jest.Mock).mockResolvedValue([]);
+    
+            const result = await getIngredientsForRecipe(999);
+    
+            expect(queryDatabase).toHaveBeenCalledWith(
+                'SELECT i.name, ri.quantity, ri.unit FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
+                [999]
+            );
+            expect(result).toEqual([]);
+        });
+    });
+    
 
     describe('createIngredient', () => {
         it('should create a new ingredient', async () => {

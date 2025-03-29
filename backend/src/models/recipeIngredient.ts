@@ -1,6 +1,6 @@
 export interface RecipeIngredient {
-    recipe_id: number;
-    ingredient_id: number;
+    recipeid: number;
+    ingredientid: number;
     quantity: number;
     unit: string;
 }

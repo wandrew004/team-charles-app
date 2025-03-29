@@ -1,8 +1,23 @@
+import { IngredientQuantity } from 'types/ingredientQuantity';
 import { queryDatabase } from '../db/client';
 import { Ingredient } from '../models';
 
 export const getIngredients = async (): Promise<Ingredient[]> => {
     return queryDatabase<Ingredient>('SELECT * FROM Ingredients');
+};
+
+export const getIngredientById = async (id: number): Promise<Ingredient | null> => {
+    return queryDatabase<Ingredient>(
+        'SELECT * FROM Ingredients WHERE ID=$1',
+        [id]
+    ).then(results => results[0] || null);
+};
+
+export const getIngredientsForRecipe = async (recipeid: number): Promise<IngredientQuantity[]> => {
+    return queryDatabase<IngredientQuantity>(
+        'SELECT i.name, ri.quantity, ri.unit FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
+        [recipeid]
+    );
 };
 
 export const createIngredient = async (name: string, description: string): Promise<Ingredient> => {
