@@ -9,20 +9,22 @@ const HomePage: React.FC = () => {
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
         <div className="min-h-screen bg-gray-100 px-8 py-12 font-sans" id="root">
-          <div className="flex flex-wrap gap-8 items-center mb-8">
-            <h1 className="text-5xl font-bold text-[#7B8A64] mr-72">Hi, User!</h1>
-            <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
-              <Link to="/create">add recipe</Link>
-            </Button>
-            <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
-              <Link to="#">see profile</Link>
-            </Button>
-            <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
-              <Link to="#">add ingredient</Link>
-            </Button>
-            <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
-              <Link to="#">see ingredients</Link>
-            </Button>
+          <div className="flex flex-wrap items-center justify-between mb-8">
+            <h1 className="text-5xl font-bold text-[#7B8A64]">Hi, User!</h1>
+            <div className="flex flex-wrap gap-8">
+              <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
+                <Link to="/create">add recipe</Link>
+              </Button>
+              <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
+                <Link to="#">see profile</Link>
+              </Button>
+              <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
+                <Link to="#">add ingredient</Link>
+              </Button>
+              <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
+                <Link to="#">see ingredients</Link>
+              </Button>
+            </div>
           </div>
 
           <section className="mb-8">
