@@ -1,47 +1,78 @@
-import { step, recipestep } from '../models/init-models'; // Adjust path if needed
+import { Step, Recipe } from '../models/init-models';
 
-export const getStepsForRecipe = async (recipeid: number): Promise<step[]> => {
-    return step.findAll({
-        include: [
-            {
-                model: recipestep,
-                where: { recipeid },
-                attributes: [], // We only want step data
-            },
-        ],
+/**
+ * Get all steps
+ */
+export const getSteps = async (): Promise<Step[]> => {
+    return Step.findAll({
+        order: [['stepNumber', 'ASC']],
     });
 };
 
+/**
+ * Get a step by ID
+ */
+export const getStepById = async (id: number): Promise<Step | null> => {
+    return Step.findByPk(id);
+};
+
+// /**
+//  * Get all steps for a specific recipe (through the RecipeStep join table)
+//  */
+// export const getStepsForRecipe = async (recipeId: number): Promise<Step[]> => {
+//     return Step.findAll({
+//         include: [
+//             {
+//                 model: Recipe,
+//                 where: { id: recipeId },
+//                 through: { attributes: [] },
+//                 attributes: [], // Exclude Recipe fields, only want Step data
+//             },
+//         ],
+//         order: [['stepNumber', 'ASC']],
+//     });
+// };
+
+/**
+ * Create a step
+ */
 export const createStep = async (
-    stepnumber: number,
-    steptext: string
-): Promise<step> => {
-    return step.create({
-        stepnumber,
-        steptext,
+    stepNumber: number,
+    stepText: string
+): Promise<Step> => {
+    return Step.create({
+        stepNumber,
+        stepText,
     });
 };
 
+/**
+ * Update a step
+ */
 export const updateStep = async (
     id: number,
-    stepnumber: number,
-    steptext: string
-): Promise<step | null> => {
-    const [_, updated] = await step.update(
+    stepNumber: number,
+    stepText: string
+): Promise<Step | null> => {
+    const [_, updated] = await Step.update(
         {
-            stepnumber,
-            steptext,
+            stepNumber,
+            stepText,
         },
         {
             where: { id },
             returning: true,
         }
     );
+
     return updated[0] || null;
 };
 
+/**
+ * Delete a step
+ */
 export const deleteStep = async (id: number): Promise<void> => {
-    await step.destroy({
+    await Step.destroy({
         where: { id },
     });
 };

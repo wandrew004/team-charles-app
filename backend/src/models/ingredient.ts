@@ -1,67 +1,67 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
-import type { ownedingredient, ownedingredientCreationAttributes, ownedingredientId } from './ownedingredient';
-import type { recipeingredient, recipeingredientId } from './recipeingredient';
-import type { recipe, recipeId } from './recipe';
-import type { unit, unitId } from './unit';
+import type { OwnedIngredient, OwnedIngredientCreationAttributes, OwnedIngredientId } from './ownedIngredient';
+import type { RecipeIngredient, RecipeIngredientId } from './recipeIngredient';
+import type { Recipe, RecipeId } from './recipe';
+import type { Unit, UnitId } from './unit';
 
-export interface ingredientAttributes {
+export interface IngredientAttributes {
   id: number;
   name: string;
   description?: string;
-  standard_unit?: number;
+  standardUnit?: number;
   density?: number;
 }
 
-export type ingredientPk = "id";
-export type ingredientId = ingredient[ingredientPk];
-export type ingredientOptionalAttributes = "id" | "description" | "standard_unit" | "density";
-export type ingredientCreationAttributes = Optional<ingredientAttributes, ingredientOptionalAttributes>;
+export type IngredientPk = "id";
+export type IngredientId = Ingredient[IngredientPk];
+export type IngredientOptionalAttributes = "id" | "description" | "standardUnit" | "density";
+export type IngredientCreationAttributes = Optional<IngredientAttributes, IngredientOptionalAttributes>;
 
-export class ingredient extends Model<ingredientAttributes, ingredientCreationAttributes> implements ingredientAttributes {
+export class Ingredient extends Model<IngredientAttributes, IngredientCreationAttributes> implements IngredientAttributes {
   id!: number;
   name!: string;
   description?: string;
-  standard_unit?: number;
+  standardUnit?: number;
   density?: number;
 
-  // ingredient hasOne ownedingredient via ingredientid
-  ownedingredient!: ownedingredient;
-  getOwnedingredient!: Sequelize.HasOneGetAssociationMixin<ownedingredient>;
-  setOwnedingredient!: Sequelize.HasOneSetAssociationMixin<ownedingredient, ownedingredientId>;
-  createOwnedingredient!: Sequelize.HasOneCreateAssociationMixin<ownedingredient>;
-  // ingredient hasMany recipeingredient via ingredientid
-  recipeingredients!: recipeingredient[];
-  getRecipeingredients!: Sequelize.HasManyGetAssociationsMixin<recipeingredient>;
-  setRecipeingredients!: Sequelize.HasManySetAssociationsMixin<recipeingredient, recipeingredientId>;
-  addRecipeingredient!: Sequelize.HasManyAddAssociationMixin<recipeingredient, recipeingredientId>;
-  addRecipeingredients!: Sequelize.HasManyAddAssociationsMixin<recipeingredient, recipeingredientId>;
-  createRecipeingredient!: Sequelize.HasManyCreateAssociationMixin<recipeingredient>;
-  removeRecipeingredient!: Sequelize.HasManyRemoveAssociationMixin<recipeingredient, recipeingredientId>;
-  removeRecipeingredients!: Sequelize.HasManyRemoveAssociationsMixin<recipeingredient, recipeingredientId>;
-  hasRecipeingredient!: Sequelize.HasManyHasAssociationMixin<recipeingredient, recipeingredientId>;
-  hasRecipeingredients!: Sequelize.HasManyHasAssociationsMixin<recipeingredient, recipeingredientId>;
-  countRecipeingredients!: Sequelize.HasManyCountAssociationsMixin;
-  // ingredient belongsToMany recipe via ingredientid and recipeid
-  recipeid_recipes!: recipe[];
-  getRecipeid_recipes!: Sequelize.BelongsToManyGetAssociationsMixin<recipe>;
-  setRecipeid_recipes!: Sequelize.BelongsToManySetAssociationsMixin<recipe, recipeId>;
-  addRecipeid_recipe!: Sequelize.BelongsToManyAddAssociationMixin<recipe, recipeId>;
-  addRecipeid_recipes!: Sequelize.BelongsToManyAddAssociationsMixin<recipe, recipeId>;
-  createRecipeid_recipe!: Sequelize.BelongsToManyCreateAssociationMixin<recipe>;
-  removeRecipeid_recipe!: Sequelize.BelongsToManyRemoveAssociationMixin<recipe, recipeId>;
-  removeRecipeid_recipes!: Sequelize.BelongsToManyRemoveAssociationsMixin<recipe, recipeId>;
-  hasRecipeid_recipe!: Sequelize.BelongsToManyHasAssociationMixin<recipe, recipeId>;
-  hasRecipeid_recipes!: Sequelize.BelongsToManyHasAssociationsMixin<recipe, recipeId>;
-  countRecipeid_recipes!: Sequelize.BelongsToManyCountAssociationsMixin;
-  // ingredient belongsTo unit via standard_unit
-  standard_unit_unit!: unit;
-  getStandard_unit_unit!: Sequelize.BelongsToGetAssociationMixin<unit>;
-  setStandard_unit_unit!: Sequelize.BelongsToSetAssociationMixin<unit, unitId>;
-  createStandard_unit_unit!: Sequelize.BelongsToCreateAssociationMixin<unit>;
+  // Ingredient hasOne OwnedIngredient via ingredientId
+  ownedIngredient!: OwnedIngredient;
+  getOwnedIngredient!: Sequelize.HasOneGetAssociationMixin<OwnedIngredient>;
+  setOwnedIngredient!: Sequelize.HasOneSetAssociationMixin<OwnedIngredient, OwnedIngredientId>;
+  createOwnedIngredient!: Sequelize.HasOneCreateAssociationMixin<OwnedIngredient>;
+  // Ingredient hasMany RecipeIngredient via ingredientId
+  recipeIngredients!: RecipeIngredient[];
+  getRecipeIngredients!: Sequelize.HasManyGetAssociationsMixin<RecipeIngredient>;
+  setRecipeIngredients!: Sequelize.HasManySetAssociationsMixin<RecipeIngredient, RecipeIngredientId>;
+  addRecipeIngredient!: Sequelize.HasManyAddAssociationMixin<RecipeIngredient, RecipeIngredientId>;
+  addRecipeIngredients!: Sequelize.HasManyAddAssociationsMixin<RecipeIngredient, RecipeIngredientId>;
+  createRecipeIngredient!: Sequelize.HasManyCreateAssociationMixin<RecipeIngredient>;
+  removeRecipeIngredient!: Sequelize.HasManyRemoveAssociationMixin<RecipeIngredient, RecipeIngredientId>;
+  removeRecipeIngredients!: Sequelize.HasManyRemoveAssociationsMixin<RecipeIngredient, RecipeIngredientId>;
+  hasRecipeIngredient!: Sequelize.HasManyHasAssociationMixin<RecipeIngredient, RecipeIngredientId>;
+  hasRecipeIngredients!: Sequelize.HasManyHasAssociationsMixin<RecipeIngredient, RecipeIngredientId>;
+  countRecipeIngredients!: Sequelize.HasManyCountAssociationsMixin;
+  // Ingredient belongsToMany Recipe via ingredientId and recipeId
+  recipeIdRecipes!: Recipe[];
+  getRecipeIdRecipes!: Sequelize.BelongsToManyGetAssociationsMixin<Recipe>;
+  setRecipeIdRecipes!: Sequelize.BelongsToManySetAssociationsMixin<Recipe, RecipeId>;
+  addRecipeIdRecipe!: Sequelize.BelongsToManyAddAssociationMixin<Recipe, RecipeId>;
+  addRecipeIdRecipes!: Sequelize.BelongsToManyAddAssociationsMixin<Recipe, RecipeId>;
+  createRecipeIdRecipe!: Sequelize.BelongsToManyCreateAssociationMixin<Recipe>;
+  removeRecipeIdRecipe!: Sequelize.BelongsToManyRemoveAssociationMixin<Recipe, RecipeId>;
+  removeRecipeIdRecipes!: Sequelize.BelongsToManyRemoveAssociationsMixin<Recipe, RecipeId>;
+  hasRecipeIdRecipe!: Sequelize.BelongsToManyHasAssociationMixin<Recipe, RecipeId>;
+  hasRecipeIdRecipes!: Sequelize.BelongsToManyHasAssociationsMixin<Recipe, RecipeId>;
+  countRecipeIdRecipes!: Sequelize.BelongsToManyCountAssociationsMixin;
+  // Ingredient belongsTo Unit via standardUnit
+  standardUnitUnit!: Unit;
+  getStandardUnitUnit!: Sequelize.BelongsToGetAssociationMixin<Unit>;
+  setStandardUnitUnit!: Sequelize.BelongsToSetAssociationMixin<Unit, UnitId>;
+  createStandardUnitUnit!: Sequelize.BelongsToCreateAssociationMixin<Unit>;
 
-  static initModel(sequelize: Sequelize.Sequelize): typeof ingredient {
-    return ingredient.init({
+  static initModel(sequelize: Sequelize.Sequelize): typeof Ingredient {
+    return Ingredient.init({
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -76,14 +76,15 @@ export class ingredient extends Model<ingredientAttributes, ingredientCreationAt
       type: DataTypes.TEXT,
       allowNull: true
     },
-    standard_unit: {
+    standardUnit: {
       type: DataTypes.INTEGER,
       allowNull: true,
       comment: "Default unit for this ingredient (e.g. grams)",
       references: {
         model: 'units',
         key: 'id'
-      }
+      },
+      field: 'standard_unit'
     },
     density: {
       type: DataTypes.DECIMAL,

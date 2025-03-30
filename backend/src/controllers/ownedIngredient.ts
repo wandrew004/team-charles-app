@@ -1,59 +1,73 @@
-import { ownedingredient, ingredient } from '../models/init-models'; // Adjust import paths as needed
+import { OwnedIngredient, Ingredient } from '../models/init-models';
 
-export const getOwnedIngredients = async (): Promise<ownedingredient[]> => {
-    return ownedingredient.findAll({
+/**
+ * Get all owned ingredients, optionally with associated Ingredient info.
+ */
+export const getOwnedIngredients = async (): Promise<OwnedIngredient[]> => {
+    return OwnedIngredient.findAll({
         include: [
             {
-                model: ingredient,
-                attributes: ['name', 'description', 'standard_unit', 'density'], // Customize fields if needed
-            },
-        ],
-    });
-};
-
-export const getOwnedIngredientById = async (
-    ingredientid: number
-): Promise<ownedingredient | null> => {
-    return ownedingredient.findByPk(ingredientid, {
-        include: [
-            {
-                model: ingredient,
+                model: Ingredient,
                 attributes: ['name', 'description', 'standard_unit', 'density'],
             },
         ],
     });
 };
 
+/**
+ * Get a single owned ingredient by ingredient ID.
+ */
+export const getOwnedIngredientById = async (
+    ingredientId: number
+): Promise<OwnedIngredient | null> => {
+    return OwnedIngredient.findByPk(ingredientId, {
+        include: [
+            {
+                model: Ingredient,
+                attributes: ['name', 'description', 'standard_unit', 'density'],
+            },
+        ],
+    });
+};
+
+/**
+ * Create a new owned ingredient.
+ */
 export const createOwnedIngredient = async (
-    ingredientid: number,
+    ingredientId: number,
     quantity: number
-): Promise<ownedingredient> => {
-    return ownedingredient.create({
-        ingredientid,
+): Promise<OwnedIngredient> => {
+    return OwnedIngredient.create({
+        ingredientId,
         quantity,
     });
 };
 
+/**
+ * Update the quantity of an owned ingredient.
+ */
 export const updateOwnedIngredient = async (
-    ingredientid: number,
+    ingredientId: number,
     quantity: number
-): Promise<ownedingredient | null> => {
-    const [_, updated] = await ownedingredient.update(
+): Promise<OwnedIngredient | null> => {
+    const [_, updated] = await OwnedIngredient.update(
+        { quantity },
         {
-            quantity,
-        },
-        {
-            where: { ingredientid },
+            where: { ingredientId },
             returning: true,
         }
     );
+
     return updated[0] || null;
 };
 
+/**
+ * Delete an owned ingredient.
+ */
 export const deleteOwnedIngredient = async (
-    ingredientid: number
+    ingredientId: number
 ): Promise<void> => {
-    await ownedingredient.destroy({
-        where: { ingredientid },
+    await OwnedIngredient.destroy({
+        where: { ingredientId },
     });
 };

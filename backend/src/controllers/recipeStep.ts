@@ -1,51 +1,68 @@
-import { recipestep } from '../models/init-models';
+import { RecipeStep, Step, Recipe } from '../models/init-models';
 
-export const getRecipeSteps = async (recipeid: number): Promise<recipestep[]> => {
-    return recipestep.findAll({
-        where: {
-            recipeid,
-        },
+/**
+ * Get all steps for a recipe, including step number and text
+ */
+export const getStepsForRecipe = async (recipeId: number): Promise<Step[]> => {
+    const recipeSteps = await RecipeStep.findAll({
+        where: { recipeId },
+        include: [
+            {
+                model: Step,
+                attributes: ['stepnumber', 'steptext'],
+            },
+        ],
+    });
+
+    return recipeSteps.map(rs => rs.step);
+};
+
+/**
+ * Add a step to a recipe
+ */
+export const addStepToRecipe = async (
+    recipeId: number,
+    stepId: number
+): Promise<RecipeStep> => {
+    return RecipeStep.create({
+        recipeId,
+        stepId,
     });
 };
 
-export const createRecipeStep = async (
-    recipeid: number,
-    stepid: number
-): Promise<recipestep> => {
-    return recipestep.create({
-        recipeid,
-        stepid,
-    });
-};
-
-export const addStepToRecipe = createRecipeStep;
-
+/**
+ * Update the step ID for a recipe step (if needed)
+ */
 export const updateRecipeStep = async (
-    recipeid: number,
-    oldStepid: number,
-    newStepid: number
-): Promise<recipestep | null> => {
-    const [_, updated] = await recipestep.update(
-        { stepid: newStepid },
+    recipeId: number,
+    oldStepId: number,
+    newStepId: number
+): Promise<RecipeStep | null> => {
+    const [_, updated] = await RecipeStep.update(
+        { stepId: newStepId },
         {
             where: {
-                recipeid,
-                stepid: oldStepid,
+                recipeId,
+                stepId: oldStepId,
             },
             returning: true,
         }
     );
+
     return updated[0] || null;
 };
 
+/**
+ * Remove a step from a recipe
+ */
 export const deleteRecipeStep = async (
-    recipeid: number,
-    stepid: number
+    recipeId: number,
+    stepId: number
 ): Promise<void> => {
-    await recipestep.destroy({
+    await RecipeStep.destroy({
         where: {
-            recipeid,
-            stepid,
+            recipeId,
+            stepId,
         },
     });
 };
