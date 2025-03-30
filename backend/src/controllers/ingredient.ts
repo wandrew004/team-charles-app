@@ -15,7 +15,13 @@ export const getIngredientById = async (id: number): Promise<Ingredient | null> 
 
 export const getIngredientsForRecipe = async (recipeid: number): Promise<IngredientQuantity[]> => {
     return queryDatabase<IngredientQuantity>(
-        'SELECT i.name, ri.quantity, ri.unit FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
+        `
+            SELECT i.name, ri.quantity, u.name
+            FROM Ingredients as i
+            INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID
+            INNER JOIN Units as u ON ri.unitID = u.ID
+            WHERE ri.recipeID=$1
+        `,
         [recipeid]
     );
 };
