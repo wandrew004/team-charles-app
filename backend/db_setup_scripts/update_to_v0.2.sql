@@ -77,4 +77,8 @@ CREATE TABLE ownedingredients (
 COMMENT ON TABLE ownedingredients IS 'Tracks what ingredients a user currently owns';
 COMMENT ON COLUMN ownedingredients.quantity IS 'Amount of ingredient available';
 
+-- 8. Update DatabaseVersion table
+INSERT INTO DatabaseVersion (Version, DependsOn)
+VALUES ('0.0.2', '0.0.1');
+
 COMMIT;
