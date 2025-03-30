@@ -1,48 +1,73 @@
 import { IngredientQuantity } from 'types/ingredientQuantity';
-import { queryDatabase } from '../db/client';
-import { Ingredient } from '../models';
+import { ingredient, recipeingredient, unit } from "../models/init-models";
 
-export const getIngredients = async (): Promise<Ingredient[]> => {
-    return queryDatabase<Ingredient>('SELECT * FROM Ingredients');
+export const getIngredients = async (): Promise<ingredient[]> => {
+    return ingredient.findAll();
 };
 
-export const getIngredientById = async (id: number): Promise<Ingredient | null> => {
-    return queryDatabase<Ingredient>(
-        'SELECT * FROM Ingredients WHERE ID=$1',
-        [id]
-    ).then(results => results[0] || null);
+export const getIngredientById = async (id: number): Promise<ingredient | null> => {
+    return ingredient.findByPk(id);
 };
 
 export const getIngredientsForRecipe = async (recipeid: number): Promise<IngredientQuantity[]> => {
-    return queryDatabase<IngredientQuantity>(
-        `
-            SELECT i.name, ri.quantity, u.name
-            FROM Ingredients as i
-            INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID
-            INNER JOIN Units as u ON ri.unitID = u.ID
-            WHERE ri.recipeID=$1
-        `,
-        [recipeid]
+    const recipeIngredients = await recipeingredient.findAll({
+        where: { recipeid: recipeid },
+        include: [
+            {
+                model: ingredient,
+                attributes: ['name'],
+            },
+            {
+                model: unit,
+                attributes: ['name'],
+            },
+        ],
+        attributes: ['quantity'],
+    });
+    
+    return recipeIngredients.map(ri => ({
+        name: ri.ingredient.name,
+        quantity: ri.quantity,
+        unit: ri.unit.name,
+    }));
+};
+
+export const createIngredient = async (name: string, description?: string, standard_unit?: number, density?: number): Promise<ingredient> => {
+    return ingredient.create({
+        name: name,
+        description: description,
+        standard_unit: standard_unit,
+        density: density
+    });
+};
+
+export const updateIngredient = async (
+    id: number,
+    name: string,
+    description?: string,
+    standard_unit?: number,
+    density?: number
+): Promise<ingredient | null> => {
+    const [_, updated] = await ingredient.update(
+        {
+            name,
+            description,
+            standard_unit,
+            density,
+        },
+        {
+            where: { id },
+            returning: true, // 🔥 gets the updated row(s) back
+        }
     );
-};
-
-export const createIngredient = async (name: string, description: string): Promise<Ingredient> => {
-    return queryDatabase<Ingredient>(
-        'INSERT INTO Ingredients (Name, Description) VALUES ($1, $2) RETURNING *',
-        [name, description]
-    ).then(results => results[0]);
-};
-
-export const updateIngredient = async (id: number, name: string, description: string): Promise<Ingredient> => {
-    return queryDatabase<Ingredient>(
-        'UPDATE Ingredients SET Name = $1, Description = $2 WHERE ID = $3 RETURNING *',
-        [name, description, id]
-    ).then(results => results[0]);
+    
+    return updated[0] || null;
 };
 
 export const deleteIngredient = async (id: number): Promise<void> => {
-    await queryDatabase<Ingredient>(
-        'DELETE FROM Ingredients WHERE ID = $1',
-        [id]
-    );
+    await ingredient.destroy({
+        where: {
+            id: id
+        }
+    });
 };

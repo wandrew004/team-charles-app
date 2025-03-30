@@ -1,34 +1,40 @@
-import { queryDatabase } from '../db/client';
-import { Recipe } from '../models';
+import { recipe } from "../models/init-models"; // Adjust the import path as needed
 
-export const getRecipes = async (): Promise<Recipe[]> => {
-    return queryDatabase<Recipe>('SELECT * FROM Recipes');
+export const getRecipes = async (): Promise<recipe[]> => {
+    return recipe.findAll();
 };
 
-export const getRecipeById = async (id: number): Promise<Recipe | null> => {
-    return queryDatabase<Recipe>(
-        'SELECT * FROM Recipes WHERE ID = $1',
-        [id]
-    ).then(results => results[0] || null);
+export const getRecipeById = async (id: number): Promise<recipe | null> => {
+    return recipe.findByPk(id);
 };
 
-export const createRecipe = async (name: string, description: string): Promise<Recipe> => {
-    return queryDatabase<Recipe>(
-        'INSERT INTO Recipes (Name, Description) VALUES ($1, $2) RETURNING *',
-        [name, description]
-    ).then(results => results[0]);
+export const createRecipe = async (name: string, description?: string): Promise<recipe> => {
+    return recipe.create({
+        name,
+        description,
+    });
 };
 
-export const updateRecipe = async (id: number, name: string, description: string): Promise<Recipe> => {
-    return queryDatabase<Recipe>(
-        'UPDATE Recipes SET Name = $1, Description = $2 WHERE ID = $3 RETURNING *',
-        [name, description, id]
-    ).then(results => results[0]);
+export const updateRecipe = async (id: number, name: string, description: string): Promise<recipe | null> => {
+    const [_, updated] = await recipe.update(
+        {
+            name,
+            description,
+        },
+        {
+            where: {
+                id: id
+            },
+            returning: true,
+        }
+    );
+    return updated[0] || null;
 };
 
 export const deleteRecipe = async (id: number): Promise<void> => {
-    await queryDatabase<Recipe>(
-        'DELETE FROM Recipes WHERE ID = $1',
-        [id]
-    );
+    await recipe.destroy({
+        where: {
+            id,
+        },
+    });
 };
