@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS ownedingredients;
 -- 2. Remove unit_id column from RecipeIngredients
 ALTER TABLE recipeingredients
     DROP CONSTRAINT IF EXISTS fk_recipeingredients_unit,
-    DROP COLUMN IF EXISTS unit_id;
+    DROP COLUMN IF EXISTS unitID;
 
 -- 3. Remove standard_unit and density from Ingredients
 ALTER TABLE ingredients
