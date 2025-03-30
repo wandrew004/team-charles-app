@@ -34,12 +34,5 @@ CREATE TABLE RecipeSteps (
     FOREIGN KEY (StepID) REFERENCES Steps(ID) ON DELETE CASCADE
 );
 
-CREATE TABLE DatabaseVersion (
-    Version VARCHAR(50) PRIMARY KEY,
-    AppliedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    DependsOn VARCHAR(50),
-    FOREIGN KEY (DependsOn) REFERENCES DatabaseVersion(Version)
-);
-
 INSERT INTO DatabaseVersion (Version, DependsOn)
 VALUES ('0.0.1', NULL);
