@@ -19,17 +19,16 @@ if [ -z "$USERNAME" ]; then
   exit 1
 fi
 
-# Create DatabaseVersion table if it doesn't exist
-psql -U "$USERNAME" -d recipehub -c "
-CREATE TABLE IF NOT EXISTS DatabaseVersion (
-  Version TEXT PRIMARY KEY,
-  DependsOn TEXT,
-  AppliedAt TIMESTAMPTZ DEFAULT now()
-);"
+# Create database_version table if it doesn't exist
+psql -U "$USERNAME" -d "$DATABASE" -c '
+CREATE TABLE IF NOT EXISTS database_version (
+  version TEXT PRIMARY KEY,
+  depends_on TEXT,
+  applied_at TIMESTAMPTZ DEFAULT now()
+);'
 
-
-# Step 3: Get current version from the DatabaseVersion table
-CURRENT_VERSION=$(psql -U "$USERNAME" -d recipehub -Atc "SELECT Version FROM DatabaseVersion ORDER BY AppliedAt DESC LIMIT 1;")
+# Step 3: Get current version from the database_version table
+CURRENT_VERSION=$(psql -U "$USERNAME" -d "$DATABASE" -Atc "SELECT version FROM database_version ORDER BY applied_at DESC LIMIT 1;")
 echo "Current database version: ${CURRENT_VERSION:-none}"
 
 # Step 4: Apply newer updates
@@ -38,8 +37,8 @@ apply_version() {
 
   # Check if already applied
   local is_applied
-  is_applied=$(psql -U "$USERNAME" -d recipehub -Atc \
-    "SELECT 1 FROM DatabaseVersion WHERE Version = '$version' AND AppliedAt IS NOT NULL LIMIT 1;")
+  is_applied=$(psql -U "$USERNAME" -d "$DATABASE" -Atc \
+    "SELECT 1 FROM database_version WHERE version = '$version' AND applied_at IS NOT NULL LIMIT 1;")
 
   if [[ "$is_applied" == "1" ]]; then
     echo "✔ $version already applied."
@@ -48,8 +47,8 @@ apply_version() {
 
   # Get dependency
   local depends_on
-  depends_on=$(psql -U "$USERNAME" -d recipehub -Atc \
-    "SELECT DependsOn FROM DatabaseVersion WHERE Version = '$version' LIMIT 1;")
+  depends_on=$(psql -U "$USERNAME" -d "$DATABASE" -Atc \
+    "SELECT depends_on FROM database_version WHERE version = '$version' LIMIT 1;")
 
   # Recursively apply dependency first
   if [[ -n "$depends_on" ]]; then
@@ -66,7 +65,7 @@ apply_version() {
   fi
 
   echo "⚙️ Applying version $version..."
-  psql -U "$USERNAME" -d recipehub -f "$filepath"
+  psql -U "$USERNAME" -d "$DATABASE" -f "$filepath"
 }
 
 # Loop through all version files and apply them if needed
