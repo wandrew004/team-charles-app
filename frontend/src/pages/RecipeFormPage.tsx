@@ -1,190 +1,312 @@
-import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
-import { TextField, Button, Container, Typography, Box, IconButton } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import Grid from "@mui/material/Grid2";
+import React, { useState, useEffect, KeyboardEvent } from 'react';
+import { Link } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import { Box, Button } from '@mui/material';
 
-type RecipeFormData = {
-    name: string;
-    description: string;
-    ingredients: { name: string; quantity: number; unit: string }[];
-    steps: { stepNumber: number; stepText: string }[];
-};
+interface IngredientEntry {
+  name: string;
+  amount: string;
+  measure: string;
+}
 
-const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}/recipes`;
+interface CreateRecipeData {
+  title: string;
+  date: string;
+  link: string;
+  headerImage: string;
+  ingredients: IngredientEntry[];
+  instructions: string[];
+}
 
-// handles form submission
+interface Recipe {
+  id: number;
+  name: string;
+  headerImage: string;
+  date: string;
+  link: string;
+}
+
+// Dummy recipes for sidebar navigation
+const recipes: Recipe[] = [
+  {
+    id: 1,
+    name: 'Spaghetti Bolognese',
+    headerImage: '/spaghetti.jpg',
+    date: '3/15/2025',
+    link: 'https://example.com/spaghetti'
+  },
+  {
+    id: 2,
+    name: 'Chicken Curry',
+    headerImage: '/chicken-curry.jpg',
+    date: '3/16/2025',
+    link: 'https://example.com/chicken-curry'
+  },
+  {
+    id: 3,
+    name: 'Garden Salad',
+    headerImage: '/salad.jpg',
+    date: '3/17/2025',
+    link: 'https://example.com/salad'
+  },
+];
+
+const API_BASE = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001';
+
+// React Query mutation hook for submitting a recipe
 const useSubmitRecipe = () => {
-    return useMutation({
-        mutationFn: async (data: RecipeFormData) => {
-            const response = await fetch(API_ENDPOINT, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            });
-
-            if (!response.ok) {
-                throw new Error("Network response was not ok");
-            }
-
-            return response.json();
-        },
-    });
+  return useMutation({
+    mutationFn: async (data: CreateRecipeData) => {
+      const response = await fetch(`${API_BASE}/recipes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    },
+  });
 };
 
-const RecipeForm = () => {
-    const [isSubmitting, setIsSubmitting] = useState(false);
+// Controlled IngredientsBox component
+interface IngredientsBoxProps {
+  ingredients: IngredientEntry[];
+  setIngredients: (ings: IngredientEntry[]) => void;
+}
 
-    const { register, handleSubmit, control, reset } = useForm<RecipeFormData>({
-        defaultValues: {
-            name: "",
-            description: "",
-            ingredients: [],
-            steps: [],
-        },
-    });
+const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredients }) => {
+  const handleNameChange = (index: number, value: string) => {
+    const newIngredients = [...ingredients];
+    newIngredients[index].name = value;
+    setIngredients(newIngredients);
+  };
 
-    const { fields: ingredientFields, append: addIngredient, remove: removeIngredient } = useFieldArray({ 
-        control, 
-        name: "ingredients" 
-    });
+  const handleAmountChange = (index: number, value: string) => {
+    const newIngredients = [...ingredients];
+    newIngredients[index].amount = value;
+    setIngredients(newIngredients);
+  };
 
-    const { fields: stepFields, append: addStep, remove: removeStep } = useFieldArray({
-        control,
-        name: "steps",
-    });
+  const handleMeasureChange = (index: number, value: string) => {
+    const newIngredients = [...ingredients];
+    newIngredients[index].measure = value;
+    setIngredients(newIngredients);
+  };
 
-    const mutation = useSubmitRecipe();
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (ingredients[index].name.trim() !== '') {
+        setIngredients([...ingredients, { name: '', amount: '', measure: '' }]);
+      }
+    }
+  };
 
-    const onSubmit = async (data: RecipeFormData) => {
-        setIsSubmitting(true);
+  return (
+    <div className="relative bg-white rounded-lg shadow-lg p-4 mt-6 w-1/2 min-h-[70vh]">
+      <h2 className="text-xl font-bold mb-4">Ingredients</h2>
+      {ingredients.map((ingredient, index) => (
+        <div key={index} className="flex items-center mb-2">
+          <span className="mr-2 font-semibold">{index + 1}.)</span>
+          <input
+            type="text"
+            placeholder="add ingredient..."
+            value={ingredient.name}
+            onChange={(e) => handleNameChange(index, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, index)}
+            className="flex-1 p-2 rounded focus:outline-none"
+          />
+          <div className="flex items-center ml-2 border border-black rounded p-1">
+            <input
+              type="text"
+              placeholder="amt"
+              value={ingredient.amount}
+              onChange={(e) => handleAmountChange(index, e.target.value)}
+              className="w-12 p-1 outline-none"
+            />
+            <select
+              value={ingredient.measure}
+              onChange={(e) => handleMeasureChange(index, e.target.value)}
+              className="p-1 outline-none"
+            >
+              <option value="">--</option>
+              <option value="tbsp">tbsp</option>
+              <option value="tsp">tsp</option>
+              <option value="cup">cup</option>
+              <option value="lb">lb</option>
+              <option value="oz">oz</option>
+            </select>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
-        mutation.mutate(data, {
-            onSuccess: () => {
-                reset();
-            },
-            onError: (error) => {
-                console.error("Error submitting recipe:", error);
-            },
-            onSettled: () => {
-                setIsSubmitting(false);
-            },
-        });
+// Controlled InstructionsBox component
+interface InstructionsBoxProps {
+  instructions: string[];
+  setInstructions: (ins: string[]) => void;
+}
+
+const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInstructions }) => {
+  const handleInputChange = (index: number, value: string) => {
+    const newInstructions = [...instructions];
+    newInstructions[index] = value;
+    setInstructions(newInstructions);
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (instructions[index].trim() !== '') {
+        setInstructions([...instructions, '']);
+      }
+    }
+  };
+
+  return (
+    <div className="relative p-4 mt-6 w-1/2">
+      <h2 className="text-xl font-bold mb-4">Instructions</h2>
+      {instructions.map((step, index) => (
+        <div key={index} className="flex items-center mb-2">
+          <span className="mr-2 font-semibold">{index + 1}.)</span>
+          <input
+            type="text"
+            placeholder="add step..."
+            value={step}
+            onChange={(e) => handleInputChange(index, e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, index)}
+            className="flex-1 p-2 rounded focus:outline-none bg-transparent"
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// CreateRecipePage component with sidebar and React Query mutation
+const CreateRecipePage: React.FC = () => {
+  const [title, setTitle] = useState<string>('');
+  const [date, setDate] = useState<string>(new Date().toLocaleDateString());
+  const [link, setLink] = useState<string>('');
+  const [isEditingLink, setIsEditingLink] = useState<boolean>(false);
+  const [ingredients, setIngredients] = useState<IngredientEntry[]>([
+    { name: '', amount: '', measure: '' },
+  ]);
+  const [instructions, setInstructions] = useState<string[]>(['']);
+  const headerImage = "/Brownie_Header.jpg";
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const mutation = useSubmitRecipe();
+
+  const handleSubmit = () => {
+    const newRecipe: CreateRecipeData = {
+      title,
+      date,
+      link,
+      headerImage,
+      ingredients: ingredients.filter(ing => ing.name.trim() !== ''),
+      instructions: instructions.filter(step => step.trim() !== '')
     };
+    mutation.mutate(newRecipe);
+  };
 
-    return (
-        <Container maxWidth="md">
-            <Typography variant="h4" component="h1" gutterBottom textAlign="center">
-                Submit a Recipe
-            </Typography>
+  return (
+    <div className="flex min-h-screen bg-gray-100 font-sans text-[#7B8A64]">
+      {/* Sidebar */}
+      {sidebarOpen && (
+        <aside className="w-64 bg-gray-100 border-r p-4 min-h-screen">
+          <div className="flex justify-between items-center mb-4">
+            <Link to="/recipes" className="text-xl">←</Link>
+            <button className="text-xl" onClick={() => setSidebarOpen(false)}>☰</button>
+          </div>
+          <h2 className="text-xl font-bold mb-4">Recipes</h2>
+          <ul>
+            {/* New Recipe item with dark grey highlight */}
+            <li className="p-2 cursor-pointer rounded mb-2 bg-gray-300 ">
+              {title.trim() !== '' ? title : "New Recipe"}
+            </li>
+            {recipes.map((recipe) => (
+              <li key={recipe.id} className="p-2 cursor-pointer rounded mb-2 hover:bg-gray-200">
+                <Link to={`/recipes/${recipe.id}`}>{recipe.name}</Link>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )}
 
-            <form onSubmit={handleSubmit(onSubmit)}>
-                {/* Recipe Name */}
-                <TextField
-                    label="Recipe Name"
-                    fullWidth
-                    margin="normal"
-                    {...register("name", { required: true })}
-                />
+      {/* Main Content */}
+      <main className="flex-1 p-8 relative overflow-y-auto">
+        {!sidebarOpen && (
+          <button className="absolute top-2 left-2 text-xl" onClick={() => setSidebarOpen(true)}>
+            ☰
+          </button>
+        )}
 
-                {/* Recipe Description */}
-                <TextField
-                    label="Recipe Description"
-                    fullWidth
-                    margin="normal"
-                    multiline
-                    rows={2}
-                    {...register("description")}
-                />
+        {/* Header Image Container */}
+        <div className="w-full h-64 mb-4 relative rounded-lg shadow-lg overflow-hidden">
+          <img src={headerImage} alt="Header" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-white opacity-30"></div>
+        </div>
 
-                {/* Ingredients Section */}
-                <Typography variant="h6" marginTop={3} gutterBottom >
-                    Ingredients
-                </Typography>
-                {ingredientFields.map((ingredient, index) => (
-                    <Grid container spacing={2} key={ingredient.id}>
-                        <Grid size={4}>
-                            <TextField
-                                label="Ingredient Name"
-                                fullWidth
-                                {...register(`ingredients.${index}.name`)}
-                            />
-                        </Grid>
-                        <Grid size={3}>
-                            <TextField
-                                label="Quantity"
-                                fullWidth
-                                {...register(`ingredients.${index}.quantity`)}
-                            />
-                        </Grid>
-                        <Grid size={3}>
-                            <TextField
-                                label="Unit"
-                                variant="outlined"
-                                fullWidth
-                                {...register(`ingredients.${index}.unit`)}
-                            />
-                        </Grid>
-                        <Grid size={2}>
-                            <IconButton onClick={() => removeIngredient(index)} color="error">
-                                <RemoveIcon />
-                            </IconButton>
-                        </Grid>
-                    </Grid>
-                ))}
-                <Button
-                    onClick={() => addIngredient({ name: "", quantity: 0, unit: "" })}
-                    startIcon={<AddIcon />}
-                    color="primary"
-                    sx={{ marginTop: 1 }}
-                >
-                    Add Ingredient
-                </Button>
+        {/* Recipe Title Input without border */}
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Recipe Title"
+          className="text-3xl font-bold mb-2 w-full p-2 rounded focus:outline-none"
+        />
 
-                {/* Steps Section */}
-                <Typography variant="h6" marginTop={3} gutterBottom>
-                    Steps
-                </Typography>
-                {stepFields.map((step, index) => (
-                    <Grid container spacing={2} key={step.id}>
-                        <Grid size={10}>
-                            <TextField
-                                label={`Step ${index + 1}`}
-                                fullWidth
-                                multiline
-                                rows={2}
-                                {...register(`steps.${index}.stepText`)}
-                            />
-                        </Grid>
-                        <Grid size={2}>
-                            <IconButton onClick={() => removeStep(index)} color="error">
-                                <RemoveIcon />
-                            </IconButton>
-                        </Grid>
-                    </Grid>
-                ))}
-                <Button
-                    onClick={() => addStep({ stepNumber: stepFields.length + 1, stepText: "" })}
-                    startIcon={<AddIcon />}
-                    color="primary"
-                    sx={{ marginTop: 1 }}
-                >
-                    Add Step
-                </Button>
+        {/* Date and Link Row */}
+        <div className="flex items-center gap-4 text-sm text-[#7B8A64] mb-4">
+          <input
+            type="text"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="focus:outline-none"
+          />
+          <span className="flex items-center gap-1">
+            {isEditingLink ? (
+              <input
+                type="text"
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                onBlur={() => setIsEditingLink(false)}
+                placeholder="add link.."
+                className="underline bg-transparent focus:outline-none"
+              />
+            ) : (
+              <span onClick={() => setIsEditingLink(true)} className="underline cursor-pointer">
+                {link || 'add link..'}
+              </span>
+            )}
+          </span>
+        </div>
 
-                {/* Submit Button */}
-                <Box mt={4}>
-                    <Button type="submit" variant="contained" fullWidth disabled={isSubmitting}>
-                        {"Submit Recipe"}
-                    </Button>
-                </Box>
-            </form>
-        </Container>
-    );
+        {/* 2-Column Section for Ingredients + Instructions */}
+        <div className="flex flex-row gap-8">
+          <IngredientsBox ingredients={ingredients} setIngredients={setIngredients} />
+          <InstructionsBox instructions={instructions} setInstructions={setInstructions} />
+        </div>
+
+        {/* Submit Button */}
+        <Box mt={4}>
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            onClick={handleSubmit}
+          >
+            Submit Recipe
+          </Button>
+        </Box>
+      </main>
+    </div>
+  );
 };
 
-export default RecipeForm;
+export default CreateRecipePage;
