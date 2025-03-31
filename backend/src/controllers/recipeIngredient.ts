@@ -1,4 +1,4 @@
-import { RecipeIngredient, Ingredient, Recipe, Unit } from '../models/init-models';
+import { RecipeIngredient, Ingredient, Unit } from '../models/init-models';
 
 /**
  * Get all ingredients for a recipe, including name and unit name

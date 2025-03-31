@@ -11,7 +11,7 @@ import {
     getRecipeById,
     getUnitByName
 } from './controllers'; // Make sure these are Sequelize-based
-import { initModels, Recipe, Step } from './models/init-models';
+import { initModels, Recipe } from './models/init-models';
 import { RecipeData } from './types/recipeData';
 import sequelize from './db/client';
 

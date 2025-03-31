@@ -1,4 +1,4 @@
-import { Step, Recipe } from '../models/init-models';
+import { Step } from '../models/init-models';
 
 /**
  * Get all steps
@@ -15,23 +15,6 @@ export const getSteps = async (): Promise<Step[]> => {
 export const getStepById = async (id: number): Promise<Step | null> => {
     return Step.findByPk(id);
 };
-
-// /**
-//  * Get all steps for a specific recipe (through the RecipeStep join table)
-//  */
-// export const getStepsForRecipe = async (recipeId: number): Promise<Step[]> => {
-//     return Step.findAll({
-//         include: [
-//             {
-//                 model: Recipe,
-//                 where: { id: recipeId },
-//                 through: { attributes: [] },
-//                 attributes: [], // Exclude Recipe fields, only want Step data
-//             },
-//         ],
-//         order: [['stepNumber', 'ASC']],
-//     });
-// };
 
 /**
  * Create a step

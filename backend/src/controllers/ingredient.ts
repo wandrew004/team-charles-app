@@ -1,5 +1,4 @@
-import { IngredientQuantity } from 'types/ingredientQuantity';
-import { Ingredient, RecipeIngredient, Unit } from "../models/init-models";
+import { Ingredient } from '../models/init-models';
 
 export const getIngredients = async (): Promise<Ingredient[]> => {
     return Ingredient.findAll();

@@ -11,11 +11,6 @@ const config = {
     port: parseInt(process.env.PG_PORT || '5432')
 };
 
-// Prevent logging and connection when in test environment
-if (process.env.NODE_ENV !== 'test') {
-    console.log('Logging into postgres with following config:', {...config, password: '***REDACTED***'});
-}
-
 let sequelize: Sequelize | null = null;
 
 if (process.env.NODE_ENV !== 'test') {
