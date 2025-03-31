@@ -1,5 +1,19 @@
 BEGIN;
 
+-- 0. Rename existing tables and columns to snake_case
+ALTER TABLE RecipeIngredients RENAME TO recipe_ingredients;
+ALTER TABLE RecipeSteps RENAME TO recipe_steps;
+
+-- Rename columns
+ALTER TABLE steps RENAME COLUMN StepNumber TO step_number;
+ALTER TABLE steps RENAME COLUMN StepText TO step_text;
+
+ALTER TABLE recipe_ingredients RENAME COLUMN RecipeID TO recipe_id;
+ALTER TABLE recipe_ingredients RENAME COLUMN IngredientID TO ingredient_id;
+
+ALTER TABLE recipe_steps RENAME COLUMN RecipeID TO recipe_id;
+ALTER TABLE recipe_steps RENAME COLUMN StepID TO step_id;
+
 -- 1. Create units table
 CREATE TABLE units (
     id SERIAL PRIMARY KEY,
@@ -33,9 +47,9 @@ INSERT INTO units (name, type) VALUES
     ('bottle', 'other'),
     ('unit', 'other');
 
--- 3. Insert distinct units found in the old recipe_ingredients.unit column
+-- 3. Insert distinct units from recipe_ingredients
 INSERT INTO units (name, type)
-SELECT DISTINCT unit, 'other'  -- Temporary fallback type
+SELECT DISTINCT unit, 'other'
 FROM recipe_ingredients
 WHERE unit IS NOT NULL
   AND TRIM(unit) <> ''
@@ -57,13 +71,13 @@ ALTER TABLE recipe_ingredients
 
 COMMENT ON COLUMN recipe_ingredients.unit_id IS 'Unit of measurement for the quantity used in a recipe';
 
--- 6. Migrate data: map old unit (TEXT) → unit_id (FK)
+-- 6. Migrate data: old unit text → unit_id FK
 UPDATE recipe_ingredients ri
 SET unit_id = u.id
 FROM units u
 WHERE ri.unit = u.name;
 
--- 6.2 Drop the unit column
+-- 6.2 Drop the old unit column
 ALTER TABLE recipe_ingredients DROP COLUMN unit;
 
 -- 7. Create owned_ingredients table

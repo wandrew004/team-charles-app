@@ -22,22 +22,11 @@ fi
 
 # Step 1: Export existing data from recipehub (if it exists)
 echo "Exporting data from existing recipehub database..."
-pg_dump -U "$USERNAME" -d recipehub --data-only --inserts -T 'DatabaseVersion' -f "$EXPORT_FILE"
+pg_dump -U "$USERNAME" -d recipehub --data-only --inserts -T 'database_version' -f "$EXPORT_FILE"
 
 # Step 1.5: Add ON CONFLICT DO NOTHING to each INSERT statement
 echo "Patching INSERT statements to avoid duplicate key errors..."
-awk '
-  BEGIN { insert_stmt = "" }
-  {
-    insert_stmt = insert_stmt $0 "\n"
-    if ($0 ~ /\);$/) {
-      gsub(/\);$/, ") ON CONFLICT DO NOTHING;")
-      printf "%s", insert_stmt
-      insert_stmt = ""
-    }
-  }
-' "$EXPORT_FILE" > "${EXPORT_FILE}.patched" && mv "${EXPORT_FILE}.patched" "$EXPORT_FILE"
-
+sed -i '/^INSERT INTO .* VALUES .*);$/ s/);$/) ON CONFLICT DO NOTHING;/' "$EXPORT_FILE"
 
 # Step 2: Drop and recreate the recipehub database
 echo "Dropping and recreating the recipehub database..."
