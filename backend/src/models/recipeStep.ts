@@ -1,5 +1,5 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
 import type { Recipe, RecipeId } from './recipe';
 import type { Step, StepId } from './step';
 

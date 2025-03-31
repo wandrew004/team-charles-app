@@ -1,5 +1,5 @@
 import * as Sequelize from 'sequelize';
-import { DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
 import type { Ingredient, IngredientId } from './ingredient';
 
 export interface OwnedIngredientAttributes {

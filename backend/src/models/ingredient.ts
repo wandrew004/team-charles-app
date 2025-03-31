@@ -1,6 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
-import type { OwnedIngredient, OwnedIngredientId } from './ownedIngredient';
+import type { OwnedIngredient, OwnedIngredientCreationAttributes, OwnedIngredientId } from './ownedIngredient';
 import type { RecipeIngredient, RecipeIngredientId } from './recipeIngredient';
 import type { Recipe, RecipeId } from './recipe';
 import type { Unit, UnitId } from './unit';
