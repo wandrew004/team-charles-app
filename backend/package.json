@@ -10,7 +10,8 @@
     "test:debug": "jest",
     "start": "tsx index.ts",
     "dev": "tsx watch index.ts",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "sequelize": "dotenv sequelize-auto -o ./src/models -d $DB_NAME -h $PG_HOST -u $PG_USER -p $PG_PORT -x $PG_PASSWORD -e postgres -l ts --sg --cm p --cf c --cp c"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -28,6 +29,7 @@
     "@types/node": "^22.13.10",
     "@types/pg": "^8.11.11",
     "@types/supertest": "^6.0.2",
+    "dotenv-cli": "^8.0.0",
     "eslint": "^9.23.0",
     "globals": "^16.0.0",
     "jest": "^29.7.0",
