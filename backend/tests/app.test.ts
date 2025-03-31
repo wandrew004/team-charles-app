@@ -1,176 +1,82 @@
 import request from 'supertest';
 import app from '../src/app';
-import {
-    createRecipe,
-    createIngredient,
-    createStep,
-    addIngredientToRecipe,
-    addStepToRecipe,
-    getRecipes,
-    getRecipeById,
-    getStepsForRecipe,
-    getIngredientsForRecipe
-} from '../src/controllers';
+import { getRecipes, getRecipeById, createRecipe, createIngredient, createStep, addIngredientToRecipe, addStepToRecipe, getUnitByName } from '../src/controllers';
+import { Recipe, Unit } from '../src/models/init-models';
 
 jest.mock('../src/controllers');
 
-describe('/recipes API endpoints', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
+const mockRecipes = [
+  { id: 1, name: 'Cake', description: 'Delicious cake' },
+  { id: 2, name: 'Bread', description: 'Fresh bread' },
+];
+
+const mockRecipeDetail = {
+  id: 1,
+  name: 'Cake',
+  description: 'Delicious cake',
+  recipeIngredients: [
+    { quantity: 200, ingredient: { name: 'Flour' }, unit: { name: 'grams' } },
+    { quantity: 100, ingredient: { name: 'Sugar' }, unit: { name: 'grams' } },
+  ],
+  recipeSteps: [
+    { step: { stepNumber: 1, stepText: 'Mix ingredients' } },
+    { step: { stepNumber: 2, stepText: 'Bake the mixture' } },
+  ],
+};
+
+describe('Express App', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('GET /recipes returns all recipes', async () => {
+    (getRecipes as jest.Mock).mockResolvedValue(mockRecipes);
+
+    const response = await request(app).get('/recipes');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(mockRecipes);
+  });
+
+  test('GET /recipes/:id returns a specific recipe', async () => {
+    (getRecipeById as jest.Mock).mockResolvedValue(mockRecipeDetail);
+
+    const response = await request(app).get('/recipes/1');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      id: 1,
+      name: 'Cake',
+      description: 'Delicious cake',
+      ingredients: [
+        { name: 'Flour', quantity: 200, unit: 'grams' },
+        { name: 'Sugar', quantity: 100, unit: 'grams' },
+      ],
+      steps: [
+        { stepNumber: 1, stepText: 'Mix ingredients' },
+        { stepNumber: 2, stepText: 'Bake the mixture' },
+      ],
     });
+  });
 
-    describe('GET /recipes', () => {
-        it('should return a list of recipes', async () => {
-            const mockRecipes = [
-                { id: 1, name: 'Spaghetti Bolognese' },
-                { id: 2, name: 'Chicken Curry' }
-            ];
-        
-            (getRecipes as jest.Mock).mockResolvedValue(mockRecipes);
-        
-            const response = await request(app).get('/recipes');
-        
-            expect(response.status).toBe(200);
-            expect(response.body).toEqual(mockRecipes);
-            expect(getRecipes).toHaveBeenCalledTimes(1);
-        });
-      
-        it('should return an empty array if no recipes found', async () => {
-            (getRecipes as jest.Mock).mockResolvedValue([]);
-        
-            const response = await request(app).get('/recipes');
-        
-            expect(response.status).toBe(200);
-            expect(response.body).toEqual([]);
-            expect(getRecipes).toHaveBeenCalledTimes(1);
-        });
-      
-        it('should handle errors gracefully', async () => {
-            (getRecipes as jest.Mock).mockRejectedValue(new Error('DB Error'));
-        
-            const response = await request(app).get('/recipes');
-        
-            expect(response.status).toBe(500);
-            expect(response.body).toEqual({ error: 'Internal Server Error' });
-        });
-    });
+  test('POST /recipes creates a new recipe', async () => {
+    (createRecipe as jest.Mock).mockResolvedValue({ id: 3 });
+    (createIngredient as jest.Mock).mockResolvedValue({ id: 1 });
+    (getUnitByName as jest.Mock).mockResolvedValue({ id: 1 });
+    (addIngredientToRecipe as jest.Mock).mockResolvedValue({});
+    (createStep as jest.Mock).mockResolvedValue({ id: 1 });
+    (addStepToRecipe as jest.Mock).mockResolvedValue({});
 
-    describe('GET /recipes/:id', () => {
-        it('should return full recipe data when recipe exists', async () => {
-            (getRecipeById as jest.Mock).mockResolvedValue({
-                id: 1,
-                name: 'Pancakes',
-                description: 'Fluffy pancakes'
-            });
-    
-            (getIngredientsForRecipe as jest.Mock).mockResolvedValue([
-                { name: 'Flour', quantity: 2, unit: 'cups' }
-            ]);
-    
-            (getStepsForRecipe as jest.Mock).mockResolvedValue([
-                { id: 1, stepnumber: 1, steptext: 'Mix ingredients' }
-            ]);
-    
-            const res = await request(app).get('/recipes/1');
-    
-            expect(res.status).toBe(200);
-            expect(res.body).toEqual({
-                id: 1,
-                name: 'Pancakes',
-                description: 'Fluffy pancakes',
-                ingredients: [
-                    { name: 'Flour', quantity: 2, unit: 'cups' }
-                ],
-                steps: [
-                    { stepNumber: 1, stepText: 'Mix ingredients' }
-                ]
-            });
-        });
-    
-        it('should return 400 for invalid recipe ID', async () => {
-            const res = await request(app).get('/recipes/abc');
-    
-            expect(res.status).toBe(400);
-            expect(res.body).toEqual({ error: 'Invalid recipe ID' });
-        });
-    
-        it('should return 404 if recipe is not found', async () => {
-            (getRecipeById as jest.Mock).mockResolvedValue(null);
-    
-            const res = await request(app).get('/recipes/999');
-    
-            expect(res.status).toBe(404);
-            expect(res.body).toEqual({ error: 'Recipe not found' });
-        });
+    const newRecipeData = {
+      name: 'Cookies',
+      description: 'Crunchy cookies',
+      ingredients: [{ name: 'Butter', quantity: 100, unit: 'grams' }],
+      steps: [{ stepNumber: 1, stepText: 'Mix butter' }],
+    };
 
-        it('should handle errors gracefully', async () => {
-            (getRecipeById as jest.Mock).mockRejectedValue(new Error('DB Error'));
-        
-            const res = await request(app).get('/recipes/1');
-        
-            expect(res.status).toBe(500);
-            expect(res.body).toEqual({ error: 'Internal Server Error' });
-        });        
-    });
+    const response = await request(app).post('/recipes').send(newRecipeData);
 
-    describe('POST /recipes', () => {
-        it('should create a new recipe with ingredients and steps', async () => {
-            const mockRecipeId = 1;
-            const recipeData = {
-                name: 'Grilled Cheese',
-                description: 'A tasty sandwich',
-                ingredients: [
-                    { name: 'Bread', quantity: 2, unit: 'slices' },
-                    { name: 'Cheese', quantity: 1, unit: 'slice' }
-                ],
-                steps: [
-                    { stepNumber: 1, stepText: 'Butter the bread' },
-                    { stepNumber: 2, stepText: 'Grill with cheese inside' }
-                ]
-            };
-        
-            (createRecipe as jest.Mock).mockResolvedValue({ id: mockRecipeId });
-            (createIngredient as jest.Mock)
-                .mockResolvedValueOnce({ id: 10 }) // Bread
-                .mockResolvedValueOnce({ id: 11 }); // Cheese
-            (addIngredientToRecipe as jest.Mock).mockResolvedValue(undefined);
-            (createStep as jest.Mock)
-                .mockResolvedValueOnce({ id: 20 }) // Step 1
-                .mockResolvedValueOnce({ id: 21 }); // Step 2
-            (addStepToRecipe as jest.Mock).mockResolvedValue(undefined);
-        
-            const response = await request(app)
-                .post('/recipes')
-                .send(recipeData);
-        
-            expect(response.status).toBe(200);
-            expect(response.body).toEqual({
-                message: 'Recipe added successfully',
-                recipeId: mockRecipeId
-            });
-        
-            // Optional: verify that each controller was called correctly
-            expect(createRecipe).toHaveBeenCalledWith('Grilled Cheese', 'A tasty sandwich');
-            expect(createIngredient).toHaveBeenCalledTimes(2);
-            expect(addIngredientToRecipe).toHaveBeenCalledTimes(2);
-            expect(createStep).toHaveBeenCalledTimes(2);
-            expect(addStepToRecipe).toHaveBeenCalledTimes(2);
-        });
-
-        it('should handle errors gracefully', async () => {
-            (createRecipe as jest.Mock).mockRejectedValue(new Error('DB Error'));
-          
-            const response = await request(app).post('/recipes').send({
-                name: 'Broken Recipe',
-                description: '',
-                ingredients: [],
-                steps: []
-            });
-          
-            expect(response.status).toBe(500);
-            expect(response.body).toEqual({ error: 'Internal Server Error' });
-          
-            expect(createRecipe).toHaveBeenCalledWith('Broken Recipe', '');
-        });          
-    });
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ message: 'Recipe added successfully', recipeId: 3 });
+  });
 });

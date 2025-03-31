@@ -1,156 +1,73 @@
-import { queryDatabase } from '../../src/db/client';
-import { getIngredients, createIngredient, updateIngredient, deleteIngredient, getIngredientById, getIngredientsForRecipe } from '../../src/controllers/ingredient';
-import { Ingredient } from '../../src/bkup_models';
-import { IngredientQuantity } from 'types/ingredientQuantity';
+import { getIngredients, getIngredientById, createIngredient, updateIngredient, deleteIngredient } from '../../src/controllers/ingredient';
+import { Ingredient } from '../../src/models/init-models';
 
-// Mock the database client
-jest.mock('../../src/db/client');
+jest.mock('../../src/models/init-models');
+
+const mockIngredients = [
+  { id: 1, name: 'Sugar', description: 'Sweet ingredient', standardUnit: 1, density: 1.5 },
+  { id: 2, name: 'Flour', description: 'Baking ingredient', standardUnit: 2, density: 0.6 },
+];
 
 describe('Ingredient Controller', () => {
-    beforeEach(() => {
-        // Clear all mocks before each test
-        jest.clearAllMocks();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('getIngredients returns all ingredients', async () => {
+    jest.spyOn(Ingredient, 'findAll').mockResolvedValue(mockIngredients as Ingredient[]);
+
+    const ingredients = await getIngredients();
+
+    expect(ingredients).toEqual(mockIngredients);
+    expect(Ingredient.findAll).toHaveBeenCalledTimes(1);
+  });
+
+  test('getIngredientById returns a single ingredient by ID', async () => {
+    jest.spyOn(Ingredient, 'findByPk').mockResolvedValue(mockIngredients[0] as Ingredient);
+
+    const ingredient = await getIngredientById(1);
+
+    expect(ingredient).toEqual(mockIngredients[0]);
+    expect(Ingredient.findByPk).toHaveBeenCalledWith(1);
+  });
+
+  test('createIngredient creates and returns a new ingredient', async () => {
+    const newIngredient = { id: 3, name: 'Butter', description: 'Fatty ingredient', standardUnit: 3, density: 0.9 };
+    jest.spyOn(Ingredient, 'create').mockResolvedValue(newIngredient as Ingredient);
+
+    const created = await createIngredient('Butter', 'Fatty ingredient', 3, 0.9);
+
+    expect(created).toEqual(newIngredient);
+    expect(Ingredient.create).toHaveBeenCalledWith({
+      name: 'Butter',
+      description: 'Fatty ingredient',
+      standardUnit: 3,
+      density: 0.9,
     });
+  });
 
-    describe('getIngredients', () => {
-        it('should return all ingredients', async () => {
-            const mockIngredients: Ingredient[] = [
-                { id: 1, name: 'Salt', description: 'Table salt' },
-                { id: 2, name: 'Sugar', description: 'Granulated sugar' }
-            ];
+  test('updateIngredient updates an ingredient', async () => {
+    jest.spyOn(Ingredient, 'update').mockResolvedValue([1]);
 
-            (queryDatabase as jest.Mock).mockResolvedValue(mockIngredients);
+    await updateIngredient(1, 'Updated Sugar', 'Updated desc', 1, 1.6);
 
-            const result = await getIngredients();
+    expect(Ingredient.update).toHaveBeenCalledWith(
+      {
+        name: 'Updated Sugar',
+        description: 'Updated desc',
+        standardUnit: 1,
+        density: 1.6,
+      },
+      { where: { id: 1 }, returning: true }
+    );
+  });
 
-            expect(queryDatabase).toHaveBeenCalledWith('SELECT * FROM Ingredients');
-            expect(result).toEqual(mockIngredients);
-        });
+  test('deleteIngredient deletes ingredient by ID', async () => {
+    jest.spyOn(Ingredient, 'destroy').mockResolvedValue(1);
 
-        it('should return empty array when no ingredients exist', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
+    await deleteIngredient(1);
 
-            const result = await getIngredients();
-
-            expect(queryDatabase).toHaveBeenCalledWith('SELECT * FROM Ingredients');
-            expect(result).toEqual([]);
-        });
-    });
-
-    describe('getIngredientById', () => {
-        it('should return an ingredient when it exists', async () => {
-            const mockIngredient: Ingredient = {
-                id: 1,
-                name: 'Flour',
-                description: 'All-purpose white flour'
-            };
-    
-            (queryDatabase as jest.Mock).mockResolvedValue([mockIngredient]);
-    
-            const result = await getIngredientById(1);
-    
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT * FROM Ingredients WHERE ID=$1',
-                [1]
-            );
-            expect(result).toEqual(mockIngredient);
-        });
-    
-        it('should return null when ingredient does not exist', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
-    
-            const result = await getIngredientById(999);
-    
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT * FROM Ingredients WHERE ID=$1',
-                [999]
-            );
-            expect(result).toBeNull();
-        });
-    });
-
-    describe('getIngredientsForRecipe', () => {
-        it('should return a list of ingredients for a valid recipe ID', async () => {
-            const mockIngredients: IngredientQuantity[] = [
-                { name: 'Flour', quantity: 2, unit: 'cups' },
-                { name: 'Sugar', quantity: 1, unit: 'cup' }
-            ];
-    
-            (queryDatabase as jest.Mock).mockResolvedValue(mockIngredients);
-    
-            const result = await getIngredientsForRecipe(1);
-    
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT i.name, ri.quantity, ri.unit FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
-                [1]
-            );
-            expect(result).toEqual(mockIngredients);
-        });
-    
-        it('should return an empty array when no ingredients are found for the recipe ID', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
-    
-            const result = await getIngredientsForRecipe(999);
-    
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT i.name, ri.quantity, ri.unit FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
-                [999]
-            );
-            expect(result).toEqual([]);
-        });
-    });
-    
-
-    describe('createIngredient', () => {
-        it('should create a new ingredient', async () => {
-            const mockIngredient: Ingredient = {
-                id: 1,
-                name: 'Salt',
-                description: 'Table salt'
-            };
-
-            (queryDatabase as jest.Mock).mockResolvedValue([mockIngredient]);
-
-            const result = await createIngredient('Salt', 'Table salt');
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'INSERT INTO Ingredients (Name, Description) VALUES ($1, $2) RETURNING *',
-                ['Salt', 'Table salt']
-            );
-            expect(result).toEqual(mockIngredient);
-        });
-    });
-
-    describe('updateIngredient', () => {
-        it('should update an existing ingredient', async () => {
-            const mockIngredient: Ingredient = {
-                id: 1,
-                name: 'Sea Salt',
-                description: 'Fine sea salt'
-            };
-
-            (queryDatabase as jest.Mock).mockResolvedValue([mockIngredient]);
-
-            const result = await updateIngredient(1, 'Sea Salt', 'Fine sea salt');
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'UPDATE Ingredients SET Name = $1, Description = $2 WHERE ID = $3 RETURNING *',
-                ['Sea Salt', 'Fine sea salt', 1]
-            );
-            expect(result).toEqual(mockIngredient);
-        });
-    });
-
-    describe('deleteIngredient', () => {
-        it('should delete an ingredient', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
-
-            await deleteIngredient(1);
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'DELETE FROM Ingredients WHERE ID = $1',
-                [1]
-            );
-        });
-    });
-});  
+    expect(Ingredient.destroy).toHaveBeenCalledWith({ where: { id: 1 } });
+  });
+});

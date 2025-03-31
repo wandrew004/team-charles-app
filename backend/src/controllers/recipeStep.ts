@@ -38,8 +38,8 @@ export const updateRecipeStep = async (
     recipeId: number,
     oldStepId: number,
     newStepId: number
-): Promise<RecipeStep | null> => {
-    const [_, updated] = await RecipeStep.update(
+): Promise<void> => {
+    await RecipeStep.update(
         { stepId: newStepId },
         {
             where: {
@@ -49,8 +49,6 @@ export const updateRecipeStep = async (
             returning: true,
         }
     );
-
-    return updated[0] || null;
 };
 
 /**

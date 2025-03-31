@@ -47,16 +47,14 @@ export const updateRecipeIngredient = async (
     ingredientId: number,
     quantity?: number,
     unitId?: number
-): Promise<RecipeIngredient | null> => {
-    const [_, updated] = await RecipeIngredient.update(
+): Promise<void> => {
+    await RecipeIngredient.update(
         { quantity, unitId },
         {
             where: { recipeId, ingredientId },
             returning: true,
         }
     );
-
-    return updated[0] || null;
 };
 
 /**

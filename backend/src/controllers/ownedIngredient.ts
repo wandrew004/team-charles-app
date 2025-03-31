@@ -49,16 +49,14 @@ export const createOwnedIngredient = async (
 export const updateOwnedIngredient = async (
     ingredientId: number,
     quantity: number
-): Promise<OwnedIngredient | null> => {
-    const [_, updated] = await OwnedIngredient.update(
+): Promise<void> => {
+    await OwnedIngredient.update(
         { quantity },
         {
             where: { ingredientId },
             returning: true,
         }
     );
-
-    return updated[0] || null;
 };
 
 /**

@@ -34,15 +34,14 @@ export const updateUnit = async (
     id: number,
     name: string,
     type: string
-): Promise<Unit | null> => {
-    const [_, updated] = await Unit.update(
+): Promise<void> => {
+    await Unit.update(
         { name, type },
         {
             where: { id },
             returning: true,
         }
     );
-    return updated[0] || null;
 };
 
 /**

@@ -53,8 +53,8 @@ export const updateStep = async (
     id: number,
     stepNumber: number,
     stepText: string
-): Promise<Step | null> => {
-    const [_, updated] = await Step.update(
+): Promise<void> => {
+    await Step.update(
         {
             stepNumber,
             stepText,
@@ -64,8 +64,6 @@ export const updateStep = async (
             returning: true,
         }
     );
-
-    return updated[0] || null;
 };
 
 /**

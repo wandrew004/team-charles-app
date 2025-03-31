@@ -19,7 +19,9 @@ const app: Express = express();
 
 app.use(express.json());
 app.use(cors());
-initModels(sequelize);
+if(process.env.NODE_ENV !== 'test') {
+    initModels(sequelize);
+}
 
 /**
  * @brief middleware handler to log requests

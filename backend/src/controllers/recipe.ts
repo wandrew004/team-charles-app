@@ -67,8 +67,8 @@ export const updateRecipe = async (
     id: number,
     name: string,
     description?: string
-): Promise<Recipe | null> => {
-    const [_, updated] = await Recipe.update(
+): Promise<void> => {
+    await Recipe.update(
         {
             name,
             description,
@@ -78,8 +78,6 @@ export const updateRecipe = async (
             returning: true,
         }
     );
-
-    return updated[0] || null;
 };
 
 /**
