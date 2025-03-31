@@ -1,6 +1,6 @@
 import { queryDatabase } from '../../src/db/client';
 import { getRecipeSteps, createRecipeStep, deleteRecipeStep } from '../../src/controllers/recipeStep';
-import { RecipeStep } from '../../src/models';
+import { RecipeStep } from '../../src/bkup_models';
 
 // Mock the database client
 jest.mock('../../src/db/client');

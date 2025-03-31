@@ -17,13 +17,16 @@ export const getRecipeById = async (id: number): Promise<Recipe | null> => {
         include: [
             {
                 model: RecipeIngredient,
+                as: 'recipeIngredients',
                 include: [
                     {
                         model: Ingredient,
+                        as: 'ingredient',
                         attributes: ['name'],
                     },
                     {
                         model: Unit,
+                        as: 'unit',
                         attributes: ['name'],
                     },
                 ],
@@ -31,10 +34,12 @@ export const getRecipeById = async (id: number): Promise<Recipe | null> => {
             },
             {
                 model: RecipeStep,
+                as: 'recipeSteps',
                 include: [
                     {
                         model: Step,
-                        attributes: ['stepnumber', 'steptext'],
+                        as: 'step',
+                        attributes: ['stepNumber', 'stepText'],
                     },
                 ],
             },

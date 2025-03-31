@@ -9,10 +9,12 @@ export const getIngredientsForRecipe = async (recipeId: number): Promise<RecipeI
         include: [
             {
                 model: Ingredient,
+                as: 'ingredient',
                 attributes: ['name'],
             },
             {
                 model: Unit,
+                as: 'unit',
                 attributes: ['name'],
             },
         ],

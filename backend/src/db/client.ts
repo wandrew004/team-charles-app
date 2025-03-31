@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
+import { Sequelize } from 'sequelize';
 
 dotenv.config();
 
@@ -16,31 +16,26 @@ if (process.env.NODE_ENV !== 'test') {
     console.log('Logging into postgres with following config:', {...config, password: '***REDACTED***'});
 }
 
-let pool: Pool | null = null;
+let sequelize: Sequelize | null = null;
 
 if (process.env.NODE_ENV !== 'test') {
-    pool = new Pool({
-        user: config.user,
+    sequelize = new Sequelize({
+        dialect: 'postgres',
         host: config.host,
+        port: config.port,
         database: config.database,
+        username: config.user,
         password: config.password,
-        port: config.port
+        logging: console.log,
+        define: {
+            underscored: true // Automatically map camelCase attributes to snake_case columns
+        }
     });
+    
+
+    sequelize.authenticate()
+        .then(() => console.log('Logging into postgres with following config:', {...config, password: '***REDACTED***'}))
+        .catch(err => console.error('Database connection failed:', err));
 }
 
-export const queryDatabase = <T>(query: string, params?: any[]): Promise<T[]> => {
-    if (!pool) {
-        throw new Error('Attempted to query database in test mode without a pool.');
-    }
-
-    return new Promise((resolve, reject) => {
-        pool!.query(query, params || [], (error, results) => {
-            if (error) {
-                return reject(error);
-            }
-            resolve(results?.rows || []);
-        });
-    });
-};
-
-export default pool;
+export default sequelize!;

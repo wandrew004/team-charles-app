@@ -9,7 +9,8 @@ export const getStepsForRecipe = async (recipeId: number): Promise<Step[]> => {
         include: [
             {
                 model: Step,
-                attributes: ['stepnumber', 'steptext'],
+                as: 'step',
+                attributes: ['stepNumber', 'stepText'],
             },
         ],
     });

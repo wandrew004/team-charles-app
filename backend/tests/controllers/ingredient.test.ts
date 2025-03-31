@@ -1,6 +1,6 @@
 import { queryDatabase } from '../../src/db/client';
 import { getIngredients, createIngredient, updateIngredient, deleteIngredient, getIngredientById, getIngredientsForRecipe } from '../../src/controllers/ingredient';
-import { Ingredient } from '../../src/models';
+import { Ingredient } from '../../src/bkup_models';
 import { IngredientQuantity } from 'types/ingredientQuantity';
 
 // Mock the database client
