@@ -1,96 +1,62 @@
-import { queryDatabase } from '../../src/db/client';
-import { getStepsForRecipe, createStep, updateStep, deleteStep } from '../../src/controllers/step';
-import { Step } from '../../src/models';
+import { getSteps, getStepById, createStep, updateStep, deleteStep } from '../../src/controllers/step';
+import { Step } from '../../src/models/init-models';
 
-// Mock the database client
-jest.mock('../../src/db/client');
+jest.mock('../../src/models/init-models');
+
+const mockSteps = [
+    { id: 1, stepNumber: 1, stepText: 'Preheat oven' },
+    { id: 2, stepNumber: 2, stepText: 'Mix ingredients' },
+];
 
 describe('Step Controller', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    describe('getStepsForRecipe', () => {
-        it('should return all steps for a recipe', async () => {
-            const mockSteps: Step[] = [
-                { id: 1, stepnumber: 1, steptext: 'First step' },
-                { id: 2, stepnumber: 2, steptext: 'Second step' }
-            ];
+    test('getSteps returns all steps ordered by stepNumber', async () => {
+        jest.spyOn(Step, 'findAll').mockResolvedValue(mockSteps as Step[]);
 
-            (queryDatabase as jest.Mock).mockResolvedValue(mockSteps);
+        const steps = await getSteps();
 
-            const result = await getStepsForRecipe(1);
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT s.* FROM Steps AS s INNER JOIN RecipeSteps AS rs ON s.id = rs.stepId WHERE rs.recipeId = $1',
-                [1]
-            );
-            expect(result).toEqual(mockSteps);
-        });
-
-        it('should return empty array when no steps exist for recipe', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
-
-            const result = await getStepsForRecipe(1);
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT s.* FROM Steps AS s INNER JOIN RecipeSteps AS rs ON s.id = rs.stepId WHERE rs.recipeId = $1',
-                [1]
-            );
-            expect(result).toEqual([]);
-        });
+        expect(steps).toEqual(mockSteps);
+        expect(Step.findAll).toHaveBeenCalledWith({ order: [['stepNumber', 'ASC']] });
     });
 
-    describe('createStep', () => {
-        it('should create a new step', async () => {
-            const mockStep: Step = {
-                id: 1,
-                stepnumber: 1,
-                steptext: 'First step'
-            };
+    test('getStepById returns a single step by ID', async () => {
+        jest.spyOn(Step, 'findByPk').mockResolvedValue(mockSteps[0] as Step);
 
-            (queryDatabase as jest.Mock).mockResolvedValue([mockStep]);
+        const step = await getStepById(1);
 
-            const result = await createStep(1, 'First step');
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'INSERT INTO Steps (StepNumber, StepText) VALUES ($1, $2) RETURNING *',
-                [1, 'First step']
-            );
-            expect(result).toEqual(mockStep);
-        });
+        expect(step).toEqual(mockSteps[0]);
+        expect(Step.findByPk).toHaveBeenCalledWith(1);
     });
 
-    describe('updateStep', () => {
-        it('should update an existing step', async () => {
-            const mockStep: Step = {
-                id: 1,
-                stepnumber: 1,
-                steptext: 'Updated step'
-            };
+    test('createStep creates a new step', async () => {
+        const newStep = { id: 3, stepNumber: 3, stepText: 'Bake for 20 mins' };
+        jest.spyOn(Step, 'create').mockResolvedValue(newStep as Step);
 
-            (queryDatabase as jest.Mock).mockResolvedValue([mockStep]);
+        const created = await createStep(3, 'Bake for 20 mins');
 
-            const result = await updateStep(1, 1, 'Updated step');
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'UPDATE Steps SET StepNumber = $1, StepText = $2 WHERE ID = $3 RETURNING *',
-                [1, 'Updated step', 1]
-            );
-            expect(result).toEqual(mockStep);
-        });
+        expect(created).toEqual(newStep);
+        expect(Step.create).toHaveBeenCalledWith({ stepNumber: 3, stepText: 'Bake for 20 mins' });
     });
 
-    describe('deleteStep', () => {
-        it('should delete a step', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
+    test('updateStep updates an existing step', async () => {
+        jest.spyOn(Step, 'update').mockResolvedValue([1]);
 
-            await deleteStep(1);
+        await updateStep(1, 1, 'Preheat oven to 180C');
 
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'DELETE FROM Steps WHERE ID = $1',
-                [1]
-            );
-        });
+        expect(Step.update).toHaveBeenCalledWith(
+            { stepNumber: 1, stepText: 'Preheat oven to 180C' },
+            { where: { id: 1 }, returning: true }
+        );
+    });
+
+    test('deleteStep deletes a step by ID', async () => {
+        jest.spyOn(Step, 'destroy').mockResolvedValue(1);
+
+        await deleteStep(1);
+
+        expect(Step.destroy).toHaveBeenCalledWith({ where: { id: 1 } });
     });
 });
