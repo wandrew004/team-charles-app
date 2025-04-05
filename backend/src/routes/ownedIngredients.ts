@@ -1,5 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { getOwnedIngredients, createOwnedIngredient, getOwnedIngredientById, updateOwnedIngredient } from '../controllers/ownedIngredient';
+import { getOwnedIngredients, createOwnedIngredient, getOwnedIngredientById, updateOwnedIngredient, deleteOwnedIngredient } from '../controllers/ownedIngredient';
 
 const router = Router();
 
@@ -50,6 +50,73 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
         // If ingredient doesn't exist, create a new one
         const ownedIngredient = await createOwnedIngredient(ingredientId, numericQuantity);
         res.status(201).json(ownedIngredient);
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @brief endpoint for deleting an owned ingredient
+ */
+router.delete('/:ingredientId', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const ingredientId = Number(req.params.ingredientId);
+        if (isNaN(ingredientId)) {
+            res.status(400).json({ error: 'Invalid ingredient ID' });
+            return;
+        }
+
+        await deleteOwnedIngredient(ingredientId);
+        res.status(200).json({ message: 'Ingredient deleted successfully' });
+    } catch (error) {
+        next(error);
+    }
+});
+
+/**
+ * @brief endpoint for deleting a specified quantity of an owned ingredient
+ */
+router.delete('/:ingredientId/quantity', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const ingredientId = Number(req.params.ingredientId);
+        const { quantity } = req.body;
+
+        if (isNaN(ingredientId)) {
+            res.status(400).json({ error: 'Invalid ingredient ID' });
+            return;
+        }
+
+        if (quantity === undefined || isNaN(Number(quantity)) || Number(quantity) <= 0) {
+            res.status(400).json({ error: 'Valid quantity is required' });
+            return;
+        }
+
+        const numericQuantity = Number(quantity);
+        const existingIngredient = await getOwnedIngredientById(ingredientId);
+
+        if (!existingIngredient) {
+            res.status(404).json({ error: 'Ingredient not found' });
+            return;
+        }
+
+        const newQuantity = existingIngredient.quantity - numericQuantity;
+
+        if (newQuantity <= 0) {
+            // If the new quantity would be 0 or negative, delete the ingredient entirely
+            await deleteOwnedIngredient(ingredientId);
+            res.status(200).json({ 
+                message: 'Ingredient deleted completely', 
+                ingredientId 
+            });
+        } else {
+            // Update the quantity
+            await updateOwnedIngredient(ingredientId, newQuantity);
+            res.status(200).json({ 
+                message: 'Ingredient quantity updated', 
+                ingredientId, 
+                newQuantity 
+            });
+        }
     } catch (error) {
         next(error);
     }
