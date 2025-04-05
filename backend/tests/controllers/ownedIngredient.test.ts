@@ -30,7 +30,7 @@ describe('OwnedIngredient Controller', () => {
         expect(OwnedIngredient.findAll).toHaveBeenCalledWith({
             include: [{
                 model: Ingredient,
-                as: "ingredient",
+                as: 'ingredient',
                 attributes: ['name', 'description', 'standard_unit', 'density']
             }]
         });
@@ -45,7 +45,7 @@ describe('OwnedIngredient Controller', () => {
         expect(OwnedIngredient.findByPk).toHaveBeenCalledWith(1, {
             include: [{
                 model: Ingredient,
-                as: "ingredient",
+                as: 'ingredient',
                 attributes: ['name', 'description', 'standard_unit', 'density']
             }]
         });
