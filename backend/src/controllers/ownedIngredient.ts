@@ -8,6 +8,7 @@ export const getOwnedIngredients = async (): Promise<OwnedIngredient[]> => {
         include: [
             {
                 model: Ingredient,
+                as: 'ingredient',
                 attributes: ['name', 'description', 'standard_unit', 'density'],
             },
         ],
