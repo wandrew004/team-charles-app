@@ -25,6 +25,7 @@ export const getOwnedIngredientById = async (
         include: [
             {
                 model: Ingredient,
+                as: 'ingredient',
                 attributes: ['name', 'description', 'standard_unit', 'density'],
             },
         ],
