@@ -13,14 +13,26 @@ describe('Aggregation Routes', () => {
     describe('GET /ingredients', () => {
         it('should return ingredients for given recipe IDs', async () => {
             const mockIngredients = [
-                { ingredientId: 1, name: 'Flour', quantity: 2, unit: 'cups' },
-                { ingredientId: 2, name: 'Sugar', quantity: 1, unit: 'cup' }
+                { 
+                    ingredient: { id: 1, name: 'Flour' },
+                    quantity: 2,
+                    unit: { id: 1, name: 'cups' },
+                    recipeId: 1,
+                    recipe: { id: 1, name: 'Chocolate Cake' }
+                },
+                { 
+                    ingredient: { id: 2, name: 'Sugar' },
+                    quantity: 1,
+                    unit: { id: 1, name: 'cup' },
+                    recipeId: 1,
+                    recipe: { id: 1, name: 'Chocolate Cake' }
+                }
             ];
             (getIngredientsForRecipes as jest.Mock).mockResolvedValue(mockIngredients);
 
             const response = await request(app)
                 .get('/aggregation/ingredients')
-                .query({ recipeIds: [1, 2] });
+                .query({ recipeIds: '1,2' });
             
             expect(response.status).toBe(200);
             expect(response.body).toEqual(mockIngredients);
@@ -32,25 +44,25 @@ describe('Aggregation Routes', () => {
                 .get('/aggregation/ingredients');
             
             expect(response.status).toBe(400);
-            expect(response.body.error).toBe('recipeIds must be provided as an array');
-        });
-
-        it('should return 400 when recipeIds is not an array', async () => {
-            const response = await request(app)
-                .get('/aggregation/ingredients')
-                .query({ recipeIds: '1' });
-            
-            expect(response.status).toBe(400);
-            expect(response.body.error).toBe('recipeIds must be provided as an array');
+            expect(response.body.error).toBe('recipeIds must be provided as a comma-separated string');
         });
 
         it('should return 400 when recipeIds contains non-numeric values', async () => {
             const response = await request(app)
                 .get('/aggregation/ingredients')
-                .query({ recipeIds: [1, 'invalid', 3] });
+                .query({ recipeIds: '1,invalid,3' });
             
             expect(response.status).toBe(400);
             expect(response.body.error).toBe('All recipe IDs must be numbers');
+        });
+
+        it('should return 400 when recipeIds contains invalid numbers', async () => {
+            const response = await request(app)
+                .get('/aggregation/ingredients')
+                .query({ recipeIds: '1,-2,3.5' });
+            
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('All recipe IDs must be positive integers');
         });
 
         it('should handle errors', async () => {
@@ -59,7 +71,7 @@ describe('Aggregation Routes', () => {
 
             const response = await request(app)
                 .get('/aggregation/ingredients')
-                .query({ recipeIds: [1, 2] });
+                .query({ recipeIds: '1,2' });
             
             expect(response.status).toBe(500);
         });

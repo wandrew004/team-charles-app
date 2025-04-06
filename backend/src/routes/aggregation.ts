@@ -24,6 +24,12 @@ router.get('/ingredients', async (req: Request, res: Response, next: NextFunctio
             return;
         }
 
+        // Validate that all IDs are positive integers
+        if (numericRecipeIds.some(id => !Number.isInteger(id) || id <= 0)) {
+            res.status(400).json({ error: 'All recipe IDs must be positive integers' });
+            return;
+        }
+
         const ingredients = await getIngredientsForRecipes(numericRecipeIds);
         res.status(200).json(ingredients);
     } catch (error) {
