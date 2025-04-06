@@ -10,11 +10,6 @@ interface IngredientEntry {
   unit: string;
 }
 
-interface Step {
-  stepNumber: number;
-  stepText: string;
-}
-
 interface RecipeData {
   id: number;
   name: string;
@@ -143,7 +138,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     <div className="relative bg-white rounded-lg shadow-lg p-4 mt-6 w-1/2 min-h-[70vh]">
       <h2 className="text-xl font-bold mb-4">Ingredients</h2>
       {ingredients.map((ingredient, index) => (
-        <div key={`${ingredient.name}-${index}`} className="flex items-center mb-2">
+        <div key={index} className="flex items-center mb-2">
           <span className="mr-2 font-semibold">{index + 1}.)</span>
           <input
             type="text"
@@ -233,20 +228,19 @@ const RecipeUpdatePage: React.FC = () => {
   const { recipe, loading, error } = useFetchRecipe(id!);
   const updateMutation = useUpdateRecipe();
 
-  const [title, setTitle] = useState<string>('');
+  const [name, setName] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [link, setLink] = useState<string>('');
   const [isEditingLink, setIsEditingLink] = useState<boolean>(false);
-  const [ingredients, setIngredients] = useState<IngredientEntry[]>([]);
-  const [instructions, setInstructions] = useState<string[]>([]);
+  const [ingredients, setIngredients] = useState<IngredientEntry[]>([{ name: '', quantity: 0, unit: '' }]);
+  const [instructions, setInstructions] = useState<string[]>(['']);
   const headerImage = recipe?.headerImage || "/default.jpg";
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     if (recipe) {
-      console.log('Recipe ingredients:', recipe.recipeIngredients);
-      setTitle(recipe.name);
+      setName(recipe.name);
       setDescription(recipe.description);
       setDate(recipe.date);
       setLink(recipe.link);
@@ -263,7 +257,7 @@ const RecipeUpdatePage: React.FC = () => {
     if (recipe) {
       const updatedRecipe: RecipeData = {
         ...recipe,
-        name: title,
+        name,
         description,
         date,
         link,
@@ -304,7 +298,7 @@ const RecipeUpdatePage: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans text-[#7B8A64]">
-      {sidebarOpen && <Sidebar currentTitle={title} />}
+      {sidebarOpen && <Sidebar currentTitle={name} />}
       <main className="flex-1 p-8 relative overflow-y-auto">
         {!sidebarOpen && (
           <button className="absolute top-2 left-2 text-xl" onClick={() => setSidebarOpen(true)}>
@@ -317,8 +311,8 @@ const RecipeUpdatePage: React.FC = () => {
         </div>
         <input
           type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           placeholder="Recipe Title"
           className="text-3xl font-bold mb-2 w-full p-2 rounded focus:outline-none"
         />

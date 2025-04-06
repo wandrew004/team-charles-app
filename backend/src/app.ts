@@ -12,7 +12,6 @@ import {
     getUnitByName
 } from './controllers'; // Make sure these are Sequelize-based
 import { initModels, Recipe } from './models/init-models';
-import { RecipeData } from './types/recipeData';
 import sequelize from './db/client';
 import ownedIngredientsRouter from './routes/ownedIngredients';
 import unitsRouter from './routes/units';

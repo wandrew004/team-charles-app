@@ -5,17 +5,25 @@ import Sidebar from './Sidebar';
 
 interface IngredientEntry {
   name: string;
-  amount: string;
-  measure: string; // will hold the UnitID as a string (or empty)
+  quantity: number;
+  unit: string;
 }
 
 interface CreateRecipeData {
-  title: string;
+  name: string;
+  description: string;
   date: string;
   link: string;
   headerImage: string;
-  ingredients: IngredientEntry[];
-  instructions: string[];
+  ingredients: {
+    name: string;
+    quantity: number;
+    unit: string
+  }[];
+  steps: {
+    stepNumber: number;
+    stepText: string;
+  }[];
 }
 
 const API_BASE = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001';
@@ -67,15 +75,15 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     setIngredients(newIngredients);
   };
 
-  const handleAmountChange = (index: number, value: string) => {
+  const handleQuantityChange = (index: number, value: number) => {
     const newIngredients = [...ingredients];
-    newIngredients[index].amount = value;
+    newIngredients[index].quantity = value;
     setIngredients(newIngredients);
   };
 
-  const handleMeasureChange = (index: number, value: string) => {
+  const handleUnitChange = (index: number, value: string) => {
     const newIngredients = [...ingredients];
-    newIngredients[index].measure = value; // store UnitID as a string
+    newIngredients[index].unit = value;
     setIngredients(newIngredients);
   };
 
@@ -83,7 +91,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     if (e.key === 'Enter') {
       e.preventDefault();
       if (ingredients[index].name.trim() !== '') {
-        setIngredients([...ingredients, { name: '', amount: '', measure: '' }]);
+        setIngredients([...ingredients, { name: '', quantity: 0, unit: '' }]);
       }
     }
   };
@@ -105,14 +113,14 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
           <div className="flex items-center ml-2 border border-black rounded p-1">
             <input
               type="text"
-              placeholder="amt"
-              value={ingredient.amount}
-              onChange={(e) => handleAmountChange(index, e.target.value)}
+              placeholder="quantity"
+              value={ingredient.quantity}
+              onChange={(e) => handleQuantityChange(index, Number(e.target.value))}
               className="w-12 p-1 outline-none"
             />
             <select
-              value={ingredient.measure}
-              onChange={(e) => handleMeasureChange(index, e.target.value)}
+              value={ingredient.unit}
+              onChange={(e) => handleUnitChange(index, e.target.value)}
               className="p-1 outline-none"
             >
               <option value="">--</option>
@@ -177,12 +185,13 @@ const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInst
 };
 
 const RecipeFormPage: React.FC = () => {
-  const [title, setTitle] = useState<string>('');
+  const [name, setName] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
   const [date, setDate] = useState<string>(new Date().toLocaleDateString());
   const [link, setLink] = useState<string>('');
   const [isEditingLink, setIsEditingLink] = useState<boolean>(false);
   const [ingredients, setIngredients] = useState<IngredientEntry[]>([
-    { name: '', amount: '', measure: '' },
+    { name: '', quantity: 0, unit: '' },
   ]);
   const [instructions, setInstructions] = useState<string[]>(['']);
   const headerImage = "/Brownie_Header.jpg";
@@ -192,19 +201,31 @@ const RecipeFormPage: React.FC = () => {
 
   const handleSubmit = () => {
     const newRecipe: CreateRecipeData = {
-      title,
+      name,
+      description,
       date,
       link,
       headerImage,
-      ingredients: ingredients.filter(ing => ing.name.trim() !== ''),
-      instructions: instructions.filter(step => step.trim() !== '')
+      ingredients: ingredients
+        .filter(ing => ing.name.trim() !== '')
+        .map(ing => ({
+          name: ing.name,
+          quantity: Number(ing.quantity),
+          unit: ing.unit
+        })),
+      steps: instructions
+        .filter(step => step.trim() !== '')
+        .map((stepText, index) => ({
+          stepNumber: index + 1,
+          stepText
+        }))
     };
     mutation.mutate(newRecipe);
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans text-[#7B8A64]">
-      {sidebarOpen && <Sidebar currentTitle={title} />}
+      {sidebarOpen && <Sidebar currentTitle={name} />}
       <main className="flex-1 p-8 relative overflow-y-auto">
         {!sidebarOpen && (
           <button className="absolute top-2 left-2 text-xl" onClick={() => setSidebarOpen(true)}>
@@ -217,10 +238,17 @@ const RecipeFormPage: React.FC = () => {
         </div>
         <input
           type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           placeholder="Recipe Title"
           className="text-3xl font-bold mb-2 w-full p-2 rounded focus:outline-none"
+        />
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Recipe Description"
+          className="text-xl mb-2 w-full p-2 rounded focus:outline-none"
         />
         <div className="flex items-center gap-4 text-sm text-[#7B8A64] mb-4">
           <input
