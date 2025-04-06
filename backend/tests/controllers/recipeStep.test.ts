@@ -1,75 +1,58 @@
-import { queryDatabase } from '../../src/db/client';
-import { getRecipeSteps, createRecipeStep, deleteRecipeStep } from '../../src/controllers/recipeStep';
-import { RecipeStep } from '../../src/models';
+import { getStepsForRecipe, addStepToRecipe, updateRecipeStep, deleteRecipeStep } from '../../src/controllers/recipeStep';
+import { RecipeStep, Step } from '../../src/models/init-models';
 
-// Mock the database client
-jest.mock('../../src/db/client');
+jest.mock('../../src/models/init-models');
 
-describe('Recipe Step Controller', () => {
+const mockSteps = [
+    { stepNumber: 1, stepText: 'Preheat oven' },
+    { stepNumber: 2, stepText: 'Mix ingredients' },
+];
+
+const mockRecipeSteps = mockSteps.map(step => ({ step }));
+
+describe('RecipeStep Controller', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    describe('getRecipeSteps', () => {
-        it('should return all steps for a recipe', async () => {
-            const mockRecipeSteps: RecipeStep[] = [
-                { recipeid: 1, stepid: 1 },
-                { recipeid: 1, stepid: 2 }
-            ];
+    test('getStepsForRecipe returns all steps for a recipe', async () => {
+        jest.spyOn(RecipeStep, 'findAll').mockResolvedValue(mockRecipeSteps as unknown as RecipeStep[]);
 
-            (queryDatabase as jest.Mock).mockResolvedValue(mockRecipeSteps);
+        const steps = await getStepsForRecipe(1);
 
-            const result = await getRecipeSteps(1);
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT * FROM RecipeSteps WHERE RecipeID = $1',
-                [1]
-            );
-            expect(result).toEqual(mockRecipeSteps);
-        });
-
-        it('should return empty array when no steps exist for recipe', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
-
-            const result = await getRecipeSteps(1);
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT * FROM RecipeSteps WHERE RecipeID = $1',
-                [1]
-            );
-            expect(result).toEqual([]);
+        expect(steps).toEqual(mockSteps);
+        expect(RecipeStep.findAll).toHaveBeenCalledWith({
+            where: { recipeId: 1 },
+            include: [{ model: Step, as: 'step', attributes: ['stepNumber', 'stepText'] }],
         });
     });
 
-    describe('createRecipeStep', () => {
-        it('should create a new recipe step', async () => {
-            const mockRecipeStep: RecipeStep = {
-                recipeid: 1,
-                stepid: 1
-            };
+    test('addStepToRecipe adds a new step to a recipe', async () => {
+        const newRecipeStep = { recipeId: 1, stepId: 3 };
+        jest.spyOn(RecipeStep, 'create').mockResolvedValue(newRecipeStep as RecipeStep);
 
-            (queryDatabase as jest.Mock).mockResolvedValue([mockRecipeStep]);
+        const added = await addStepToRecipe(1, 3);
 
-            const result = await createRecipeStep(1, 1);
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'INSERT INTO RecipeSteps (RecipeID, StepID) VALUES ($1, $2)',
-                [1, 1]
-            );
-            expect(result).toEqual(mockRecipeStep);
-        });
+        expect(added).toEqual(newRecipeStep);
+        expect(RecipeStep.create).toHaveBeenCalledWith(newRecipeStep);
     });
 
-    describe('deleteRecipeStep', () => {
-        it('should delete a recipe step', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
+    test('updateRecipeStep updates a recipe step', async () => {
+        jest.spyOn(RecipeStep, 'update').mockResolvedValue([1]);
 
-            await deleteRecipeStep(1, 1);
+        await updateRecipeStep(1, 2, 3);
 
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'DELETE FROM RecipeSteps WHERE RecipeID = $1 AND StepID = $2',
-                [1, 1]
-            );
-        });
+        expect(RecipeStep.update).toHaveBeenCalledWith(
+            { stepId: 3 },
+            { where: { recipeId: 1, stepId: 2 }, returning: true }
+        );
+    });
+
+    test('deleteRecipeStep deletes a step from a recipe', async () => {
+        jest.spyOn(RecipeStep, 'destroy').mockResolvedValue(1);
+
+        await deleteRecipeStep(1, 2);
+
+        expect(RecipeStep.destroy).toHaveBeenCalledWith({ where: { recipeId: 1, stepId: 2 } });
     });
 });

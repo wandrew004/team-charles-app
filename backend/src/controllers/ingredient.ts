@@ -1,42 +1,47 @@
-import { IngredientQuantity } from 'types/ingredientQuantity';
-import { queryDatabase } from '../db/client';
-import { Ingredient } from '../models';
+import { Ingredient } from '../models/init-models';
 
 export const getIngredients = async (): Promise<Ingredient[]> => {
-    return queryDatabase<Ingredient>('SELECT * FROM Ingredients');
+    return Ingredient.findAll();
 };
 
 export const getIngredientById = async (id: number): Promise<Ingredient | null> => {
-    return queryDatabase<Ingredient>(
-        'SELECT * FROM Ingredients WHERE ID=$1',
-        [id]
-    ).then(results => results[0] || null);
+    return Ingredient.findByPk(id);
 };
 
-export const getIngredientsForRecipe = async (recipeid: number): Promise<IngredientQuantity[]> => {
-    return queryDatabase<IngredientQuantity>(
-        'SELECT i.name, ri.quantity, ri.unit FROM Ingredients as i INNER JOIN RecipeIngredients as ri ON i.ID = ri.ingredientID WHERE ri.recipeID=$1',
-        [recipeid]
-    );
+export const createIngredient = async (name: string, description?: string, standardUnit?: number, density?: number): Promise<Ingredient> => {
+    return Ingredient.create({
+        name,
+        description,
+        standardUnit,
+        density
+    });
 };
 
-export const createIngredient = async (name: string, description: string): Promise<Ingredient> => {
-    return queryDatabase<Ingredient>(
-        'INSERT INTO Ingredients (Name, Description) VALUES ($1, $2) RETURNING *',
-        [name, description]
-    ).then(results => results[0]);
-};
-
-export const updateIngredient = async (id: number, name: string, description: string): Promise<Ingredient> => {
-    return queryDatabase<Ingredient>(
-        'UPDATE Ingredients SET Name = $1, Description = $2 WHERE ID = $3 RETURNING *',
-        [name, description, id]
-    ).then(results => results[0]);
+export const updateIngredient = async (
+    id: number,
+    name: string,
+    description?: string,
+    standardUnit?: number,
+    density?: number
+): Promise<void> => {
+    await Ingredient.update(
+        {
+            name,
+            description,
+            standardUnit,
+            density,
+        },
+        {
+            where: { id },
+            returning: true, // 🔥 gets the updated row(s) back
+        }
+    );    
 };
 
 export const deleteIngredient = async (id: number): Promise<void> => {
-    await queryDatabase<Ingredient>(
-        'DELETE FROM Ingredients WHERE ID = $1',
-        [id]
-    );
+    await Ingredient.destroy({
+        where: {
+            id: id
+        }
+    });
 };

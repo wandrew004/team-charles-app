@@ -1,98 +1,78 @@
-import { queryDatabase } from '../../src/db/client';
-import { getRecipeIngredients, createRecipeIngredient, updateRecipeIngredient, deleteRecipeIngredient } from '../../src/controllers/recipeIngredient';
-import { RecipeIngredient } from '../../src/models';
+import { getIngredientsForRecipe, createRecipeIngredient, updateRecipeIngredient, deleteRecipeIngredient, addIngredientToRecipe } from '../../src/controllers/recipeIngredient';
+import { RecipeIngredient, Ingredient, Unit } from '../../src/models/init-models';
 
-// Mock the database client
-jest.mock('../../src/db/client');
+jest.mock('../../src/models/init-models');
 
-describe('Recipe Ingredient Controller', () => {
+const mockRecipeIngredients = [
+    {
+        quantity: 200,
+        ingredient: { name: 'Flour' },
+        unit: { name: 'grams' }
+    },
+    {
+        quantity: 100,
+        ingredient: { name: 'Sugar' },
+        unit: { name: 'grams' }
+    },
+];
+
+describe('RecipeIngredient Controller', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    describe('getRecipeIngredients', () => {
-        it('should return all ingredients for a recipe', async () => {
-            const mockRecipeIngredients: RecipeIngredient[] = [
-                { recipeid: 1, ingredientid: 1, quantity: 2, unit: 'cups' },
-                { recipeid: 1, ingredientid: 2, quantity: 1, unit: 'tbsp' }
-            ];
+    test('getIngredientsForRecipe returns all ingredients for a recipe', async () => {
+        jest.spyOn(RecipeIngredient, 'findAll').mockResolvedValue(mockRecipeIngredients as unknown as RecipeIngredient[]);
 
-            (queryDatabase as jest.Mock).mockResolvedValue(mockRecipeIngredients);
+        const ingredients = await getIngredientsForRecipe(1);
 
-            const result = await getRecipeIngredients(1);
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT * FROM RecipeIngredients WHERE RecipeID = $1',
-                [1]
-            );
-            expect(result).toEqual(mockRecipeIngredients);
-        });
-
-        it('should return empty array when no ingredients exist for recipe', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
-
-            const result = await getRecipeIngredients(1);
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT * FROM RecipeIngredients WHERE RecipeID = $1',
-                [1]
-            );
-            expect(result).toEqual([]);
+        expect(ingredients).toEqual(mockRecipeIngredients);
+        expect(RecipeIngredient.findAll).toHaveBeenCalledWith({
+            where: { recipeId: 1 },
+            include: [
+                { model: Ingredient, as: 'ingredient', attributes: ['name'] },
+                { model: Unit, as: 'unit', attributes: ['name'] },
+            ],
+            attributes: ['quantity'],
         });
     });
 
-    describe('createRecipeIngredient', () => {
-        it('should create a new recipe ingredient', async () => {
-            const mockRecipeIngredient: RecipeIngredient = {
-                recipeid: 1,
-                ingredientid: 1,
-                quantity: 2,
-                unit: 'cups'
-            };
+    test('createRecipeIngredient creates a new recipe ingredient', async () => {
+        const newIngredient = { recipeId: 1, ingredientId: 3, quantity: 50, unitId: 2 };
+        jest.spyOn(RecipeIngredient, 'create').mockResolvedValue(newIngredient as RecipeIngredient);
 
-            (queryDatabase as jest.Mock).mockResolvedValue([mockRecipeIngredient]);
+        const created = await createRecipeIngredient(1, 3, 50, 2);
 
-            const result = await createRecipeIngredient(1, 1, 2, 'cups');
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'INSERT INTO RecipeIngredients (RecipeID, IngredientID, Quantity, Unit) VALUES ($1, $2, $3, $4)',
-                [1, 1, 2, 'cups']
-            );
-            expect(result).toEqual(mockRecipeIngredient);
-        });
+        expect(created).toEqual(newIngredient);
+        expect(RecipeIngredient.create).toHaveBeenCalledWith(newIngredient);
     });
 
-    describe('updateRecipeIngredient', () => {
-        it('should update an existing recipe ingredient', async () => {
-            const mockRecipeIngredient: RecipeIngredient = {
-                recipeid: 1,
-                ingredientid: 1,
-                quantity: 3,
-                unit: 'cups'
-            };
+    test('updateRecipeIngredient updates a recipe ingredient', async () => {
+        jest.spyOn(RecipeIngredient, 'update').mockResolvedValue([1]);
 
-            (queryDatabase as jest.Mock).mockResolvedValue([mockRecipeIngredient]);
+        await updateRecipeIngredient(1, 3, 100, 2);
 
-            const result = await updateRecipeIngredient(1, 1, 3, 'cups');
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'UPDATE RecipeIngredients SET Quantity = $1, Unit = $2 WHERE RecipeID = $3 AND IngredientID = $4 RETURNING *',
-                [3, 'cups', 1, 1]
-            );
-            expect(result).toEqual(mockRecipeIngredient);
-        });
+        expect(RecipeIngredient.update).toHaveBeenCalledWith(
+            { quantity: 100, unitId: 2 },
+            { where: { recipeId: 1, ingredientId: 3 }, returning: true }
+        );
     });
 
-    describe('deleteRecipeIngredient', () => {
-        it('should delete a recipe ingredient', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
+    test('deleteRecipeIngredient deletes a recipe ingredient', async () => {
+        jest.spyOn(RecipeIngredient, 'destroy').mockResolvedValue(1);
 
-            await deleteRecipeIngredient(1, 1);
+        await deleteRecipeIngredient(1, 3);
 
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'DELETE FROM RecipeIngredients WHERE RecipeID = $1 AND IngredientID = $2',
-                [1, 1]
-            );
-        });
+        expect(RecipeIngredient.destroy).toHaveBeenCalledWith({ where: { recipeId: 1, ingredientId: 3 } });
+    });
+
+    test('addIngredientToRecipe adds a new ingredient to a recipe', async () => {
+        const newIngredient = { recipeId: 1, ingredientId: 4, quantity: 75, unitId: 1 };
+        jest.spyOn(RecipeIngredient, 'create').mockResolvedValue(newIngredient as RecipeIngredient);
+
+        const added = await addIngredientToRecipe(1, 4, 75, 1);
+
+        expect(added).toEqual(newIngredient);
+        expect(RecipeIngredient.create).toHaveBeenCalledWith(newIngredient);
     });
 });
