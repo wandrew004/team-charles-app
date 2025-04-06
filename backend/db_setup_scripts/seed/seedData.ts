@@ -1,19 +1,43 @@
 import { RecipeFormData } from '../../src/types/recipeFormData';
 
+// Updated mapping of unit names to IDs based on 0.0.2.sql
+const unitMapping: { [key: string]: number } = {
+  'g': 1,
+  'kg': 2,
+  'oz': 3,
+  'lb': 4,
+  'mg': 5,
+  'ml': 6,
+  'l': 7,
+  'tsp': 8,
+  'tbsp': 9,
+  'cup': 10,
+  'quart': 11,
+  'pint': 12,
+  'fl oz': 13,
+  'dash': 14,
+  'pinch': 15,
+  'piece': 16,
+  'slice': 17,
+  'can': 18,
+  'bottle': 19,
+  'unit': 20
+};
+
 export const sampleRecipes: RecipeFormData[] = [
   {
     name: "Classic Chocolate Chip Cookies",
     description: "Soft and chewy chocolate chip cookies with a crispy edge",
     ingredients: [
-      { name: "All-purpose flour", quantity: 2.25, unit: "cups" },
-      { name: "Butter", quantity: 1, unit: "cup" },
-      { name: "Granulated sugar", quantity: 0.75, unit: "cup" },
-      { name: "Brown sugar", quantity: 0.75, unit: "cup" },
-      { name: "Eggs", quantity: 2, unit: "whole" },
-      { name: "Vanilla extract", quantity: 1, unit: "tsp" },
-      { name: "Baking soda", quantity: 1, unit: "tsp" },
-      { name: "Salt", quantity: 0.5, unit: "tsp" },
-      { name: "Chocolate chips", quantity: 2, unit: "cups" }
+      { name: "All-purpose flour", quantity: 2.25, unit: unitMapping['cup'] },
+      { name: "Butter", quantity: 1, unit: unitMapping['cup'] },
+      { name: "Granulated sugar", quantity: 0.75, unit: unitMapping['cup'] },
+      { name: "Brown sugar", quantity: 0.75, unit: unitMapping['cup'] },
+      { name: "Eggs", quantity: 2, unit: unitMapping['unit'] },
+      { name: "Vanilla extract", quantity: 1, unit: unitMapping['tsp'] },
+      { name: "Baking soda", quantity: 1, unit: unitMapping['tsp'] },
+      { name: "Salt", quantity: 0.5, unit: unitMapping['tsp'] },
+      { name: "Chocolate chips", quantity: 2, unit: unitMapping['cup'] }
     ],
     steps: [
       { stepNumber: 1, stepText: "Preheat oven to 375°F (190°C)" },
@@ -29,13 +53,13 @@ export const sampleRecipes: RecipeFormData[] = [
     name: "Oven Baked Salmon",
     description: "Simple and delicious oven-baked salmon with herbs",
     ingredients: [
-      { name: "Salmon fillet", quantity: 1.5, unit: "lbs" },
-      { name: "Olive oil", quantity: 2, unit: "tbsp" },
-      { name: "Lemon", quantity: 1, unit: "whole" },
-      { name: "Fresh dill", quantity: 0.25, unit: "cup" },
-      { name: "Garlic", quantity: 3, unit: "cloves" },
-      { name: "Salt", quantity: 0.5, unit: "tsp" },
-      { name: "Black pepper", quantity: 0.25, unit: "tsp" }
+      { name: "Salmon fillet", quantity: 1.5, unit: unitMapping['lb'] },
+      { name: "Olive oil", quantity: 2, unit: unitMapping['tbsp'] },
+      { name: "Lemon", quantity: 1, unit: unitMapping['unit'] },
+      { name: "Fresh dill", quantity: 0.25, unit: unitMapping['cup'] },
+      { name: "Garlic", quantity: 3, unit: unitMapping['unit'] },
+      { name: "Salt", quantity: 0.5, unit: unitMapping['tsp'] },
+      { name: "Black pepper", quantity: 0.25, unit: unitMapping['tsp'] }
     ],
     steps: [
       { stepNumber: 1, stepText: "Preheat oven to 400°F (200°C)" },
@@ -49,14 +73,14 @@ export const sampleRecipes: RecipeFormData[] = [
     name: "Vegetable Stir Fry",
     description: "Quick and healthy vegetable stir fry with Asian flavors",
     ingredients: [
-      { name: "Broccoli", quantity: 2, unit: "cups" },
-      { name: "Bell peppers", quantity: 2, unit: "whole" },
-      { name: "Carrots", quantity: 2, unit: "whole" },
-      { name: "Snap peas", quantity: 1, unit: "cup" },
-      { name: "Soy sauce", quantity: 3, unit: "tbsp" },
-      { name: "Sesame oil", quantity: 1, unit: "tbsp" },
-      { name: "Ginger", quantity: 1, unit: "tbsp" },
-      { name: "Garlic", quantity: 2, unit: "cloves" }
+      { name: "Broccoli", quantity: 2, unit: unitMapping['cup'] },
+      { name: "Bell peppers", quantity: 2, unit: unitMapping['unit'] },
+      { name: "Carrots", quantity: 2, unit: unitMapping['unit'] },
+      { name: "Snap peas", quantity: 1, unit: unitMapping['cup'] },
+      { name: "Soy sauce", quantity: 3, unit: unitMapping['tbsp'] },
+      { name: "Sesame oil", quantity: 1, unit: unitMapping['tbsp'] },
+      { name: "Ginger", quantity: 1, unit: unitMapping['tbsp'] },
+      { name: "Garlic", quantity: 2, unit: unitMapping['unit'] }
     ],
     steps: [
       { stepNumber: 1, stepText: "Cut all vegetables into bite-sized pieces" },

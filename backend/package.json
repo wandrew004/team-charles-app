@@ -12,7 +12,7 @@
     "dev": "tsx watch index.ts",
     "lint": "eslint .",
     "sequelize": "dotenv sequelize-auto -o ./src/models -d $DB_NAME -h $PG_HOST -u $PG_USER -p $PG_PORT -x $PG_PASSWORD -e postgres -l ts --sg --cm p --cf c --cp c",
-    "seed": "tsx src/scripts/seed/runSeed.ts"
+    "seed": "tsx ./db_setup_scripts/seed/runSeed.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
