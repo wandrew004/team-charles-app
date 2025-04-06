@@ -157,7 +157,7 @@ app.post('/recipes', async (req: Request, res: Response, next: NextFunction) => 
 });
 
 app.use('/ownedIngredients', ownedIngredientsRouter);
-app.use('/api/aggregation', aggregationRouter);
+app.use('/aggregation', aggregationRouter);
 
 /**
  * @brief global error handler
