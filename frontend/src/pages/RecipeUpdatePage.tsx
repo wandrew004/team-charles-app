@@ -6,18 +6,24 @@ import Sidebar from './Sidebar';
 
 interface IngredientEntry {
   name: string;
-  amount: string;
-  measure: string; // holds the UnitID as a string (or empty)
+  quantity: number;
+  unit: string;
+}
+
+interface Step {
+  stepNumber: number;
+  stepText: string;
 }
 
 interface RecipeData {
   id: number;
-  title: string;
+  name: string;
+  description: string;
   date: string;
   link: string;
   headerImage: string;
   ingredients: IngredientEntry[];
-  instructions: string[];
+  steps: Step[];
 }
 
 const API_BASE = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001';
@@ -96,15 +102,15 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     setIngredients(newIngredients);
   };
 
-  const handleAmountChange = (index: number, value: string) => {
+  const handleQuantityChange = (index: number, value: number) => {
     const newIngredients = [...ingredients];
-    newIngredients[index].amount = value;
+    newIngredients[index].quantity = value;
     setIngredients(newIngredients);
   };
 
-  const handleMeasureChange = (index: number, value: string) => {
+  const handleUnitChange = (index: number, value: string) => {
     const newIngredients = [...ingredients];
-    newIngredients[index].measure = value;
+    newIngredients[index].unit = value;
     setIngredients(newIngredients);
   };
 
@@ -112,7 +118,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     if (e.key === 'Enter') {
       e.preventDefault();
       if (ingredients[index].name.trim() !== '') {
-        setIngredients([...ingredients, { name: '', amount: '', measure: '' }]);
+        setIngredients([...ingredients, { name: '', quantity: 0, unit: '' }]);
       }
     }
   };
@@ -134,14 +140,14 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
           <div className="flex items-center ml-2 border border-black rounded p-1">
             <input
               type="text"
-              placeholder="amt"
-              value={ingredient.amount}
-              onChange={(e) => handleAmountChange(index, e.target.value)}
+              placeholder="quantity"
+              value={ingredient.quantity}
+              onChange={(e) => handleQuantityChange(index, Number(e.target.value))}
               className="w-12 p-1 outline-none"
             />
             <select
-              value={ingredient.measure}
-              onChange={(e) => handleMeasureChange(index, e.target.value)}
+              value={ingredient.unit}
+              onChange={(e) => handleUnitChange(index, e.target.value)}
               className="p-1 outline-none"
             >
               <option value="">--</option>
@@ -212,6 +218,7 @@ const RecipeUpdatePage: React.FC = () => {
   const updateMutation = useUpdateRecipe();
 
   const [title, setTitle] = useState<string>('');
+  const [description, setDescription] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [link, setLink] = useState<string>('');
   const [isEditingLink, setIsEditingLink] = useState<boolean>(false);
@@ -222,11 +229,13 @@ const RecipeUpdatePage: React.FC = () => {
 
   useEffect(() => {
     if (recipe) {
-      setTitle(recipe.title);
+      console.log('Recipe ingredients:', recipe.ingredients);
+      setTitle(recipe.name);
+      setDescription(recipe.description);
       setDate(recipe.date);
       setLink(recipe.link);
       setIngredients(recipe.ingredients);
-      setInstructions(recipe.instructions);
+      setInstructions(recipe.steps.map(step => step.stepText));
     }
   }, [recipe]);
 
@@ -234,12 +243,18 @@ const RecipeUpdatePage: React.FC = () => {
     if (recipe) {
       const updatedRecipe: RecipeData = {
         ...recipe,
-        title,
+        name: title,
+        description,
         date,
         link,
         headerImage,
         ingredients: ingredients.filter(ing => ing.name.trim() !== ''),
-        instructions: instructions.filter(step => step.trim() !== '')
+        steps: instructions
+          .filter(step => step.trim() !== '')
+          .map((stepText, index) => ({
+            stepNumber: index + 1,
+            stepText
+          }))
       };
       updateMutation.mutate(updatedRecipe, {
         onSuccess: () => {
@@ -272,6 +287,13 @@ const RecipeUpdatePage: React.FC = () => {
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Recipe Title"
           className="text-3xl font-bold mb-2 w-full p-2 rounded focus:outline-none"
+        />
+        <input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Recipe Description"
+          className="text-xl mb-2 w-full p-2 rounded focus:outline-none"
         />
         <div className="flex items-center gap-4 text-sm text-[#7B8A64] mb-4">
           <input
