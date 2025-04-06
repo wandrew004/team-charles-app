@@ -32,6 +32,23 @@ type AggregatedIngredient = {
   recipeName: string;
 };
 
+type AggregatedIngredientReturn = {
+    quantity: string;
+    recipeId: number;
+    ingredient: {
+        id: number;
+        name: string;
+    };
+    unit: {
+        id: number;
+        name: string;
+    };
+    recipe: {
+        id: number;
+        name: string;
+    };
+};
+
 const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}`;
 
 const AggregationPage: React.FC = () => {
@@ -60,7 +77,7 @@ const AggregationPage: React.FC = () => {
         throw new Error('Failed to fetch aggregated ingredients');
       }
       const data = await response.json();
-      return data.map((item: any) => ({
+      return data.map((item: AggregatedIngredientReturn) => ({
         ingredientId: item.ingredient.id,
         name: item.ingredient.name,
         quantity: Number(item.quantity),
