@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -99,9 +99,9 @@ const useSubmitOwnedIngredient = () =>
   });
 
 const PantryForm = () => {
-  const { data: ingredients = [], isLoading, isError } = useIngredients();
-  const { data: units = [], isLoading: unitsLoading } = useUnits();
-  const { register, handleSubmit, reset, setValue, watch } = useForm<OwnedIngredientFormData>();
+  const { data: ingredients = [], isLoading } = useIngredients();
+  const { data: units = [] } = useUnits();
+  const { register, handleSubmit, reset } = useForm<OwnedIngredientFormData>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addingNew, setAddingNew] = useState(false);
 
@@ -191,7 +191,7 @@ const PantryForm = () => {
                 ))}
               </Select>
             </FormControl>
-            
+
             <TextField
               label="Density"
               type="number"
