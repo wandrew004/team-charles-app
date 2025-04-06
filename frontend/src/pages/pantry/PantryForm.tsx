@@ -93,7 +93,7 @@ const PantryForm = () => {
         textAlign="center"
         className="text-[#7B8A64]"
       >
-        Submit a Recipe
+        Submit a Ingredient
       </Typography>
 
       <form onSubmit={handleSubmit(onSubmit)}>
