@@ -4,26 +4,25 @@ import {
   createRecipe, 
   createStep, 
   addIngredientToRecipe, 
-  addStepToRecipe 
-} from '../../controllers';
-import { queryDatabase } from '../../db/client';
-import { Ingredient } from '../../models';
+  addStepToRecipe, 
+  deleteIngredient, 
+  deleteRecipe, 
+  deleteStep 
+} from '../../src/controllers';
+import { Step, Recipe, Ingredient } from '../../src/models/init-models';
+import sequelize from '../../src/db/client';
+import { initModels } from '../../src/models/init-models';
+
+initModels(sequelize);
 
 async function clearDatabase() {
   console.log('Clearing existing data...');
   
-  await queryDatabase('DELETE FROM RecipeSteps');
-  await queryDatabase('DELETE FROM RecipeIngredients');
-  await queryDatabase('DELETE FROM Steps');
-  await queryDatabase('DELETE FROM Recipes');
-  await queryDatabase('DELETE FROM Ingredients');
+  await Step.destroy({ where: {} });
+  await Recipe.destroy({ where: {} });
+  await Ingredient.destroy({ where: {} });
   
-  // Reset sequences to start from 1
-  await queryDatabase('ALTER SEQUENCE "ingredients_id_seq" RESTART WITH 1');
-  await queryDatabase('ALTER SEQUENCE "recipes_id_seq" RESTART WITH 1');
-  await queryDatabase('ALTER SEQUENCE "steps_id_seq" RESTART WITH 1');
-  
-  console.log('Database cleared successfully and sequences reset');
+  console.log('Database cleared successfully');
 }
 
 async function seedIngredients() {
@@ -46,22 +45,11 @@ async function seedRecipes() {
     
     // Add ingredients to the recipe
     for (const ingredientData of recipeData.ingredients) {
-      const existingIngredients = await queryDatabase<Ingredient>(
-        'SELECT * FROM Ingredients WHERE Name = $1',
-        [ingredientData.name]
-      );
-      
-      let ingredientId;
-      if (existingIngredients.length > 0) {
-        ingredientId = existingIngredients[0].id;
-      } else {
-        const newIngredient = await createIngredient(ingredientData.name, '');
-        ingredientId = newIngredient.id;
-      }
+      const existingIngredient = await createIngredient(ingredientData.name, '');
       
       await addIngredientToRecipe(
         recipe.id,
-        ingredientId,
+        existingIngredient.id,
         ingredientData.quantity,
         ingredientData.unit
       );
@@ -87,4 +75,4 @@ export async function seedDatabase() {
     console.error('Error seeding database:', error);
     process.exit(1);
   }
-} 
+}
