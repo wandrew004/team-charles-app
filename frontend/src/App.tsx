@@ -3,6 +3,7 @@ import HomePage from './pages/HomePage';
 import RecipePage from './pages/RecipePage';
 import RecipeForm from './pages/RecipeFormPage';
 import Recipes from './pages/Recipes';
+import RecipeUpdatePage from './pages/RecipeUpdatePage';
 import './index.css';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Route path="/recipe/:id" element={<RecipePage />} />
         <Route path="/create" element={<RecipeForm />} />
         <Route path="/recipes" element={<Recipes />} />
+        <Route path="/update/:id" element={<RecipeUpdatePage />} />
       </Routes>
     </Router>
   );
