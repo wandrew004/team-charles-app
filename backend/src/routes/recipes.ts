@@ -3,15 +3,14 @@ import {
     getRecipes, 
     getRecipeById, 
     createRecipe, 
-    updateRecipe, 
     deleteRecipe,
-    updateRecipeWithRelations
-} from '../controllers/recipe';
-import { createIngredient } from '../controllers/ingredient';
-import { getUnitByName } from '../controllers/unit';
-import { createStep } from '../controllers/step';
-import { addIngredientToRecipe } from '../controllers/recipeIngredient';
-import { addStepToRecipe } from '../controllers/recipeStep';
+    updateRecipeWithRelations,
+    createIngredient,
+    getUnitByName,
+    createStep,
+    addIngredientToRecipe,
+    addStepToRecipe,
+} from '../controllers';
 import { Recipe } from '../models/recipe';
 import { RecipeFormData } from '../types/recipeFormData';
 

@@ -1,17 +1,6 @@
 import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
-import { RecipeFormData } from './types/recipeFormData';
-import {
-    createIngredient,
-    createRecipe,
-    createStep,
-    addIngredientToRecipe,
-    addStepToRecipe,
-    getRecipes,
-    getRecipeById,
-    getUnitByName
-} from './controllers'; // Make sure these are Sequelize-based
-import { initModels, Recipe } from './models/init-models';
+import { initModels } from './models/init-models';
 import sequelize from './db/client';
 import ownedIngredientsRouter from './routes/ownedIngredients';
 import unitsRouter from './routes/units';
