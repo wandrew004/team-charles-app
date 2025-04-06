@@ -57,7 +57,13 @@ const AggregationPage: React.FC = () => {
       if (!response.ok) {
         throw new Error('Failed to fetch aggregated ingredients');
       }
-      return response.json();
+      const data = await response.json();
+      return data.map((item: any) => ({
+        ingredientId: item.ingredient.id,
+        name: item.ingredient.name,
+        quantity: Number(item.quantity),
+        unit: item.unit.name
+      }));
     },
     enabled: selectedRecipes.length > 0,
   });
@@ -155,8 +161,7 @@ const AggregationPage: React.FC = () => {
                   {aggregatedIngredients?.map((ingredient: AggregatedIngredient) => (
                     <ListItem key={ingredient.ingredientId} className="!bg-[#E2EBCA] !rounded-lg !mb-2">
                       <ListItemText
-                        primary={ingredient.name}
-                        secondary={`${ingredient.quantity} ${ingredient.unit}`}
+                        primary={`${ingredient.name}: ${ingredient.quantity} ${ingredient.unit}`}
                         className="!text-[#7B8A64]"
                       />
                     </ListItem>
