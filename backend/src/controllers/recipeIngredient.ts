@@ -84,4 +84,27 @@ export const addIngredientToRecipe = async (
         quantity,
         unitId,
     });
+};
+
+/**
+ * Get all ingredients for multiple recipes, including name and unit name
+ * Aggregates quantities for the same ingredients
+ */
+export const getIngredientsForRecipes = async (recipeIds: number[]): Promise<RecipeIngredient[]> => {
+    return RecipeIngredient.findAll({
+        where: { recipeId: recipeIds },
+        include: [
+            {
+                model: Ingredient,
+                as: 'ingredient',
+                attributes: ['id', 'name'],
+            },
+            {
+                model: Unit,
+                as: 'unit',
+                attributes: ['id', 'name'],
+            },
+        ],
+        attributes: ['quantity'],
+    });
 };  
