@@ -19,21 +19,21 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  * @brief endpoint for creating a new ingredient
  */
 router.post('/', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const { name, description, standardUnit, density } = req.body;
+    try {
+        const { name, description, standardUnit, density } = req.body;
 
-    if (!name) {
-      res.status(400).json({ error: 'Ingredient name is required.' });
-      return;
+        if (!name) {
+            res.status(400).json({ error: 'Ingredient name is required.' });
+            return;
+        }
+
+        const newIngredient = await createIngredient(name, description, standardUnit, density);
+
+        res.status(201).json(newIngredient);
+    } catch (error: any) {
+        console.error('Error creating ingredient:', error);
+        res.status(500).json({ error: error.message || 'Internal server error' });
     }
-
-    const newIngredient = await createIngredient(name, description, standardUnit, density);
-
-    res.status(201).json(newIngredient);
-  } catch (error: any) {
-    console.error("Error creating ingredient:", error);
-    res.status(500).json({ error: error.message || 'Internal server error' });
-  }
 });
 
 export default router;
