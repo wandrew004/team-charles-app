@@ -1,4 +1,4 @@
-import { OwnedIngredient, Ingredient } from '../models/init-models';
+import { OwnedIngredient, Ingredient, Unit } from '../models/init-models';
 
 /**
  * Get all owned ingredients, optionally with associated Ingredient info.
@@ -9,9 +9,16 @@ export const getOwnedIngredients = async (): Promise<OwnedIngredient[]> => {
             {
                 model: Ingredient,
                 as: 'ingredient',
-                attributes: ['name', 'description', 'standard_unit', 'density'],
-            },
-        ],
+                include: [
+                    {
+                        model: Unit,
+                        as: 'standardUnitUnit',
+                        attributes: ['id', 'name', 'type']
+                    }
+                ],
+                attributes: ['name', 'description', 'standardUnit', 'density']
+            }
+        ]
     });
 };
 

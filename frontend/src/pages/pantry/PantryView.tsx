@@ -6,13 +6,21 @@ import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import theme from '../../theme';
 
 type Ingredient = {
-  id: number;
-  name: string;
-  quantity: string;
-  unit: string;
+  ingredientId: number;
+  quantity: number;
+  ingredient: {
+    name: string;
+    description?: string;
+    density?: string;
+    standardUnitUnit?: {
+      id: number;
+      name: string;
+      type: string;
+    };
+  };
 };
 
-const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}/recipes`;
+const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}/ownedIngredients`;
 
 const fetchPantry = async (): Promise<Ingredient[]> => {
   const response = await fetch(API_ENDPOINT);
@@ -61,11 +69,9 @@ const PantryView: React.FC = () => {
             <div className="text-red-500 text-center text-lg">Failed to load pantry.</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {pantry?.map((ingredient) => (
+              {pantry?.map((owned) => (
                 <Card
-                  key={ingredient.id}
-                  // component={Link}
-                  // to={`/pantry/${ingredient.id}`}
+                  key={owned.ingredientId}
                   className="!bg-[#E2EBCA] shadow-md hover:shadow-lg transition duration-200 cursor-pointer w-full"
                 >
                   <CardContent>
@@ -73,14 +79,19 @@ const PantryView: React.FC = () => {
                       variant="h6" 
                       className="!text-[#7B8A64] !font-semibold !text-lg mb-2"
                     >
-                      {ingredient.name} →
+                      {owned.ingredient.name} →
                     </Typography>
                     <Typography 
                       variant="body1" 
                       className="!text-[#7B8A64] !text-base"
                     >
-                      {ingredient.quantity} {ingredient.unit}
+                      {owned.quantity} {owned.ingredient.standardUnitUnit?.name || ''}
                     </Typography>
+                    {owned.ingredient.description && (
+                      <Typography variant="body2" className="!text-[#7B8A64] italic mt-1">
+                        {owned.ingredient.description}
+                      </Typography>
+                    )}
                   </CardContent>
                 </Card>
               ))}
