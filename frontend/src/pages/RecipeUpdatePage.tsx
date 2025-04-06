@@ -22,8 +22,23 @@ interface RecipeData {
   date: string;
   link: string;
   headerImage: string;
-  ingredients: IngredientEntry[];
-  steps: Step[];
+  recipeIngredients: {
+    quantity: string;
+    ingredient: {
+      name: string;
+    };
+    unit: {
+      name: string;
+    };
+  }[];
+  recipeSteps: {
+    recipeId: number;
+    stepId: number;
+    step: {
+      stepNumber: number;
+      stepText: string;
+    };
+  }[];
 }
 
 const API_BASE = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001';
@@ -41,9 +56,10 @@ const useFetchRecipe = (id: string) => {
           throw new Error('Failed to fetch recipe');
         }
         const data = await response.json();
+        console.log('Fetched recipe data:', data);
         setRecipe(data);
       } catch (err: unknown) {
-        console.error(err);
+        console.error('Error fetching recipe:', err);
         setError((err as Error).message);
       } finally {
         setLoading(false);
@@ -127,7 +143,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     <div className="relative bg-white rounded-lg shadow-lg p-4 mt-6 w-1/2 min-h-[70vh]">
       <h2 className="text-xl font-bold mb-4">Ingredients</h2>
       {ingredients.map((ingredient, index) => (
-        <div key={index} className="flex items-center mb-2">
+        <div key={`${ingredient.name}-${index}`} className="flex items-center mb-2">
           <span className="mr-2 font-semibold">{index + 1}.)</span>
           <input
             type="text"
@@ -229,13 +245,17 @@ const RecipeUpdatePage: React.FC = () => {
 
   useEffect(() => {
     if (recipe) {
-      console.log('Recipe ingredients:', recipe.ingredients);
+      console.log('Recipe ingredients:', recipe.recipeIngredients);
       setTitle(recipe.name);
       setDescription(recipe.description);
       setDate(recipe.date);
       setLink(recipe.link);
-      setIngredients(recipe.ingredients);
-      setInstructions(recipe.steps.map(step => step.stepText));
+      setIngredients(recipe.recipeIngredients.map(ing => ({
+        name: ing.ingredient.name,
+        quantity: parseFloat(ing.quantity),
+        unit: ing.unit.name
+      })));
+      setInstructions(recipe.recipeSteps.map(step => step.step.stepText));
     }
   }, [recipe]);
 
@@ -248,12 +268,26 @@ const RecipeUpdatePage: React.FC = () => {
         date,
         link,
         headerImage,
-        ingredients: ingredients.filter(ing => ing.name.trim() !== ''),
-        steps: instructions
+        recipeIngredients: ingredients
+          .filter(ing => ing.name.trim() !== '')
+          .map(ing => ({
+            quantity: ing.quantity.toString(),
+            ingredient: {
+              name: ing.name
+            },
+            unit: {
+              name: ing.unit
+            }
+          })),
+        recipeSteps: instructions
           .filter(step => step.trim() !== '')
           .map((stepText, index) => ({
-            stepNumber: index + 1,
-            stepText
+            recipeId: recipe.id,
+            stepId: index + 1,
+            step: {
+              stepNumber: index + 1,
+              stepText
+            }
           }))
       };
       updateMutation.mutate(updatedRecipe, {

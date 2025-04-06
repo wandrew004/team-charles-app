@@ -79,28 +79,7 @@ app.get('/recipes/:id', async (req: Request, res: Response, next: NextFunction):
             return;
         }
 
-        console.log(recipe);
-
-        const ingredients = recipe.recipeIngredients.map((ing) => ({
-            name: ing.ingredient.name,
-            quantity: Number(ing.quantity ?? 0),
-            unit: ing.unit.name,
-        }));
-
-        const steps = recipe.recipeSteps.map((recipeStep) => ({
-            stepNumber: recipeStep.step.stepNumber,
-            stepText: recipeStep.step.stepText,
-        }));
-
-        const recipeData: RecipeData = {
-            id: recipe.id,
-            name: recipe.name,
-            description: recipe.description || '',
-            ingredients,
-            steps,
-        };
-
-        res.status(200).json(recipeData);
+        res.status(200).json(recipe);
     } catch (error) {
         next(error);
     }
