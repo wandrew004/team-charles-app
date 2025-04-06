@@ -28,6 +28,8 @@ type AggregatedIngredient = {
   name: string;
   quantity: number;
   unit: string;
+  recipeId: number;
+  recipeName: string;
 };
 
 const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}`;
@@ -62,7 +64,9 @@ const AggregationPage: React.FC = () => {
         ingredientId: item.ingredient.id,
         name: item.ingredient.name,
         quantity: Number(item.quantity),
-        unit: item.unit.name
+        unit: item.unit.name,
+        recipeId: item.recipeId,
+        recipeName: item.recipe.name
       }));
     },
     enabled: selectedRecipes.length > 0,
@@ -159,9 +163,10 @@ const AggregationPage: React.FC = () => {
               ) : (
                 <List>
                   {aggregatedIngredients?.map((ingredient: AggregatedIngredient) => (
-                    <ListItem key={ingredient.ingredientId} className="!bg-[#E2EBCA] !rounded-lg !mb-2">
+                    <ListItem key={`${ingredient.ingredientId}-${ingredient.recipeId}`} className="!bg-[#E2EBCA] !rounded-lg !mb-2">
                       <ListItemText
                         primary={`${ingredient.name}: ${ingredient.quantity} ${ingredient.unit}`}
+                        secondary={`From: ${ingredient.recipeName}`}
                         className="!text-[#7B8A64]"
                       />
                     </ListItem>

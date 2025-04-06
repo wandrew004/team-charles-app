@@ -1,4 +1,4 @@
-import { RecipeIngredient, Ingredient, Unit } from '../models/init-models';
+import { RecipeIngredient, Ingredient, Unit, Recipe } from '../models/init-models';
 
 /**
  * Get all ingredients for a recipe, including name and unit name
@@ -104,7 +104,12 @@ export const getIngredientsForRecipes = async (recipeIds: number[]): Promise<Rec
                 as: 'unit',
                 attributes: ['id', 'name'],
             },
+            {
+                model: Recipe,
+                as: 'recipe',
+                attributes: ['id', 'name'],
+            }
         ],
-        attributes: ['quantity'],
+        attributes: ['quantity', 'recipeId'],
     });
 };  
