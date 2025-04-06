@@ -1,18 +1,18 @@
 import React, { useState, useEffect, KeyboardEvent } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Box, Button } from '@mui/material';
 import Sidebar from './Sidebar';
 
 interface IngredientEntry {
-  name: string;    // e.g. "Flour"
-  amount: string;  // e.g. "2"
-  measure: string; // UnitID as a string (or empty)
+  name: string;
+  amount: string;
+  measure: string; // holds the UnitID as a string (or empty)
 }
 
 interface RecipeData {
   id: number;
-  title: string; 
+  title: string;
   date: string;
   link: string;
   headerImage: string;
@@ -36,9 +36,9 @@ const useFetchRecipe = (id: string) => {
         }
         const data = await response.json();
         setRecipe(data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
-        setError(err.message);
+        setError((err as Error).message);
       } finally {
         setLoading(false);
       }
@@ -65,14 +65,19 @@ const useUpdateRecipe = () => {
   });
 };
 
+interface Unit {
+  unitID: number;
+  name: string;
+  type: string;
+}
+
 interface IngredientsBoxProps {
   ingredients: IngredientEntry[];
   setIngredients: (ings: IngredientEntry[]) => void;
 }
 
 const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredients }) => {
-
-  const fetchUnits = async () => {
+  const fetchUnits = async (): Promise<Unit[]> => {
     const response = await fetch(`${API_BASE}/units`);
     if (!response.ok) {
       throw new Error('Failed to fetch units');
@@ -80,11 +85,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     return response.json();
   };
 
-  const {
-    data: standardUnits,
-    isLoading: unitsLoading,
-    error: unitsError,
-  } = useQuery({
+  const { data: standardUnits, isLoading: unitsLoading, error: unitsError } = useQuery<Unit[]>({
     queryKey: ['units'],
     queryFn: fetchUnits,
   });
@@ -103,7 +104,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
 
   const handleMeasureChange = (index: number, value: string) => {
     const newIngredients = [...ingredients];
-    newIngredients[index].measure = value; // store the unitID
+    newIngredients[index].measure = value;
     setIngredients(newIngredients);
   };
 
@@ -149,7 +150,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
               ) : unitsError ? (
                 <option>Error loading units</option>
               ) : (
-                standardUnits?.map((unit: any) => (
+                standardUnits?.map((unit: Unit) => (
                   <option key={unit.unitID} value={unit.unitID}>
                     {unit.name}
                   </option>
@@ -261,12 +262,10 @@ const RecipeUpdatePage: React.FC = () => {
             ☰
           </button>
         )}
-
         <div className="w-full h-64 mb-4 relative rounded-lg shadow-lg overflow-hidden">
           <img src={headerImage} alt="Header" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-white opacity-30"></div>
         </div>
-
         <input
           type="text"
           value={title}
@@ -274,7 +273,6 @@ const RecipeUpdatePage: React.FC = () => {
           placeholder="Recipe Title"
           className="text-3xl font-bold mb-2 w-full p-2 rounded focus:outline-none"
         />
-
         <div className="flex items-center gap-4 text-sm text-[#7B8A64] mb-4">
           <input
             type="text"
@@ -299,19 +297,12 @@ const RecipeUpdatePage: React.FC = () => {
             )}
           </span>
         </div>
-
         <div className="flex flex-row gap-8">
           <IngredientsBox ingredients={ingredients} setIngredients={setIngredients} />
           <InstructionsBox instructions={instructions} setInstructions={setInstructions} />
         </div>
-
         <Box mt={4}>
-          <Button
-            type="button"
-            variant="contained"
-            fullWidth
-            onClick={handleUpdate}
-          >
+          <Button type="button" variant="contained" fullWidth onClick={handleUpdate}>
             Update Recipe
           </Button>
         </Box>

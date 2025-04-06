@@ -4,8 +4,8 @@ import { Box, Button } from '@mui/material';
 import Sidebar from './Sidebar';
 
 interface IngredientEntry {
-  name: string;    // e.g. "Flour"
-  amount: string;  // e.g. "2"
+  name: string;
+  amount: string;
   measure: string; // will hold the UnitID as a string (or empty)
 }
 
@@ -36,14 +36,19 @@ const useSubmitRecipe = () => {
   });
 };
 
+interface Unit {
+  unitID: number;
+  name: string;
+  type: string;
+}
+
 interface IngredientsBoxProps {
   ingredients: IngredientEntry[];
   setIngredients: (ings: IngredientEntry[]) => void;
 }
 
 const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredients }) => {
-  // Inline query to fetch from /units
-  const fetchUnits = async () => {
+  const fetchUnits = async (): Promise<Unit[]> => {
     const response = await fetch(`${API_BASE}/units`);
     if (!response.ok) {
       throw new Error('Failed to fetch units');
@@ -51,11 +56,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     return response.json();
   };
 
-  const {
-    data: standardUnits,
-    isLoading: unitsLoading,
-    error: unitsError,
-  } = useQuery({
+  const { data: standardUnits, isLoading: unitsLoading, error: unitsError } = useQuery<Unit[]>({
     queryKey: ['units'],
     queryFn: fetchUnits,
   });
@@ -120,7 +121,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
               ) : unitsError ? (
                 <option>Error loading units</option>
               ) : (
-                standardUnits?.map((unit: any) => (
+                standardUnits?.map((unit: Unit) => (
                   <option key={unit.unitID} value={unit.unitID}>
                     {unit.name}
                   </option>
@@ -210,12 +211,10 @@ const RecipeFormPage: React.FC = () => {
             ☰
           </button>
         )}
-
         <div className="w-full h-64 mb-4 relative rounded-lg shadow-lg overflow-hidden">
           <img src={headerImage} alt="Header" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-white opacity-30"></div>
         </div>
-
         <input
           type="text"
           value={title}
@@ -223,7 +222,6 @@ const RecipeFormPage: React.FC = () => {
           placeholder="Recipe Title"
           className="text-3xl font-bold mb-2 w-full p-2 rounded focus:outline-none"
         />
-
         <div className="flex items-center gap-4 text-sm text-[#7B8A64] mb-4">
           <input
             type="text"
@@ -248,19 +246,12 @@ const RecipeFormPage: React.FC = () => {
             )}
           </span>
         </div>
-
         <div className="flex flex-row gap-8">
           <IngredientsBox ingredients={ingredients} setIngredients={setIngredients} />
           <InstructionsBox instructions={instructions} setInstructions={setInstructions} />
         </div>
-
         <Box mt={4}>
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            onClick={handleSubmit}
-          >
+          <Button type="submit" variant="contained" fullWidth onClick={handleSubmit}>
             Submit Recipe
           </Button>
         </Box>

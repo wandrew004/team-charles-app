@@ -4,7 +4,12 @@ import { useQuery } from '@tanstack/react-query';
 
 const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}/recipes`;
 
-const fetchRecipes = async () => {
+interface RecipeSummary {
+  id: number;
+  name: string;
+}
+
+const fetchRecipes = async (): Promise<RecipeSummary[]> => {
   const response = await fetch(API_ENDPOINT);
   if (!response.ok) {
     throw new Error('Failed to fetch recipes');
@@ -17,7 +22,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentTitle }) => {
-  const { data: recipes, isLoading, error } = useQuery({
+  const { data: recipes, isLoading, error } = useQuery<RecipeSummary[]>({
     queryKey: ['recipes'],
     queryFn: fetchRecipes,
   });
@@ -34,10 +39,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentTitle }) => {
         </li>
         {isLoading && <li>Loading...</li>}
         {error && <li>Error loading recipes</li>}
-        {recipes && recipes.map((recipe: any) => (
+        {recipes && recipes.map((recipe: RecipeSummary) => (
           <li key={recipe.id} className="flex items-center justify-between p-2 cursor-pointer rounded mb-2 hover:bg-gray-200">
             <Link to={`/recipe/${recipe.id}`}>{recipe.name}</Link>
-            <Link to={`/update/${recipe.id}`} className="ml-2 text-gray-500 text-sm">Edit</Link>
+            <Link to={`/update/${recipe.id}`} className="ml-2 text-blue-500 text-sm">Edit</Link>
           </li>
         ))}
       </ul>
