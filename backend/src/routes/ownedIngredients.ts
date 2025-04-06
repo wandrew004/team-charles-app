@@ -37,7 +37,8 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
         const existingIngredient = await getOwnedIngredientById(ingredientId);
         if (existingIngredient) {
             // Update the quantity by adding the new quantity to the existing one
-            await updateOwnedIngredient(ingredientId, numericQuantity);
+            const existingQuantity: number = Number(existingIngredient.quantity);
+            await updateOwnedIngredient(ingredientId, existingQuantity + numericQuantity);
             const updatedIngredient = await getOwnedIngredientById(ingredientId);
             res.status(200).json({ 
                 message: 'Ingredient quantity updated', 
