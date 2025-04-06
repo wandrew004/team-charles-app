@@ -1,31 +1,59 @@
-import { queryDatabase } from '../db/client';
-import { Step } from '../models';
+import { Step } from '../models/init-models';
 
-export const getStepsForRecipe = async (recipeid: number): Promise<Step[]> => {
-    return queryDatabase<Step>(
-        'SELECT s.* FROM Steps AS s INNER JOIN RecipeSteps AS rs ON s.id = rs.stepId WHERE rs.recipeId = $1',
-        [recipeid]
+/**
+ * Get all steps
+ */
+export const getSteps = async (): Promise<Step[]> => {
+    return Step.findAll({
+        order: [['stepNumber', 'ASC']],
+    });
+};
+
+/**
+ * Get a step by ID
+ */
+export const getStepById = async (id: number): Promise<Step | null> => {
+    return Step.findByPk(id);
+};
+
+/**
+ * Create a step
+ */
+export const createStep = async (
+    stepNumber: number,
+    stepText: string
+): Promise<Step> => {
+    return Step.create({
+        stepNumber,
+        stepText,
+    });
+};
+
+/**
+ * Update a step
+ */
+export const updateStep = async (
+    id: number,
+    stepNumber: number,
+    stepText: string
+): Promise<void> => {
+    await Step.update(
+        {
+            stepNumber,
+            stepText,
+        },
+        {
+            where: { id },
+            returning: true,
+        }
     );
 };
 
-export const createStep = async (stepNumber: number, stepText: string): Promise<Step> => {
-    return queryDatabase<Step>(
-        'INSERT INTO Steps (StepNumber, StepText) VALUES ($1, $2) RETURNING *',
-        [stepNumber, stepText]
-    ).then(results => results[0]);
-};
-
-export const updateStep = async (
-    id: number, 
-    stepNumber: number, 
-    stepText: string
-): Promise<Step> => {
-    return queryDatabase<Step>(
-        'UPDATE Steps SET StepNumber = $1, StepText = $2 WHERE ID = $3 RETURNING *',
-        [stepNumber, stepText, id]
-    ).then(results => results[0]);
-};
-
+/**
+ * Delete a step
+ */
 export const deleteStep = async (id: number): Promise<void> => {
-    await queryDatabase<Step>('DELETE FROM Steps WHERE ID = $1', [id]);
+    await Step.destroy({
+        where: { id },
+    });
 };

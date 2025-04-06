@@ -1,122 +1,95 @@
-import { queryDatabase } from '../../src/db/client';
 import { getRecipes, getRecipeById, createRecipe, updateRecipe, deleteRecipe } from '../../src/controllers/recipe';
-import { Recipe } from '../../src/models';
+import { Recipe, RecipeIngredient, RecipeStep, Ingredient, Unit, Step } from '../../src/models/init-models';
 
-// Mock the database client
-jest.mock('../../src/db/client');
+jest.mock('../../src/models/init-models');
+
+const mockRecipes = [
+    { id: 1, name: 'Cake', description: 'Delicious cake' },
+    { id: 2, name: 'Bread', description: 'Fresh bread' },
+];
+
+const mockRecipeDetail = {
+    id: 1,
+    name: 'Cake',
+    description: 'Delicious cake',
+    recipeIngredients: [
+        { quantity: 200, ingredient: { name: 'Flour' }, unit: { name: 'grams' } },
+        { quantity: 100, ingredient: { name: 'Sugar' }, unit: { name: 'grams' } },
+    ],
+    recipeSteps: [
+        { step: { stepNumber: 1, stepText: 'Mix ingredients' } },
+        { step: { stepNumber: 2, stepText: 'Bake the mixture' } },
+    ],
+};
 
 describe('Recipe Controller', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    describe('getRecipes', () => {
-        it('should return all recipes', async () => {
-            const mockRecipes: Recipe[] = [
-                { id: 1, name: 'Pasta', description: 'Italian pasta dish' },
-                { id: 2, name: 'Pizza', description: 'Classic pizza' }
-            ];
+    test('getRecipes returns all recipes', async () => {
+        jest.spyOn(Recipe, 'findAll').mockResolvedValue(mockRecipes as Recipe[]);
 
-            (queryDatabase as jest.Mock).mockResolvedValue(mockRecipes);
+        const recipes = await getRecipes();
 
-            const result = await getRecipes();
+        expect(recipes).toEqual(mockRecipes);
+        expect(Recipe.findAll).toHaveBeenCalledWith({ attributes: ['id', 'name', 'description'] });
+    });
 
-            expect(queryDatabase).toHaveBeenCalledWith('SELECT * FROM Recipes');
-            expect(result).toEqual(mockRecipes);
-        });
+    test('getRecipeById returns a single detailed recipe by ID', async () => {
+        jest.spyOn(Recipe, 'findByPk').mockResolvedValue(mockRecipeDetail as unknown as Recipe);
 
-        it('should return empty array when no recipes exist', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
+        const recipe = await getRecipeById(1);
 
-            const result = await getRecipes();
-
-            expect(queryDatabase).toHaveBeenCalledWith('SELECT * FROM Recipes');
-            expect(result).toEqual([]);
+        expect(recipe).toEqual(mockRecipeDetail);
+        expect(Recipe.findByPk).toHaveBeenCalledWith(1, {
+            include: [
+                {
+                    model: RecipeIngredient,
+                    as: 'recipeIngredients',
+                    include: [
+                        { model: Ingredient, as: 'ingredient', attributes: ['name'] },
+                        { model: Unit, as: 'unit', attributes: ['name'] },
+                    ],
+                    attributes: ['quantity'],
+                },
+                {
+                    model: RecipeStep,
+                    as: 'recipeSteps',
+                    include: [
+                        { model: Step, as: 'step', attributes: ['stepNumber', 'stepText'] },
+                    ],
+                },
+            ],
         });
     });
 
-    describe('getRecipeById', () => {
-        it('should return a recipe when it exists', async () => {
-            const mockRecipe: Recipe = {
-                id: 1,
-                name: 'Pasta',
-                description: 'Italian pasta dish'
-            };
+    test('createRecipe creates a new recipe', async () => {
+        const newRecipe = { id: 3, name: 'Cookies', description: 'Crunchy cookies' };
+        jest.spyOn(Recipe, 'create').mockResolvedValue(newRecipe as Recipe);
 
-            (queryDatabase as jest.Mock).mockResolvedValue([mockRecipe]);
+        const created = await createRecipe('Cookies', 'Crunchy cookies');
 
-            const result = await getRecipeById(1);
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT * FROM Recipes WHERE ID = $1',
-                [1]
-            );
-            expect(result).toEqual(mockRecipe);
-        });
-
-        it('should return null when recipe does not exist', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
-
-            const result = await getRecipeById(999);
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'SELECT * FROM Recipes WHERE ID = $1',
-                [999]
-            );
-            expect(result).toBeNull();
-        });
+        expect(created).toEqual(newRecipe);
+        expect(Recipe.create).toHaveBeenCalledWith({ name: 'Cookies', description: 'Crunchy cookies' });
     });
 
-    describe('createRecipe', () => {
-        it('should create a new recipe', async () => {
-            const mockRecipe: Recipe = {
-                id: 1,
-                name: 'Pasta',
-                description: 'Italian pasta dish'
-            };
+    test('updateRecipe updates a recipe', async () => {
+        jest.spyOn(Recipe, 'update').mockResolvedValue([1]);
 
-            (queryDatabase as jest.Mock).mockResolvedValue([mockRecipe]);
+        await updateRecipe(1, 'Updated Cake', 'More delicious cake');
 
-            const result = await createRecipe('Pasta', 'Italian pasta dish');
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'INSERT INTO Recipes (Name, Description) VALUES ($1, $2) RETURNING *',
-                ['Pasta', 'Italian pasta dish']
-            );
-            expect(result).toEqual(mockRecipe);
-        });
+        expect(Recipe.update).toHaveBeenCalledWith(
+            { name: 'Updated Cake', description: 'More delicious cake' },
+            { where: { id: 1 }, returning: true }
+        );
     });
 
-    describe('updateRecipe', () => {
-        it('should update an existing recipe', async () => {
-            const mockRecipe: Recipe = {
-                id: 1,
-                name: 'Spaghetti',
-                description: 'Updated pasta dish'
-            };
+    test('deleteRecipe deletes a recipe by ID', async () => {
+        jest.spyOn(Recipe, 'destroy').mockResolvedValue(1);
 
-            (queryDatabase as jest.Mock).mockResolvedValue([mockRecipe]);
+        await deleteRecipe(1);
 
-            const result = await updateRecipe(1, 'Spaghetti', 'Updated pasta dish');
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'UPDATE Recipes SET Name = $1, Description = $2 WHERE ID = $3 RETURNING *',
-                ['Spaghetti', 'Updated pasta dish', 1]
-            );
-            expect(result).toEqual(mockRecipe);
-        });
-    });
-
-    describe('deleteRecipe', () => {
-        it('should delete a recipe', async () => {
-            (queryDatabase as jest.Mock).mockResolvedValue([]);
-
-            await deleteRecipe(1);
-
-            expect(queryDatabase).toHaveBeenCalledWith(
-                'DELETE FROM Recipes WHERE ID = $1',
-                [1]
-            );
-        });
+        expect(Recipe.destroy).toHaveBeenCalledWith({ where: { id: 1 } });
     });
 });

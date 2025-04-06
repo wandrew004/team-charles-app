@@ -1,34 +1,90 @@
-import { queryDatabase } from '../db/client';
-import { Recipe } from '../models';
+import { Recipe, Ingredient, Step, RecipeIngredient, RecipeStep, Unit } from '../models/init-models';
 
+/**
+ * Get all recipes (basic data)
+ */
 export const getRecipes = async (): Promise<Recipe[]> => {
-    return queryDatabase<Recipe>('SELECT * FROM Recipes');
+    return Recipe.findAll({
+        attributes: ['id', 'name', 'description'],
+    });
 };
 
+/**
+ * Get a single recipe with associated ingredients and steps
+ */
 export const getRecipeById = async (id: number): Promise<Recipe | null> => {
-    return queryDatabase<Recipe>(
-        'SELECT * FROM Recipes WHERE ID = $1',
-        [id]
-    ).then(results => results[0] || null);
+    return Recipe.findByPk(id, {
+        include: [
+            {
+                model: RecipeIngredient,
+                as: 'recipeIngredients',
+                include: [
+                    {
+                        model: Ingredient,
+                        as: 'ingredient',
+                        attributes: ['name'],
+                    },
+                    {
+                        model: Unit,
+                        as: 'unit',
+                        attributes: ['name'],
+                    },
+                ],
+                attributes: ['quantity'],
+            },
+            {
+                model: RecipeStep,
+                as: 'recipeSteps',
+                include: [
+                    {
+                        model: Step,
+                        as: 'step',
+                        attributes: ['stepNumber', 'stepText'],
+                    },
+                ],
+            },
+        ],
+    });
 };
 
-export const createRecipe = async (name: string, description: string): Promise<Recipe> => {
-    return queryDatabase<Recipe>(
-        'INSERT INTO Recipes (Name, Description) VALUES ($1, $2) RETURNING *',
-        [name, description]
-    ).then(results => results[0]);
+/**
+ * Create a new recipe
+ */
+export const createRecipe = async (
+    name: string,
+    description?: string
+): Promise<Recipe> => {
+    return Recipe.create({
+        name,
+        description,
+    });
 };
 
-export const updateRecipe = async (id: number, name: string, description: string): Promise<Recipe> => {
-    return queryDatabase<Recipe>(
-        'UPDATE Recipes SET Name = $1, Description = $2 WHERE ID = $3 RETURNING *',
-        [name, description, id]
-    ).then(results => results[0]);
-};
-
-export const deleteRecipe = async (id: number): Promise<void> => {
-    await queryDatabase<Recipe>(
-        'DELETE FROM Recipes WHERE ID = $1',
-        [id]
+/**
+ * Update a recipe
+ */
+export const updateRecipe = async (
+    id: number,
+    name: string,
+    description?: string
+): Promise<void> => {
+    await Recipe.update(
+        {
+            name,
+            description,
+        },
+        {
+            where: { id },
+            returning: true,
+        }
     );
+};
+
+/**
+ * Delete a recipe
+ */
+export const deleteRecipe = async (id: number): Promise<void> => {
+    await Recipe.destroy({
+        where: { id },
+    });
 };

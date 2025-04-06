@@ -1,39 +1,87 @@
-import { queryDatabase } from '../db/client';
-import { RecipeIngredient } from '../models';
+import { RecipeIngredient, Ingredient, Unit } from '../models/init-models';
 
-export const getRecipeIngredients = async (recipeid: number): Promise<RecipeIngredient[]> => {
-    return queryDatabase<RecipeIngredient>(
-        'SELECT * FROM RecipeIngredients WHERE RecipeID = $1',
-        [recipeid]
-    );
+/**
+ * Get all ingredients for a recipe, including name and unit name
+ */
+export const getIngredientsForRecipe = async (recipeId: number): Promise<RecipeIngredient[]> => {
+    return RecipeIngredient.findAll({
+        where: { recipeId },
+        include: [
+            {
+                model: Ingredient,
+                as: 'ingredient',
+                attributes: ['name'],
+            },
+            {
+                model: Unit,
+                as: 'unit',
+                attributes: ['name'],
+            },
+        ],
+        attributes: ['quantity'],
+    });
 };
 
-export const createRecipeIngredient = async (recipeid: number, ingredientid: number, quantity: number, unit: string): Promise<RecipeIngredient> => {
-    return queryDatabase<RecipeIngredient>(
-        'INSERT INTO RecipeIngredients (RecipeID, IngredientID, Quantity, Unit) VALUES ($1, $2, $3, $4)',
-        [recipeid, ingredientid, quantity, unit]
-    ).then(results => results[0]);
-};
-export const addIngredientToRecipe = createRecipeIngredient;
-
-export const updateRecipeIngredient = async (
-    recipeid: number, 
-    ingredientid: number, 
-    quantity: number, 
-    unit: string
+/**
+ * Create a new recipe ingredient
+ */
+export const createRecipeIngredient = async (
+    recipeId: number,
+    ingredientId: number,
+    quantity?: number,
+    unitId?: number
 ): Promise<RecipeIngredient> => {
-    return queryDatabase<RecipeIngredient>(
-        'UPDATE RecipeIngredients SET Quantity = $1, Unit = $2 WHERE RecipeID = $3 AND IngredientID = $4 RETURNING *',
-        [quantity, unit, recipeid, ingredientid]
-    ).then(results => results[0]);
+    return RecipeIngredient.create({
+        recipeId,
+        ingredientId,
+        quantity,
+        unitId,
+    });
 };
 
-export const deleteRecipeIngredient = async (
-    recipeid: number, 
-    ingredientid: number
+/**
+ * Update an existing recipe ingredient
+ */
+export const updateRecipeIngredient = async (
+    recipeId: number,
+    ingredientId: number,
+    quantity?: number,
+    unitId?: number
 ): Promise<void> => {
-    await queryDatabase<RecipeIngredient>(
-        'DELETE FROM RecipeIngredients WHERE RecipeID = $1 AND IngredientID = $2',
-        [recipeid, ingredientid]
+    await RecipeIngredient.update(
+        { quantity, unitId },
+        {
+            where: { recipeId, ingredientId },
+            returning: true,
+        }
     );
 };
+
+/**
+ * Delete a recipe ingredient
+ */
+export const deleteRecipeIngredient = async (
+    recipeId: number,
+    ingredientId: number
+): Promise<void> => {
+    await RecipeIngredient.destroy({
+        where: {
+            recipeId,
+            ingredientId,
+        },
+    });
+};
+
+export const addIngredientToRecipe = async (
+    recipeId: number,
+    ingredientId: number,
+    quantity: number,
+    unitId: number
+): Promise<RecipeIngredient> => {
+    return RecipeIngredient.create({
+        recipeId,
+        ingredientId,
+        quantity,
+        unitId,
+    });
+};  
