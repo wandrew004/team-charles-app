@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
+  Alert,
   TextField,
   Button,
   Container,
@@ -104,7 +105,8 @@ const PantryForm = () => {
   const { register, handleSubmit, reset } = useForm<OwnedIngredientFormData>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addingNew, setAddingNew] = useState(false);
-
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const createIngredient = useCreateIngredient();
   const submitOwnedIngredient = useSubmitOwnedIngredient();
 
@@ -132,8 +134,10 @@ const PantryForm = () => {
 
       reset();
       setAddingNew(false);
-    } catch (error) {
-      console.error(error);
+      setFeedback("Ingredient successfully added to pantry!");
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -150,6 +154,17 @@ const PantryForm = () => {
       <Typography variant="h4" component="h1" gutterBottom>
         Add Ingredient to Pantry
       </Typography>
+
+      {feedback && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {feedback}
+        </Alert>
+      )}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <FormControlLabel
