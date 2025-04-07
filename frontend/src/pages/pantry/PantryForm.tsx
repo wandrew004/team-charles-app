@@ -26,6 +26,11 @@ const OWNED_INGREDIENTS_ENDPOINT = `${BACKEND_HOST}/ownedIngredients`;
 interface Ingredient {
   id: number;
   name: string;
+  standardUnitUnit?: {
+    id: number;
+    name: string;
+    type: string;
+  };
 }
 
 interface OwnedIngredientFormData {
@@ -102,7 +107,12 @@ const useSubmitOwnedIngredient = () =>
 const PantryForm = () => {
   const { data: ingredients = [], isLoading } = useIngredients();
   const { data: units = [] } = useUnits();
-  const { register, handleSubmit, reset } = useForm<OwnedIngredientFormData>();
+  const { register, handleSubmit, reset, watch } = useForm<OwnedIngredientFormData>();
+  const selectedIngredientId = watch("ingredientId");
+  const selectedIngredient = ingredients.find(
+    (ing) => ing.id === Number(selectedIngredientId)
+  );
+  const selectedUnit = selectedIngredient?.standardUnitUnit?.name;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addingNew, setAddingNew] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -135,9 +145,14 @@ const PantryForm = () => {
       reset();
       setAddingNew(false);
       setFeedback("Ingredient successfully added to pantry!");
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Something went wrong. Please try again.");
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error(err);
+        setError(err.message);
+      } else {
+        console.error("Unknown error", err);
+        setError("Something went wrong. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -233,7 +248,7 @@ const PantryForm = () => {
         )}
 
         <TextField
-          label="Quantity"
+          label={`Quantity${selectedUnit ? ` (${selectedUnit})` : ""}`}
           type="number"
           fullWidth
           margin="normal"
