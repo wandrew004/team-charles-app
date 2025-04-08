@@ -1,7 +1,15 @@
-import { Ingredient } from '../models/init-models';
+import { Ingredient, Unit } from '../models/init-models';
 
 export const getIngredients = async (): Promise<Ingredient[]> => {
-    return Ingredient.findAll();
+    return Ingredient.findAll({
+        include: [
+            {
+                model: Unit,
+                as: 'standardUnitUnit',
+                attributes: ['id', 'name', 'type'],
+            },
+        ],
+    });
 };
 
 export const getIngredientById = async (id: number): Promise<Ingredient | null> => {

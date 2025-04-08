@@ -5,6 +5,8 @@ import sequelize from './db/client';
 import ownedIngredientsRouter from './routes/ownedIngredients';
 import unitsRouter from './routes/units';
 import recipesRouter from './routes/recipes';
+import ingredientsRouter from './routes/ingredients';
+
 const app: Express = express();
 
 app.use(express.json());
@@ -41,6 +43,7 @@ app.use((req, res, next) => {
 app.use('/ownedIngredients', ownedIngredientsRouter);
 app.use('/units', unitsRouter);
 app.use('/recipes', recipesRouter);
+app.use('/ingredients', ingredientsRouter);
 
 /**
  * @brief global error handler
