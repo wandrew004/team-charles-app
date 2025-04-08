@@ -1,7 +1,7 @@
 import React, { useState, useEffect, KeyboardEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Snackbar, Alert } from '@mui/material';
 import Sidebar from './Sidebar';
 
 interface IngredientEntry {
@@ -43,27 +43,28 @@ const useFetchRecipe = (id: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  useEffect(() => {
-    const fetchRecipe = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/recipes/${id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch recipe');
-        }
-        const data = await response.json();
-        console.log('Fetched recipe data:', data);
-        setRecipe(data);
-      } catch (err: unknown) {
-        console.error('Error fetching recipe:', err);
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
+  const fetchRecipe = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/recipes/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch recipe');
       }
-    };
+      const data = await response.json();
+      console.log('Fetched recipe data:', data);
+      setRecipe(data);
+    } catch (err: unknown) {
+      console.error('Error fetching recipe:', err);
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchRecipe();
   }, [id]);
 
-  return { recipe, loading, error };
+  return { recipe, loading, error, refetch: fetchRecipe };
 };
 
 const useUpdateRecipe = () => {
@@ -225,8 +226,9 @@ const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInst
 const RecipeUpdatePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { recipe, loading, error } = useFetchRecipe(id!);
+  const { recipe, loading, error, refetch } = useFetchRecipe(id!);
   const updateMutation = useUpdateRecipe();
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const [name, setName] = useState<string>('');
   const [description, setDescription] = useState<string>('');
@@ -286,7 +288,8 @@ const RecipeUpdatePage: React.FC = () => {
       };
       updateMutation.mutate(updatedRecipe, {
         onSuccess: () => {
-          navigate(`/recipe/${recipe.id}`);
+          refetch();
+          setShowSuccess(true);
         }
       });
     }
@@ -357,6 +360,16 @@ const RecipeUpdatePage: React.FC = () => {
           </Button>
         </Box>
       </main>
+      <Snackbar 
+        open={showSuccess} 
+        autoHideDuration={3000} 
+        onClose={() => setShowSuccess(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
+          Recipe updated successfully!
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
