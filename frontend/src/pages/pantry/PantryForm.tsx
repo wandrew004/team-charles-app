@@ -223,10 +223,11 @@ const PantryForm = () => {
             </FormControl>
 
             <TextField
-              label="Density"
+              label="Density (g/cm³)"
               type="number"
               fullWidth
               margin="normal"
+              inputProps={{ step: "0.01" }}
               {...register("density", { valueAsNumber: true, required: true })}
             />
           </>
