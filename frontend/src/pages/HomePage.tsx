@@ -22,7 +22,7 @@ const HomePage: React.FC = () => {
                 <Link to="/pantry/create">add ingredient</Link>
               </Button>
               <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
-                <Link to="#">see ingredients</Link>
+                <Link to="/pantry">see ingredients</Link>
               </Button>
               <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
                 <Link to="/aggregate">aggregate recipes</Link>
