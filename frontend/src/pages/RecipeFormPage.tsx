@@ -82,8 +82,8 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     // Only update if the value is a valid number
     if (!isNaN(numericValue)) {
       newIngredients[index].quantity = numericValue;
-      setIngredients(newIngredients);
     }
+    setIngredients(newIngredients);
   };
 
   const handleUnitChange = (index: number, value: string) => {
@@ -117,13 +117,11 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
           />
           <div className="flex items-center ml-2 border border-black rounded p-1">
             <input
-              type="number"
-              placeholder="quantity"
-              value={ingredient.quantity}
+              type="text"
+              placeholder="0"
+              value={ingredient.quantity === 0 ? '' : ingredient.quantity}
               onChange={(e) => handleQuantityChange(index, e.target.value)}
               className="w-12 p-1 outline-none"
-              min="0"
-              step="0.01"
             />
             <select
               value={ingredient.unit}
