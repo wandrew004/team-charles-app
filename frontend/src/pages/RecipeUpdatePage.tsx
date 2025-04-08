@@ -114,10 +114,14 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     setIngredients(newIngredients);
   };
 
-  const handleQuantityChange = (index: number, value: number) => {
+  const handleQuantityChange = (index: number, value: string) => {
     const newIngredients = [...ingredients];
-    newIngredients[index].quantity = value;
-    setIngredients(newIngredients);
+    const numericValue = Number(value);
+    // Only update if the value is a valid number
+    if (!isNaN(numericValue)) {
+      newIngredients[index].quantity = numericValue;
+      setIngredients(newIngredients);
+    }
   };
 
   const handleUnitChange = (index: number, value: string) => {
@@ -151,11 +155,13 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
           />
           <div className="flex items-center ml-2 border border-black rounded p-1">
             <input
-              type="text"
+              type="number"
               placeholder="quantity"
               value={ingredient.quantity}
-              onChange={(e) => handleQuantityChange(index, Number(e.target.value))}
+              onChange={(e) => handleQuantityChange(index, e.target.value)}
               className="w-12 p-1 outline-none"
+              min="0"
+              step="0.01"
             />
             <select
               value={ingredient.unit}
