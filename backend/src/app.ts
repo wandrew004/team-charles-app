@@ -3,9 +3,10 @@ import cors from 'cors';
 import { initModels } from './models/init-models';
 import sequelize from './db/client';
 import ownedIngredientsRouter from './routes/ownedIngredients';
+import aggregationRouter from './routes/aggregation';
+import ingredientsRouter from './routes/ingredients';
 import unitsRouter from './routes/units';
 import recipesRouter from './routes/recipes';
-import ingredientsRouter from './routes/ingredients';
 
 const app: Express = express();
 
@@ -41,6 +42,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/ownedIngredients', ownedIngredientsRouter);
+app.use('/aggregation', aggregationRouter);
 app.use('/units', unitsRouter);
 app.use('/recipes', recipesRouter);
 app.use('/ingredients', ingredientsRouter);

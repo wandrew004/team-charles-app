@@ -1,4 +1,4 @@
-import { RecipeIngredient, Ingredient, Unit } from '../models/init-models';
+import { RecipeIngredient, Ingredient, Unit, Recipe } from '../models/init-models';
 
 /**
  * Get all ingredients for a recipe, including name and unit name
@@ -83,5 +83,33 @@ export const addIngredientToRecipe = async (
         ingredientId,
         quantity,
         unitId,
+    });
+};
+
+/**
+ * Get all ingredients for multiple recipes, including name and unit name
+ * Aggregates quantities for the same ingredients
+ */
+export const getIngredientsForRecipes = async (recipeIds: number[]): Promise<RecipeIngredient[]> => {
+    return RecipeIngredient.findAll({
+        where: { recipeId: recipeIds },
+        include: [
+            {
+                model: Ingredient,
+                as: 'ingredient',
+                attributes: ['id', 'name'],
+            },
+            {
+                model: Unit,
+                as: 'unit',
+                attributes: ['id', 'name'],
+            },
+            {
+                model: Recipe,
+                as: 'recipe',
+                attributes: ['id', 'name'],
+            }
+        ],
+        attributes: ['quantity', 'recipeId'],
     });
 };  

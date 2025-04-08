@@ -24,6 +24,9 @@ const HomePage: React.FC = () => {
               <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
                 <Link to="#">see ingredients</Link>
               </Button>
+              <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
+                <Link to="/aggregate">aggregate recipes</Link>
+              </Button>
             </div>
           </div>
 
