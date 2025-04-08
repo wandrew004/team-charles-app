@@ -2,6 +2,7 @@ import React, { useState, KeyboardEvent } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Box, Button } from '@mui/material';
 import Sidebar from './Sidebar';
+import { useNavigate } from 'react-router-dom';
 
 interface IngredientEntry {
   name: string;
@@ -196,6 +197,7 @@ const RecipeFormPage: React.FC = () => {
   const [instructions, setInstructions] = useState<string[]>(['']);
   const headerImage = "/Brownie_Header.jpg";
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const navigate = useNavigate();
 
   const mutation = useSubmitRecipe();
 
@@ -220,7 +222,16 @@ const RecipeFormPage: React.FC = () => {
           stepText
         }))
     };
-    mutation.mutate(newRecipe);
+    mutation.mutate(newRecipe, {
+      onSuccess: (response) => {
+        if (response && response.recipeId) {
+          navigate(`/update/${response.recipeId}`);
+        } else {
+          console.error('No recipe ID received from server');
+          navigate('/recipes');
+        }
+      }
+    });
   };
 
   return (
