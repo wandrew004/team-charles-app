@@ -133,7 +133,7 @@ const AggregationPage: React.FC = () => {
             ) : (
               <>
                 {Array.from({ length: numDropdowns }).map((_, index) => (
-                  <FormControl fullWidth key={index} className="mb-4">
+                  <FormControl fullWidth key={index} sx={{ mb: 2 }}>
                     <InputLabel>Recipe {index + 1}</InputLabel>
                     <Select
                       value={selectedRecipes[index] || ''}
