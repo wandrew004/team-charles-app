@@ -41,8 +41,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentTitle }) => {
         {error && <li>Error loading recipes</li>}
         {recipes && recipes.map((recipe: RecipeSummary) => (
           <li key={recipe.id} className="flex items-center justify-between p-2 cursor-pointer rounded mb-2 hover:bg-gray-200">
-            <Link to={`/recipe/${recipe.id}`}>{recipe.name}</Link>
-            <Link to={`/update/${recipe.id}`} className="ml-2 text-blue-500 text-sm">Edit</Link>
+            <Link to={`/update/${recipe.id}`} className="flex items-center justify-between w-full">
+              <span>{recipe.name}</span>
+              <span className="text-blue-500 text-sm">Edit</span>
+            </Link>
           </li>
         ))}
       </ul>
