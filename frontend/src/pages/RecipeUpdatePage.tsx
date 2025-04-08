@@ -1,8 +1,8 @@
-import React, { useState, KeyboardEvent } from 'react';
+import React, { useState, useEffect, KeyboardEvent, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Snackbar, Alert } from '@mui/material';
 import Sidebar from './Sidebar';
-import { useNavigate } from 'react-router-dom';
 
 interface IngredientEntry {
   name: string;
@@ -10,35 +10,73 @@ interface IngredientEntry {
   unit: string;
 }
 
-interface CreateRecipeData {
+interface RecipeData {
+  id: number;
   name: string;
   description: string;
   date: string;
   link: string;
   headerImage: string;
-  ingredients: {
-    name: string;
-    quantity: number;
-    unit: string
+  recipeIngredients: {
+    quantity: string;
+    ingredient: {
+      name: string;
+    };
+    unit: {
+      name: string;
+    };
   }[];
-  steps: {
-    stepNumber: number;
-    stepText: string;
+  recipeSteps: {
+    recipeId: number;
+    stepId: number;
+    step: {
+      stepNumber: number;
+      stepText: string;
+    };
   }[];
 }
 
 const API_BASE = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001';
 
-const useSubmitRecipe = () => {
+const useFetchRecipe = (id: string) => {
+  const [recipe, setRecipe] = useState<RecipeData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  const fetchRecipe = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/recipes/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch recipe');
+      }
+      const data = await response.json();
+      console.log('Fetched recipe data:', data);
+      setRecipe(data);
+    } catch (err: unknown) {
+      console.error('Error fetching recipe:', err);
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchRecipe();
+  }, [id, fetchRecipe]);
+
+  return { recipe, loading, error, refetch: fetchRecipe };
+};
+
+const useUpdateRecipe = () => {
   return useMutation({
-    mutationFn: async (data: CreateRecipeData) => {
-      const response = await fetch(`${API_BASE}/recipes`, {
-        method: 'POST',
+    mutationFn: async (data: RecipeData) => {
+      const response = await fetch(`${API_BASE}/recipes/${data.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Failed to update recipe');
       }
       return response.json();
     },
@@ -125,7 +163,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
           <div className="flex items-center ml-2 border border-black rounded p-1">
             <input
               type="text"
-              placeholder="0"
+              placeholder='0'
               value={ingredient.quantity === 0 ? '' : ingredient.quantity}
               onChange={(e) => handleQuantityChange(index, e.target.value)}
               className="w-12 p-1 outline-none"
@@ -203,54 +241,80 @@ const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInst
   );
 };
 
-const RecipeFormPage: React.FC = () => {
+const RecipeUpdatePage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const { recipe, loading, error, refetch } = useFetchRecipe(id!);
+  const updateMutation = useUpdateRecipe();
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const [name, setName] = useState<string>('');
   const [description, setDescription] = useState<string>('');
-  const [date, setDate] = useState<string>(new Date().toLocaleDateString());
+  const [date, setDate] = useState<string>('');
   const [link, setLink] = useState<string>('');
   const [isEditingLink, setIsEditingLink] = useState<boolean>(false);
-  const [ingredients, setIngredients] = useState<IngredientEntry[]>([
-    { name: '', quantity: 0, unit: '' },
-  ]);
+  const [ingredients, setIngredients] = useState<IngredientEntry[]>([{ name: '', quantity: 0, unit: '' }]);
   const [instructions, setInstructions] = useState<string[]>(['']);
-  const headerImage = "/Brownie_Header.jpg";
+  const headerImage = recipe?.headerImage || "/default.jpg";
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const navigate = useNavigate();
 
-  const mutation = useSubmitRecipe();
+  useEffect(() => {
+    if (recipe) {
+      setName(recipe.name);
+      setDescription(recipe.description);
+      setDate(recipe.date);
+      setLink(recipe.link);
+      setIngredients(recipe.recipeIngredients.map(ing => ({
+        name: ing.ingredient.name,
+        quantity: parseFloat(ing.quantity),
+        unit: ing.unit.name
+      })));
+      setInstructions(recipe.recipeSteps.map(step => step.step.stepText));
+    }
+  }, [recipe]);
 
-  const handleSubmit = () => {
-    const newRecipe: CreateRecipeData = {
-      name,
-      description,
-      date,
-      link,
-      headerImage,
-      ingredients: ingredients
-        .filter(ing => ing.name.trim() !== '')
-        .map(ing => ({
-          name: ing.name,
-          quantity: Number(ing.quantity),
-          unit: ing.unit
-        })),
-      steps: instructions
-        .filter(step => step.trim() !== '')
-        .map((stepText, index) => ({
-          stepNumber: index + 1,
-          stepText
-        }))
-    };
-    mutation.mutate(newRecipe, {
-      onSuccess: (response) => {
-        if (response && response.recipeId) {
-          navigate(`/update/${response.recipeId}`);
-        } else {
-          console.error('No recipe ID received from server');
-          navigate('/recipes');
+  const handleUpdate = () => {
+    if (recipe) {
+      const updatedRecipe: RecipeData = {
+        ...recipe,
+        name,
+        description,
+        date,
+        link,
+        headerImage,
+        recipeIngredients: ingredients
+          .filter(ing => ing.name.trim() !== '')
+          .map(ing => ({
+            quantity: ing.quantity.toString(),
+            ingredient: {
+              name: ing.name
+            },
+            unit: {
+              name: ing.unit
+            }
+          })),
+        recipeSteps: instructions
+          .filter(step => step.trim() !== '')
+          .map((stepText, index) => ({
+            recipeId: recipe.id,
+            stepId: index + 1,
+            step: {
+              stepNumber: index + 1,
+              stepText
+            }
+          }))
+      };
+      updateMutation.mutate(updatedRecipe, {
+        onSuccess: () => {
+          refetch();
+          setShowSuccess(true);
         }
-      }
-    });
+      });
+    }
   };
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (!recipe) return <p>Recipe not found.</p>;
 
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans text-[#7B8A64]">
@@ -308,13 +372,23 @@ const RecipeFormPage: React.FC = () => {
           <InstructionsBox instructions={instructions} setInstructions={setInstructions} />
         </div>
         <Box mt={4}>
-          <Button type="submit" variant="contained" fullWidth onClick={handleSubmit}>
-            Submit Recipe
+          <Button type="button" variant="contained" fullWidth onClick={handleUpdate}>
+            Update Recipe
           </Button>
         </Box>
       </main>
+      <Snackbar 
+        open={showSuccess} 
+        autoHideDuration={3000} 
+        onClose={() => setShowSuccess(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
+          Recipe updated successfully!
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
 
-export default RecipeFormPage;
+export default RecipeUpdatePage;

@@ -31,8 +31,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
 
         res.status(201).json(newIngredient);
     } catch (error: any) {
-        console.error('Error creating ingredient:', error);
-        res.status(500).json({ error: error.message || 'Internal server error' });
+        next(error);
     }
 });
 
