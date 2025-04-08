@@ -1,5 +1,5 @@
-import React, { useState, useEffect, KeyboardEvent } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, KeyboardEvent, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Box, Button, Snackbar, Alert } from '@mui/material';
 import Sidebar from './Sidebar';
@@ -43,7 +43,7 @@ const useFetchRecipe = (id: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const fetchRecipe = async () => {
+  const fetchRecipe = useCallback(async () => {
     try {
       const response = await fetch(`${API_BASE}/recipes/${id}`);
       if (!response.ok) {
@@ -58,11 +58,11 @@ const useFetchRecipe = (id: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchRecipe();
-  }, [id]);
+  }, [id, fetchRecipe]);
 
   return { recipe, loading, error, refetch: fetchRecipe };
 };
@@ -243,7 +243,6 @@ const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInst
 
 const RecipeUpdatePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { recipe, loading, error, refetch } = useFetchRecipe(id!);
   const updateMutation = useUpdateRecipe();
   const [showSuccess, setShowSuccess] = useState(false);

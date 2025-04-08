@@ -2,10 +2,7 @@ import request from 'supertest';
 import express from 'express';
 import ingredientRouter from '../../src/routes/ingredients';
 import * as ingredientController from '../../src/controllers/ingredient';
-
-const app = express();
-app.use(express.json());
-app.use('/ingredients', ingredientRouter);
+import app from '../../src/app';
 
 jest.mock('../../src/controllers/ingredient');
 
@@ -89,7 +86,7 @@ describe('Ingredients API', () => {
                 });
 
             expect(response.status).toBe(500);
-            expect(response.body).toEqual({ error: 'Insert failed' });
+            expect(response.body).toEqual({ error: 'Internal Server Error' });
         });
     });
 });
