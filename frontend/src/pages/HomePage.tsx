@@ -19,7 +19,7 @@ const HomePage: React.FC = () => {
                 <Link to="#">see profile</Link>
               </Button>
               <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
-                <Link to="#">add ingredient</Link>
+                <Link to="/pantry/create">add ingredient</Link>
               </Button>
               <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
                 <Link to="#">see ingredients</Link>
@@ -64,7 +64,7 @@ const HomePage: React.FC = () => {
                 <p className="font-medium text-lg">seasoning →</p>
               </Card>
               <Button className="!bg-gray-300 !text-gray-700 self-center text-lg min-w-[240px] py-3">
-                <Link to="#">+ see more</Link>
+                <Link to="/pantry">+ see more</Link>
               </Button>
             </div>
           </section>

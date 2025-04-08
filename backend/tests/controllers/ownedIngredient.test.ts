@@ -1,5 +1,5 @@
 import { getOwnedIngredients, getOwnedIngredientById, createOwnedIngredient, updateOwnedIngredient, deleteOwnedIngredient } from '../../src/controllers/ownedIngredient';
-import { OwnedIngredient, Ingredient } from '../../src/models/init-models';
+import { OwnedIngredient, Ingredient, Unit } from '../../src/models/init-models';
 
 jest.mock('../../src/models/init-models');
 
@@ -7,34 +7,57 @@ const mockOwnedIngredients = [
     {
         ingredientId: 1,
         quantity: 500,
-        Ingredient: { name: 'Sugar', description: 'Sweet', standard_unit: 1, density: 1.5 }
+        ingredient: {
+            name: 'Sugar',
+            description: 'Sweet',
+            standardUnit: 1,
+            density: 1.5,
+            standardUnitUnit: { id: 1, name: 'g', type: 'mass' },
+        },
     },
     {
         ingredientId: 2,
         quantity: 1000,
-        Ingredient: { name: 'Flour', description: 'Baking', standard_unit: 2, density: 0.6 }
+        ingredient: {
+            name: 'Flour',
+            description: 'Baking',
+            standardUnit: 2,
+            density: 0.6,
+            standardUnitUnit: { id: 2, name: 'oz', type: 'mass' },
+        },
     },
 ] as unknown as OwnedIngredient[];
+  
 
 describe('OwnedIngredient Controller', () => {
     beforeEach(() => {
         jest.clearAllMocks();
     });
 
-    test('getOwnedIngredients returns all owned ingredients', async () => {
+    test('getOwnedIngredients returns all owned ingredients with units', async () => {
         jest.spyOn(OwnedIngredient, 'findAll').mockResolvedValue(mockOwnedIngredients as OwnedIngredient[]);
-
+      
         const ingredients = await getOwnedIngredients();
-
+      
         expect(ingredients).toEqual(mockOwnedIngredients);
         expect(OwnedIngredient.findAll).toHaveBeenCalledWith({
-            include: [{
-                model: Ingredient,
-                as: 'ingredient',
-                attributes: ['name', 'description', 'standard_unit', 'density']
-            }]
+            include: [
+                {
+                    model: Ingredient,
+                    as: 'ingredient',
+                    attributes: ['name', 'description', 'standardUnit', 'density'],
+                    include: [
+                        {
+                            model: Unit,
+                            as: 'standardUnitUnit',
+                            attributes: ['id', 'name', 'type'],
+                        },
+                    ],
+                },
+            ],
         });
     });
+      
 
     test('getOwnedIngredientById returns a single owned ingredient by ID', async () => {
         jest.spyOn(OwnedIngredient, 'findByPk').mockResolvedValue(mockOwnedIngredients[0] as OwnedIngredient);
