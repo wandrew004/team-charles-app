@@ -97,6 +97,13 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
       e.preventDefault();
       if (ingredients[index].name.trim() !== '') {
         setIngredients([...ingredients, { name: '', quantity: 0, unit: '' }]);
+        // Focus the new input after state update
+        setTimeout(() => {
+          const inputs = document.querySelectorAll('.ingredient-input');
+          if (inputs.length > 0) {
+            (inputs[inputs.length - 1] as HTMLInputElement).focus();
+          }
+        }, 0);
       }
     }
   };
@@ -113,7 +120,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
             value={ingredient.name}
             onChange={(e) => handleNameChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className="flex-1 p-2 rounded focus:outline-none"
+            className="flex-1 p-2 rounded focus:outline-none ingredient-input"
           />
           <div className="flex items-center ml-2 border border-black rounded p-1">
             <input
@@ -165,6 +172,13 @@ const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInst
       e.preventDefault();
       if (instructions[index].trim() !== '') {
         setInstructions([...instructions, '']);
+        // Focus the new input after state update
+        setTimeout(() => {
+          const inputs = document.querySelectorAll('.instruction-input');
+          if (inputs.length > 0) {
+            (inputs[inputs.length - 1] as HTMLInputElement).focus();
+          }
+        }, 0);
       }
     }
   };
@@ -181,7 +195,7 @@ const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInst
             value={step}
             onChange={(e) => handleInputChange(index, e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className="flex-1 p-2 rounded focus:outline-none bg-transparent"
+            className="flex-1 p-2 rounded focus:outline-none bg-transparent instruction-input"
           />
         </div>
       ))}
