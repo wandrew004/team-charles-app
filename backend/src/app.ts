@@ -15,6 +15,8 @@ import { initModels, Recipe } from './models/init-models';
 import { RecipeData } from './types/recipeData';
 import sequelize from './db/client';
 import ownedIngredientsRouter from './routes/ownedIngredients';
+import ingredientsRouter from './routes/ingredients';
+import unitsRouter from './routes/units';
 
 const app: Express = express();
 
@@ -156,6 +158,8 @@ app.post('/recipes', async (req: Request, res: Response, next: NextFunction) => 
 });
 
 app.use('/ownedIngredients', ownedIngredientsRouter);
+app.use('/ingredients', ingredientsRouter);
+app.use('/units', unitsRouter);
 
 /**
  * @brief global error handler
