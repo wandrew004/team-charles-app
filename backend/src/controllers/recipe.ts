@@ -1,4 +1,6 @@
 import { Recipe, Ingredient, Step, RecipeIngredient, RecipeStep, Unit } from '../models/init-models';
+import { getIngredientByName, createIngredient } from './ingredient';
+import { getUnitByName, createUnit } from './unit';
 
 /**
  * Get all recipes (basic data)
@@ -87,4 +89,117 @@ export const deleteRecipe = async (id: number): Promise<void> => {
     await Recipe.destroy({
         where: { id },
     });
+};
+
+/**
+ * Update a recipe with all its relationships (ingredients and steps)
+ */
+export const updateRecipeWithRelations = async (
+    id: number,
+    name: string,
+    description?: string,
+    recipeIngredients?: Array<{
+        quantity: string;
+        ingredient: {
+            name: string;
+        };
+        unit: {
+            name: string;
+        };
+    }>,
+    recipeSteps?: Array<{
+        stepId: number;
+        step: {
+            stepNumber: number;
+            stepText: string;
+        };
+    }>
+): Promise<void> => {
+    // Start a transaction to ensure all updates are atomic
+    const transaction = await Recipe.sequelize!.transaction();
+
+    try {
+        // Update basic recipe information
+        await Recipe.update(
+            {
+                name,
+                description,
+            },
+            {
+                where: { id },
+                transaction,
+            }
+        );
+
+        // If ingredients are provided, update them
+        if (recipeIngredients) {
+            // First remove all existing recipe ingredients
+            await RecipeIngredient.destroy({
+                where: { recipeId: id },
+                transaction,
+            });
+
+            // Create new recipe ingredients
+            for (const ing of recipeIngredients) {
+                // Find or create ingredient
+                let ingredient = await getIngredientByName(ing.ingredient.name);
+                if (!ingredient) {
+                    ingredient = await createIngredient(ing.ingredient.name);
+                }
+
+                // Find or create unit
+                let unit = await getUnitByName(ing.unit.name);
+                if (!unit) {
+                    unit = await createUnit(ing.unit.name, 'other'); // Default type
+                }
+
+                // Create recipe ingredient
+                await RecipeIngredient.create({
+                    recipeId: id,
+                    ingredientId: ingredient.id,
+                    quantity: parseFloat(ing.quantity),
+                    unitId: unit.id,
+                }, { transaction });
+            }
+        }
+
+        // If steps are provided, update them
+        if (recipeSteps) {
+            // First remove all existing recipe steps
+            await RecipeStep.destroy({
+                where: { recipeId: id },
+                transaction,
+            });
+
+            // Create new steps and recipe steps
+            for (const stepData of recipeSteps) {
+                // Create or update the step
+                let step = await Step.findByPk(stepData.stepId);
+                if (!step) {
+                    step = await Step.create({
+                        stepNumber: stepData.step.stepNumber,
+                        stepText: stepData.step.stepText,
+                    }, { transaction });
+                } else {
+                    await step.update({
+                        stepNumber: stepData.step.stepNumber,
+                        stepText: stepData.step.stepText,
+                    }, { transaction });
+                }
+
+                // Create recipe step
+                await RecipeStep.create({
+                    recipeId: id,
+                    stepId: step.id,
+                }, { transaction });
+            }
+        }
+
+        // Commit the transaction
+        await transaction.commit();
+    } catch (error) {
+        // If anything fails, rollback the transaction
+        await transaction.rollback();
+        throw error;
+    }
 };

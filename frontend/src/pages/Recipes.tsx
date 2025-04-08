@@ -64,7 +64,7 @@ const Recipes: React.FC = () => {
                 <Card
                   key={recipe.id}
                   component={Link}
-                  to={`/recipes/${recipe.id}`}
+                  to={`/update/${recipe.id}`}
                   className="!bg-[#E2EBCA] shadow-md hover:shadow-lg transition duration-200 cursor-pointer w-full"
                 >
                   <CardContent>

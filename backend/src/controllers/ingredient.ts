@@ -16,6 +16,10 @@ export const getIngredientById = async (id: number): Promise<Ingredient | null> 
     return Ingredient.findByPk(id);
 };
 
+export const getIngredientByName = async (name: string): Promise<Ingredient | null> => {
+    return Ingredient.findOne({ where: { name } });
+};
+
 export const createIngredient = async (name: string, description?: string, standardUnit?: number, density?: number): Promise<Ingredient> => {
     return Ingredient.create({
         name,
