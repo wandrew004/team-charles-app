@@ -10,6 +10,7 @@ import {
     createStep,
     addIngredientToRecipe,
     addStepToRecipe,
+    getUnitById,
 } from '../controllers';
 import { Recipe } from '../models/recipe';
 import { RecipeFormData } from '../types/recipeFormData';
@@ -72,16 +73,20 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
                     undefined
                 );
 
-                const unitRecord = await getUnitByName(ingredientData.unit);
-                if (!unitRecord) {
-                    throw new Error(`Unit "${ingredientData.unit}" not found.`);
+                if (!ingredientData.unit) {
+                    throw new Error('Unit is required for ingredient');
+                }
+
+                const unit = await getUnitById(ingredientData.unit);
+                if (!unit) {
+                    throw new Error(`Unit with ID ${ingredientData.unit} does not exist`);
                 }
 
                 await addIngredientToRecipe(
                     recipe.id,
                     ingredient.id,
                     ingredientData.quantity,
-                    unitRecord.id
+                    ingredientData.unit
                 );
             })
         );
