@@ -70,7 +70,11 @@ const RecipeFormPage: React.FC = () => {
   const [ingredients, setIngredients] = useState<IngredientEntry[]>([
     { ingredientId: 0, quantity: 0, unitId: 0 },
   ]);
-  const [instructions, setInstructions] = useState<string[]>(['']);
+  const [instructions, setInstructions] = useState<Array<{stepId: number; stepNumber: number; stepText: string}>>([{
+    stepId: 1,
+    stepNumber: 1,
+    stepText: ''
+  }]);
   const headerImage = "/Brownie_Header.jpg";
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
@@ -92,10 +96,10 @@ const RecipeFormPage: React.FC = () => {
           unitId: ing.unitId
         })),
       steps: instructions
-        .filter(step => step.trim() !== '')
-        .map((stepText, index) => ({
-          stepNumber: index + 1,
-          stepText
+        .filter(step => step.stepText.trim() !== '')
+        .map(step => ({
+          stepNumber: step.stepNumber,
+          stepText: step.stepText
         }))
     };
     mutation.mutate(newRecipe, {

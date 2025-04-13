@@ -125,7 +125,7 @@ const RecipeUpdatePage: React.FC = () => {
   const [ingredients, setIngredients] = useState<IngredientEntry[]>([
     { ingredientId: 0, quantity: 0, unitId: 0 },
   ]);
-  const [instructions, setInstructions] = useState<string[]>(['']);
+  const [instructions, setInstructions] = useState<Array<{stepId: number; stepNumber: number; stepText: string}>>([]);
   const headerImage = recipe?.headerImage || "/default.jpg";
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -140,7 +140,11 @@ const RecipeUpdatePage: React.FC = () => {
         quantity: parseFloat(ing.quantity),
         unitId: ing.unit.id
       })));
-      setInstructions(recipe.recipeSteps.map((step: RecipeData['recipeSteps'][0]) => step.step.stepText));
+      setInstructions(recipe.recipeSteps.map((step: RecipeData['recipeSteps'][0]) => ({
+        stepId: step.stepId,
+        stepNumber: step.step.stepNumber,
+        stepText: step.step.stepText
+      })));
     }
   }, [recipe]);
 
@@ -167,13 +171,13 @@ const RecipeUpdatePage: React.FC = () => {
             }
           })),
         recipeSteps: instructions
-          .filter(step => step.trim() !== '')
-          .map((stepText, index) => ({
+          .filter(step => step.stepText.trim() !== '')
+          .map(step => ({
             recipeId: recipe.id,
-            stepId: index + 1,
+            stepId: step.stepId,
             step: {
-              stepNumber: index + 1,
-              stepText
+              stepNumber: step.stepNumber,
+              stepText: step.stepText
             }
           }))
       };
