@@ -1,5 +1,6 @@
 import React, { useState, KeyboardEvent } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { TextField, Button, FormControl, InputLabel, Select, MenuItem, Box, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 
 interface Unit {
   id: number;
@@ -28,6 +29,7 @@ interface IngredientsBoxProps {
 }
 
 const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredients, API_BASE }) => {
+  const queryClient = useQueryClient();
   const fetchUnits = async (): Promise<Unit[]> => {
     const response = await fetch(`${API_BASE}/units`);
     if (!response.ok) {
@@ -57,6 +59,13 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
+  const [newIngredient, setNewIngredient] = useState({
+    name: '',
+    description: '',
+    standardUnit: '',
+    density: ''
+  });
+  const [showNewIngredientForm, setShowNewIngredientForm] = useState<boolean>(false);
 
   const filteredIngredients = availableIngredients?.filter(ing => 
     ing.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -112,6 +121,37 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     }
   };
 
+  const createIngredientMutation = useMutation({
+    mutationFn: async (data: typeof newIngredient) => {
+      const response = await fetch(`${API_BASE}/ingredients`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create ingredient');
+      }
+      return response.json();
+    },
+    onSuccess: (newIngredient) => {
+      queryClient.invalidateQueries({ queryKey: ['ingredients'] });
+      handleIngredientSelect(activeIndex, newIngredient.id);
+      setShowNewIngredientForm(false);
+      setNewIngredient({
+        name: '',
+        description: '',
+        standardUnit: '',
+        density: ''
+      });
+    },
+  });
+
+  const handleCreateNewIngredient = () => {
+    if (newIngredient.name.trim()) {
+      createIngredientMutation.mutate(newIngredient);
+    }
+  };
+
   return (
     <div className="relative bg-white rounded-lg shadow-lg p-4 mt-6 w-1/2 min-h-[70vh]">
       <h2 className="text-xl font-bold mb-4">Ingredients</h2>
@@ -134,7 +174,15 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
                 ) : ingredientsError ? (
                   <div className="p-2">Error loading ingredients</div>
                 ) : filteredIngredients.length === 0 ? (
-                  <div className="p-2">No ingredients found</div>
+                  <div className="p-2">
+                    <div className="text-gray-500 mb-2">No ingredients found</div>
+                    <button
+                      onClick={() => setShowNewIngredientForm(true)}
+                      className="text-blue-500 hover:text-blue-700"
+                    >
+                      Create new ingredient
+                    </button>
+                  </div>
                 ) : (
                   filteredIngredients.map((ing) => (
                     <div
@@ -178,6 +226,66 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
           </div>
         </div>
       ))}
+
+      <Dialog 
+        open={showNewIngredientForm} 
+        onClose={() => setShowNewIngredientForm(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Create New Ingredient</DialogTitle>
+        <DialogContent>
+          <Box className="space-y-4 mt-4">
+            <TextField
+              label="Name"
+              fullWidth
+              value={newIngredient.name}
+              onChange={(e) => setNewIngredient(prev => ({ ...prev, name: e.target.value }))}
+              required
+            />
+            <TextField
+              label="Description"
+              fullWidth
+              value={newIngredient.description}
+              onChange={(e) => setNewIngredient(prev => ({ ...prev, description: e.target.value }))}
+            />
+            <FormControl fullWidth>
+              <InputLabel>Standard Unit</InputLabel>
+              <Select
+                value={newIngredient.standardUnit}
+                onChange={(e) => setNewIngredient(prev => ({ ...prev, standardUnit: e.target.value }))}
+                label="Standard Unit"
+                required
+              >
+                {units?.map((unit) => (
+                  <MenuItem key={unit.id} value={unit.id}>
+                    {unit.name} {unit.type && `(${unit.type})`}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              label="Density (g/cm³)"
+              type="number"
+              fullWidth
+              value={newIngredient.density}
+              onChange={(e) => setNewIngredient(prev => ({ ...prev, density: e.target.value }))}
+              inputProps={{ step: "0.01" }}
+              required
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowNewIngredientForm(false)}>Cancel</Button>
+          <Button 
+            variant="contained" 
+            onClick={handleCreateNewIngredient}
+            disabled={!newIngredient.name || !newIngredient.standardUnit || !newIngredient.density}
+          >
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
