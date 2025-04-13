@@ -26,13 +26,13 @@ if (process.env.NODE_ENV !== 'test') {
         define: {
             underscored: true // Automatically map camelCase attributes to snake_case columns
         },
-	dialectOptions: config.ssl
+        dialectOptions: config.ssl
 	    ? {
 		 ssl: {
-			require: true,
-			rejectUnauthorized:false,
+                    require: true,
+                    rejectUnauthorized:false,
 		   },
-		}
+            }
 	    : undefined,
     });
     
