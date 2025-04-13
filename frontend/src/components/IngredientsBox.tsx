@@ -22,6 +22,13 @@ interface IngredientEntry {
   unitId: number;
 }
 
+interface NewIngredientForm {
+  name: string;
+  description: string;
+  standardUnit: string;
+  density?: string;
+}
+
 interface IngredientsBoxProps {
   ingredients: IngredientEntry[];
   setIngredients: (ings: IngredientEntry[]) => void;
@@ -59,7 +66,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [activeIndex, setActiveIndex] = useState<number>(-1);
-  const [newIngredient, setNewIngredient] = useState({
+  const [newIngredient, setNewIngredient] = useState<NewIngredientForm>({
     name: '',
     description: '',
     standardUnit: '',
@@ -122,11 +129,16 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
   };
 
   const createIngredientMutation = useMutation({
-    mutationFn: async (data: typeof newIngredient) => {
+    mutationFn: async (data: NewIngredientForm) => {
       const response = await fetch(`${API_BASE}/ingredients`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          name: data.name,
+          description: data.description,
+          standardUnit: Number(data.standardUnit),
+          ...(data.density && { density: Number(data.density) })
+        }),
       });
       if (!response.ok) {
         throw new Error('Failed to create ingredient');
@@ -150,6 +162,24 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     if (newIngredient.name.trim()) {
       createIngredientMutation.mutate(newIngredient);
     }
+  };
+
+  const isVolumeUnit = (unitId: number) => {
+    const unit = units?.find(u => u.id === unitId);
+    return unit?.type === 'volume';
+  };
+
+  const getCompatibleUnits = (standardUnitId: number, hasDensity: boolean) => {
+    if (!units) return [];
+    
+    const standardUnit = units.find(u => u.id === standardUnitId);
+    if (!standardUnit) return [];
+
+    // If we have density, all units are compatible
+    if (hasDensity) return units;
+
+    // Otherwise, only show units of the same type
+    return units.filter(unit => unit.type === standardUnit.type);
   };
 
   return (
@@ -216,7 +246,14 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
               ) : unitsError ? (
                 <option>Error loading units</option>
               ) : (
-                units?.map((unit) => (
+                getCompatibleUnits(
+                  ingredients[index].ingredientId ? 
+                    availableIngredients?.find(i => i.id === ingredients[index].ingredientId)?.standardUnit || 0 
+                    : 0,
+                  ingredients[index].ingredientId ? 
+                    Boolean(availableIngredients?.find(i => i.id === ingredients[index].ingredientId)?.density)
+                    : false
+                ).map((unit) => (
                   <option key={unit.id} value={unit.id}>
                     {unit.name}
                   </option>
@@ -271,7 +308,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
               value={newIngredient.density}
               onChange={(e) => setNewIngredient(prev => ({ ...prev, density: e.target.value }))}
               inputProps={{ step: "0.01" }}
-              required
+              helperText="Required for converting between volume and weight units"
             />
           </Box>
         </DialogContent>
@@ -280,7 +317,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
           <Button 
             variant="contained" 
             onClick={handleCreateNewIngredient}
-            disabled={!newIngredient.name || !newIngredient.standardUnit || !newIngredient.density}
+            disabled={!newIngredient.name || !newIngredient.standardUnit}
           >
             Create
           </Button>
