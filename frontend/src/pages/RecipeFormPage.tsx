@@ -1,8 +1,10 @@
-import React, { useState, KeyboardEvent } from 'react';
+import React, { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Box, Button } from '@mui/material';
 import Sidebar from './Sidebar';
 import { useNavigate } from 'react-router-dom';
+import IngredientsBox from '../components/IngredientsBox';
+import InstructionsBox from '../components/InstructionsBox';
 
 interface IngredientEntry {
   ingredientId: number;
@@ -57,179 +59,6 @@ const useSubmitRecipe = () => {
       return response.json();
     },
   });
-};
-
-interface IngredientsBoxProps {
-  ingredients: IngredientEntry[];
-  setIngredients: (ings: IngredientEntry[]) => void;
-}
-
-const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredients }) => {
-  const fetchUnits = async (): Promise<Unit[]> => {
-    const response = await fetch(`${API_BASE}/units`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch units');
-    }
-    return response.json();
-  };
-
-  const fetchIngredients = async (): Promise<Ingredient[]> => {
-    const response = await fetch(`${API_BASE}/ingredients`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch ingredients');
-    }
-    return response.json();
-  };
-
-  const { data: units, isLoading: unitsLoading, error: unitsError } = useQuery<Unit[]>({
-    queryKey: ['units'],
-    queryFn: fetchUnits,
-  });
-
-  const { data: availableIngredients, isLoading: ingredientsLoading, error: ingredientsError } = useQuery<Ingredient[]>({
-    queryKey: ['ingredients'],
-    queryFn: fetchIngredients,
-  });
-
-  const handleIngredientChange = (index: number, value: string) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index].ingredientId = Number(value);
-    setIngredients(newIngredients);
-  };
-
-  const handleQuantityChange = (index: number, value: string) => {
-    const newIngredients = [...ingredients];
-    const numericValue = Number(value);
-    if (!isNaN(numericValue)) {
-      newIngredients[index].quantity = numericValue;
-    }
-    setIngredients(newIngredients);
-  };
-
-  const handleUnitChange = (index: number, value: string) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index].unitId = Number(value);
-    setIngredients(newIngredients);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (ingredients[index].ingredientId) {
-        setIngredients([...ingredients, { ingredientId: 0, quantity: 0, unitId: 0 }]);
-        setTimeout(() => {
-          const inputs = document.querySelectorAll('.ingredient-input');
-          if (inputs.length > 0) {
-            (inputs[inputs.length - 1] as HTMLInputElement).focus();
-          }
-        }, 0);
-      }
-    }
-  };
-
-  return (
-    <div className="relative bg-white rounded-lg shadow-lg p-4 mt-6 w-1/2 min-h-[70vh]">
-      <h2 className="text-xl font-bold mb-4">Ingredients</h2>
-      {ingredients.map((ingredient, index) => (
-        <div key={index} className="flex items-center mb-2">
-          <span className="mr-2 font-semibold">{index + 1}.)</span>
-          <select
-            value={ingredient.ingredientId}
-            onChange={(e) => handleIngredientChange(index, e.target.value)}
-            className="flex-1 p-2 rounded focus:outline-none ingredient-input"
-          >
-            <option value={0}>Select ingredient...</option>
-            {ingredientsLoading ? (
-              <option>Loading ingredients...</option>
-            ) : ingredientsError ? (
-              <option>Error loading ingredients</option>
-            ) : (
-              availableIngredients?.map((ing) => (
-                <option key={ing.id} value={ing.id}>
-                  {ing.name}
-                </option>
-              ))
-            )}
-          </select>
-          <div className="flex items-center ml-2 border border-black rounded p-1">
-            <input
-              type="text"
-              placeholder="0"
-              value={ingredient.quantity === 0 ? '' : ingredient.quantity}
-              onChange={(e) => handleQuantityChange(index, e.target.value)}
-              className="w-12 p-1 outline-none"
-            />
-            <select
-              value={ingredient.unitId}
-              onChange={(e) => handleUnitChange(index, e.target.value)}
-              className="p-1 outline-none"
-            >
-              <option value={0}>Select unit...</option>
-              {unitsLoading ? (
-                <option>Loading units...</option>
-              ) : unitsError ? (
-                <option>Error loading units</option>
-              ) : (
-                units?.map((unit) => (
-                  <option key={unit.id} value={unit.id}>
-                    {unit.name}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-interface InstructionsBoxProps {
-  instructions: string[];
-  setInstructions: (ins: string[]) => void;
-}
-
-const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInstructions }) => {
-  const handleInputChange = (index: number, value: string) => {
-    const newInstructions = [...instructions];
-    newInstructions[index] = value;
-    setInstructions(newInstructions);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (instructions[index].trim() !== '') {
-        setInstructions([...instructions, '']);
-        // Focus the new input after state update
-        setTimeout(() => {
-          const inputs = document.querySelectorAll('.instruction-input');
-          if (inputs.length > 0) {
-            (inputs[inputs.length - 1] as HTMLInputElement).focus();
-          }
-        }, 0);
-      }
-    }
-  };
-
-  return (
-    <div className="relative p-4 mt-6 w-1/2">
-      <h2 className="text-xl font-bold mb-4">Instructions</h2>
-      {instructions.map((step, index) => (
-        <div key={index} className="flex items-center mb-2">
-          <span className="mr-2 font-semibold">{index + 1}.)</span>
-          <input
-            type="text"
-            placeholder="add step..."
-            value={step}
-            onChange={(e) => handleInputChange(index, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            className="flex-1 p-2 rounded focus:outline-none bg-transparent instruction-input"
-          />
-        </div>
-      ))}
-    </div>
-  );
 };
 
 const RecipeFormPage: React.FC = () => {
@@ -333,7 +162,7 @@ const RecipeFormPage: React.FC = () => {
           </span>
         </div>
         <div className="flex flex-row gap-8">
-          <IngredientsBox ingredients={ingredients} setIngredients={setIngredients} />
+          <IngredientsBox ingredients={ingredients} setIngredients={setIngredients} API_BASE={API_BASE} />
           <InstructionsBox instructions={instructions} setInstructions={setInstructions} />
         </div>
         <Box mt={4}>
