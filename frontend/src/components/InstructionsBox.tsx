@@ -1,4 +1,4 @@
-import React, { KeyboardEvent } from 'react';
+import React, { KeyboardEvent, useRef, useEffect } from 'react';
 
 interface InstructionsBoxProps {
   instructions: string[];
@@ -6,14 +6,29 @@ interface InstructionsBoxProps {
 }
 
 const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInstructions }) => {
+  const textareaRefs = useRef<(HTMLTextAreaElement | null)[]>([]);
+
   const handleInputChange = (index: number, value: string) => {
     const newInstructions = [...instructions];
     newInstructions[index] = value;
     setInstructions(newInstructions);
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Enter') {
+  const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  };
+
+  useEffect(() => {
+    textareaRefs.current.forEach(textarea => {
+      if (textarea) {
+        adjustTextareaHeight(textarea);
+      }
+    });
+  }, [instructions]);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>, index: number) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (instructions[index].trim() !== '') {
         setInstructions([...instructions, '']);
@@ -21,7 +36,7 @@ const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInst
         setTimeout(() => {
           const inputs = document.querySelectorAll('.instruction-input');
           if (inputs.length > 0) {
-            (inputs[inputs.length - 1] as HTMLInputElement).focus();
+            (inputs[inputs.length - 1] as HTMLTextAreaElement).focus();
           }
         }, 0);
       }
@@ -33,7 +48,7 @@ const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInst
       setTimeout(() => {
         const inputs = document.querySelectorAll('.instruction-input');
         if (inputs.length > 0) {
-          (inputs[index - 1] as HTMLInputElement).focus();
+          (inputs[index - 1] as HTMLTextAreaElement).focus();
         }
       }, 0);
     }
@@ -43,15 +58,23 @@ const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInst
     <div className="relative p-4 mt-6 w-1/2">
       <h2 className="text-xl font-bold mb-4">Instructions</h2>
       {instructions.map((step, index) => (
-        <div key={index} className="flex items-center mb-2">
-          <span className="mr-2 font-semibold">{index + 1}.)</span>
-          <input
-            type="text"
+        <div key={index} className="flex items-start mb-2">
+          <span className="mr-2 font-semibold mt-2">{index + 1}.)</span>
+          <textarea
+            ref={el => {
+              if (el) {
+                textareaRefs.current[index] = el;
+              }
+            }}
             placeholder="add step..."
             value={step}
-            onChange={(e) => handleInputChange(index, e.target.value)}
+            onChange={(e) => {
+              handleInputChange(index, e.target.value);
+              adjustTextareaHeight(e.target);
+            }}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className="flex-1 p-2 rounded focus:outline-none bg-transparent instruction-input"
+            className="flex-1 p-2 rounded focus:outline-none bg-transparent instruction-input resize-none overflow-hidden"
+            style={{ minHeight: '2.5rem' }}
           />
         </div>
       ))}
