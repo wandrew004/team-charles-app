@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { Box, Button } from '@mui/material';
 import Sidebar from './Sidebar';
 import { useNavigate } from 'react-router-dom';
@@ -27,20 +27,6 @@ interface CreateRecipeData {
     stepNumber: number;
     stepText: string;
   }[];
-}
-
-interface Unit {
-  id: number;
-  name: string;
-  type: string;
-}
-
-interface Ingredient {
-  id: number;
-  name: string;
-  description?: string;
-  standardUnit?: number;
-  density?: number;
 }
 
 const API_BASE = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001';

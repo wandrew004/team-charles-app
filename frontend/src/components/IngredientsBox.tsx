@@ -178,11 +178,6 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     }
   };
 
-  const isVolumeUnit = (unitId: number) => {
-    const unit = units?.find(u => u.id === unitId);
-    return unit?.type === 'volume';
-  };
-
   const getCompatibleUnits = (standardUnitId: number, hasDensity: boolean) => {
     if (!units) return [];
     

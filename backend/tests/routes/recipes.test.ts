@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from '../../src/app';
-import { addIngredientToRecipe, addStepToRecipe, createIngredient, createRecipe, createStep, deleteRecipe, getRecipeById, getRecipes, getUnitById, updateRecipeWithRelations } from '../../src/controllers';
+import { addIngredientToRecipe, addStepToRecipe, createRecipe, createStep, deleteRecipe, getRecipeById, getRecipes, updateRecipeWithRelations } from '../../src/controllers';
 
 // Mock all controller functions
 jest.mock('../../src/controllers');
