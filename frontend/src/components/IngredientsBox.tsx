@@ -118,6 +118,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
         setIngredients([...ingredients, { ingredientId: 0, quantity: 0, unitId: 0 }]);
         setSearchTerm('');
         setShowDropdown(false);
+        setActiveIndex(-1);
         setTimeout(() => {
           const inputs = document.querySelectorAll('.ingredient-input');
           if (inputs.length > 0) {
