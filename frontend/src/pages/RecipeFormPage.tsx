@@ -5,9 +5,9 @@ import Sidebar from './Sidebar';
 import { useNavigate } from 'react-router-dom';
 
 interface IngredientEntry {
-  name: string;
+  ingredientId: number;
   quantity: number;
-  unit: string;
+  unitId: number;
 }
 
 interface CreateRecipeData {
@@ -17,14 +17,28 @@ interface CreateRecipeData {
   link: string;
   headerImage: string;
   ingredients: {
-    name: string;
+    ingredientId: number;
     quantity: number;
-    unit: string
+    unitId: number;
   }[];
   steps: {
     stepNumber: number;
     stepText: string;
   }[];
+}
+
+interface Unit {
+  id: number;
+  name: string;
+  type: string;
+}
+
+interface Ingredient {
+  id: number;
+  name: string;
+  description?: string;
+  standardUnit?: number;
+  density?: number;
 }
 
 const API_BASE = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001';
@@ -45,12 +59,6 @@ const useSubmitRecipe = () => {
   });
 };
 
-interface Unit {
-  unitID: number;
-  name: string;
-  type: string;
-}
-
 interface IngredientsBoxProps {
   ingredients: IngredientEntry[];
   setIngredients: (ings: IngredientEntry[]) => void;
@@ -65,21 +73,33 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     return response.json();
   };
 
-  const { data: standardUnits, isLoading: unitsLoading, error: unitsError } = useQuery<Unit[]>({
+  const fetchIngredients = async (): Promise<Ingredient[]> => {
+    const response = await fetch(`${API_BASE}/ingredients`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch ingredients');
+    }
+    return response.json();
+  };
+
+  const { data: units, isLoading: unitsLoading, error: unitsError } = useQuery<Unit[]>({
     queryKey: ['units'],
     queryFn: fetchUnits,
   });
 
-  const handleNameChange = (index: number, value: string) => {
+  const { data: availableIngredients, isLoading: ingredientsLoading, error: ingredientsError } = useQuery<Ingredient[]>({
+    queryKey: ['ingredients'],
+    queryFn: fetchIngredients,
+  });
+
+  const handleIngredientChange = (index: number, value: string) => {
     const newIngredients = [...ingredients];
-    newIngredients[index].name = value;
+    newIngredients[index].ingredientId = Number(value);
     setIngredients(newIngredients);
   };
 
   const handleQuantityChange = (index: number, value: string) => {
     const newIngredients = [...ingredients];
     const numericValue = Number(value);
-    // Only update if the value is a valid number
     if (!isNaN(numericValue)) {
       newIngredients[index].quantity = numericValue;
     }
@@ -88,16 +108,15 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
 
   const handleUnitChange = (index: number, value: string) => {
     const newIngredients = [...ingredients];
-    newIngredients[index].unit = value;
+    newIngredients[index].unitId = Number(value);
     setIngredients(newIngredients);
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (ingredients[index].name.trim() !== '') {
-        setIngredients([...ingredients, { name: '', quantity: 0, unit: '' }]);
-        // Focus the new input after state update
+      if (ingredients[index].ingredientId) {
+        setIngredients([...ingredients, { ingredientId: 0, quantity: 0, unitId: 0 }]);
         setTimeout(() => {
           const inputs = document.querySelectorAll('.ingredient-input');
           if (inputs.length > 0) {
@@ -114,14 +133,24 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
       {ingredients.map((ingredient, index) => (
         <div key={index} className="flex items-center mb-2">
           <span className="mr-2 font-semibold">{index + 1}.)</span>
-          <input
-            type="text"
-            placeholder="add ingredient..."
-            value={ingredient.name}
-            onChange={(e) => handleNameChange(index, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
+          <select
+            value={ingredient.ingredientId}
+            onChange={(e) => handleIngredientChange(index, e.target.value)}
             className="flex-1 p-2 rounded focus:outline-none ingredient-input"
-          />
+          >
+            <option value={0}>Select ingredient...</option>
+            {ingredientsLoading ? (
+              <option>Loading ingredients...</option>
+            ) : ingredientsError ? (
+              <option>Error loading ingredients</option>
+            ) : (
+              availableIngredients?.map((ing) => (
+                <option key={ing.id} value={ing.id}>
+                  {ing.name}
+                </option>
+              ))
+            )}
+          </select>
           <div className="flex items-center ml-2 border border-black rounded p-1">
             <input
               type="text"
@@ -131,18 +160,18 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
               className="w-12 p-1 outline-none"
             />
             <select
-              value={ingredient.unit}
+              value={ingredient.unitId}
               onChange={(e) => handleUnitChange(index, e.target.value)}
               className="p-1 outline-none"
             >
-              <option value="">--</option>
+              <option value={0}>Select unit...</option>
               {unitsLoading ? (
                 <option>Loading units...</option>
               ) : unitsError ? (
                 <option>Error loading units</option>
               ) : (
-                standardUnits?.map((unit: Unit) => (
-                  <option key={unit.unitID} value={unit.unitID}>
+                units?.map((unit) => (
+                  <option key={unit.id} value={unit.id}>
                     {unit.name}
                   </option>
                 ))
@@ -210,7 +239,7 @@ const RecipeFormPage: React.FC = () => {
   const [link, setLink] = useState<string>('');
   const [isEditingLink, setIsEditingLink] = useState<boolean>(false);
   const [ingredients, setIngredients] = useState<IngredientEntry[]>([
-    { name: '', quantity: 0, unit: '' },
+    { ingredientId: 0, quantity: 0, unitId: 0 },
   ]);
   const [instructions, setInstructions] = useState<string[]>(['']);
   const headerImage = "/Brownie_Header.jpg";
@@ -227,11 +256,11 @@ const RecipeFormPage: React.FC = () => {
       link,
       headerImage,
       ingredients: ingredients
-        .filter(ing => ing.name.trim() !== '')
+        .filter(ing => ing.ingredientId !== 0)
         .map(ing => ({
-          name: ing.name,
+          ingredientId: ing.ingredientId,
           quantity: Number(ing.quantity),
-          unit: ing.unit
+          unitId: ing.unitId
         })),
       steps: instructions
         .filter(step => step.trim() !== '')
