@@ -126,6 +126,19 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
           }
         }, 0);
       }
+    } else if (e.key === 'Backspace' && !ingredients[index].ingredientId && index > 0) {
+      e.preventDefault();
+      const newIngredients = ingredients.filter((_, i) => i !== index);
+      setIngredients(newIngredients);
+      setSearchTerm('');
+      setShowDropdown(false);
+      setActiveIndex(-1);
+      setTimeout(() => {
+        const inputs = document.querySelectorAll('.ingredient-input');
+        if (inputs.length > 0) {
+          (inputs[index - 1] as HTMLInputElement).focus();
+        }
+      }, 0);
     }
   };
 

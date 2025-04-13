@@ -25,6 +25,17 @@ const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInst
           }
         }, 0);
       }
+    } else if (e.key === 'Backspace' && instructions[index].trim() === '' && index > 0) {
+      e.preventDefault();
+      const newInstructions = instructions.filter((_, i) => i !== index);
+      setInstructions(newInstructions);
+      // Focus the previous input after state update
+      setTimeout(() => {
+        const inputs = document.querySelectorAll('.instruction-input');
+        if (inputs.length > 0) {
+          (inputs[index - 1] as HTMLInputElement).focus();
+        }
+      }, 0);
     }
   };
 
