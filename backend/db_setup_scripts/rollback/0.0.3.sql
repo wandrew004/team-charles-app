@@ -14,7 +14,7 @@ DROP COLUMN IF EXISTS user_id;
 DROP TABLE IF EXISTS users;
 
 -- 4. Remove 0.0.3 from the DatabaseVersion Table, fails if something depends on it
-DELETE FROM DatabaseVersion
+DELETE FROM database_version
 WHERE Version = '0.0.3';
 
 COMMIT;
