@@ -161,7 +161,13 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     },
     onSuccess: (newIngredient) => {
       queryClient.invalidateQueries({ queryKey: ['ingredients'] });
-      handleIngredientSelect(activeIndex, newIngredient.id);
+      const newIngredients = [...ingredients];
+      if (activeIndex >= 0 && activeIndex < newIngredients.length) {
+        newIngredients[activeIndex].ingredientId = newIngredient.id;
+        setIngredients(newIngredients);
+        setSearchTerm(newIngredient.name);
+      }
+      setShowDropdown(false);
       setShowNewIngredientForm(false);
       setNewIngredient({
         name: '',
@@ -174,6 +180,9 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
 
   const handleCreateNewIngredient = () => {
     if (newIngredient.name.trim()) {
+      if (activeIndex === -1 && ingredients.length > 0) {
+        setActiveIndex(ingredients.length - 1);
+      }
       createIngredientMutation.mutate(newIngredient);
     }
   };
@@ -216,7 +225,12 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
                   <div className="p-2">
                     <div className="text-gray-500 mb-2">No ingredients found</div>
                     <button
-                      onClick={() => setShowNewIngredientForm(true)}
+                      onClick={() => {
+                        setShowNewIngredientForm(true);
+                        if (activeIndex === -1 && ingredients.length > 0) {
+                          setActiveIndex(ingredients.length - 1);
+                        }
+                      }}
                       className="text-blue-500 hover:text-blue-700"
                     >
                       Create new ingredient
