@@ -7,6 +7,7 @@ import aggregationRouter from './routes/aggregation';
 import ingredientsRouter from './routes/ingredients';
 import unitsRouter from './routes/units';
 import recipesRouter from './routes/recipes';
+import usersRouter from './routes/users';
 
 const app: Express = express();
 
@@ -46,6 +47,7 @@ app.use('/aggregation', aggregationRouter);
 app.use('/units', unitsRouter);
 app.use('/recipes', recipesRouter);
 app.use('/ingredients', ingredientsRouter);
+app.use('/users', usersRouter);
 
 /**
  * @brief global error handler

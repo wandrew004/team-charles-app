@@ -148,4 +148,115 @@ describe('Owned Ingredients Routes', () => {
             expect(response.body.error).toBe('Valid quantity is required');
         });
     });
+
+    describe('GET /user/:userId', () => {
+        it('should return all owned ingredients for a specific user', async () => {
+            const mockIngredients = [
+                { ingredientId: 1, quantity: 5 },
+                { ingredientId: 2, quantity: 3 }
+            ];
+            (ownedIngredientController.getUserOwnedIngredients as jest.Mock).mockResolvedValue(mockIngredients);
+
+            const response = await request(app).get('/owned-ingredients/user/1');
+            
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual(mockIngredients);
+            expect(ownedIngredientController.getUserOwnedIngredients).toHaveBeenCalledWith(1);
+        });
+
+        it('should return 400 for invalid user ID', async () => {
+            const response = await request(app).get('/owned-ingredients/user/invalid');
+            
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('Invalid user ID');
+        });
+    });
+
+    describe('GET /user/:userId/:ingredientId', () => {
+        it('should return a specific owned ingredient for a user', async () => {
+            const mockIngredient = { ingredientId: 1, quantity: 5 };
+            (ownedIngredientController.getUserOwnedIngredientById as jest.Mock).mockResolvedValue(mockIngredient);
+
+            const response = await request(app).get('/owned-ingredients/user/1/1');
+            
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual(mockIngredient);
+            expect(ownedIngredientController.getUserOwnedIngredientById).toHaveBeenCalledWith(1, 1);
+        });
+
+        it('should return 404 for non-existent ingredient', async () => {
+            (ownedIngredientController.getUserOwnedIngredientById as jest.Mock).mockResolvedValue(null);
+
+            const response = await request(app).get('/owned-ingredients/user/1/999');
+            
+            expect(response.status).toBe(404);
+            expect(response.body.error).toBe('Ingredient not found');
+        });
+
+        it('should return 400 for invalid IDs', async () => {
+            const response = await request(app).get('/owned-ingredients/user/invalid/invalid');
+            
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('Invalid user ID or ingredient ID');
+        });
+    });
+
+    describe('POST /user/:userId', () => {
+        it('should create a new owned ingredient for a user', async () => {
+            const newIngredient = { ingredientId: 1, quantity: 5 };
+            (ownedIngredientController.getUserOwnedIngredientById as jest.Mock).mockResolvedValue(null);
+            (ownedIngredientController.createUserOwnedIngredient as jest.Mock).mockResolvedValue(newIngredient);
+
+            const response = await request(app)
+                .post('/owned-ingredients/user/1')
+                .send(newIngredient);
+            
+            expect(response.status).toBe(201);
+            expect(response.body).toEqual(newIngredient);
+            expect(ownedIngredientController.createUserOwnedIngredient).toHaveBeenCalledWith(1, 1, 5);
+        });
+
+        it('should update existing ingredient quantity for a user', async () => {
+            const existingIngredient = { ingredientId: 1, quantity: 5 };
+            const updatedQuantity = 8;
+            (ownedIngredientController.getUserOwnedIngredientById as jest.Mock).mockResolvedValue(existingIngredient);
+            (ownedIngredientController.updateUserOwnedIngredient as jest.Mock).mockResolvedValue({ ...existingIngredient, quantity: updatedQuantity });
+
+            const response = await request(app)
+                .post('/owned-ingredients/user/1')
+                .send({ ingredientId: 1, quantity: 3 });
+            
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('Ingredient quantity updated');
+            expect(ownedIngredientController.updateUserOwnedIngredient).toHaveBeenCalledWith(1, 1, 8);
+        });
+
+        it('should return 400 for invalid input', async () => {
+            const response = await request(app)
+                .post('/owned-ingredients/user/1')
+                .send({ ingredientId: 1 }); // Missing quantity
+            
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('ingredientId and quantity are required');
+        });
+    });
+
+    describe('DELETE /user/:userId/:ingredientId', () => {
+        it('should delete an owned ingredient for a user', async () => {
+            (ownedIngredientController.deleteUserOwnedIngredient as jest.Mock).mockResolvedValue(true);
+
+            const response = await request(app).delete('/owned-ingredients/user/1/1');
+            
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe('Ingredient deleted successfully');
+            expect(ownedIngredientController.deleteUserOwnedIngredient).toHaveBeenCalledWith(1, 1);
+        });
+
+        it('should return 400 for invalid IDs', async () => {
+            const response = await request(app).delete('/owned-ingredients/user/invalid/invalid');
+            
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('Invalid user ID or ingredient ID');
+        });
+    });
 });
