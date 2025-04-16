@@ -1,7 +1,7 @@
 -- Rollback version 0.0.1
 
 -- Step 1: Remove the version entry first (to avoid FK issues)
-DELETE FROM DatabaseVersion WHERE Version = '0.0.1';
+DELETE FROM database_version WHERE Version = '0.0.1';
 
 -- Step 2: Drop dependent tables first (child → parent order)
 DROP TABLE IF EXISTS RecipeSteps;
