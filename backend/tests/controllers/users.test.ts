@@ -63,10 +63,7 @@ describe('User Controller', () => {
 
     test('updateUser updates user with hashed password if provided', async () => {
         const plainPassword = 'newpassword';
-        const hashed = await bcrypt.hash(plainPassword, 10);
-
-        const updateSpy = jest.spyOn(User, 'update').mockResolvedValue([1] as any);
-
+        
         await updateUser(1, 'updateduser', plainPassword);
 
         expect(User.update).toHaveBeenCalledWith(

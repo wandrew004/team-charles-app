@@ -4,60 +4,60 @@ import bcrypt from 'bcrypt';
 const SALT_ROUNDS = 10;
 
 /**
- * Get all users (excluding passwords)
- */
+* Get all users (excluding passwords)
+*/
 export const getAllUsers = async (): Promise<Partial<User>[]> => {
-  return User.findAll({
-    attributes: ['id', 'username'],
-  });
+    return User.findAll({
+        attributes: ['id', 'username'],
+    });
 };
 
 /**
- * Get a single user by ID (excluding password)
- */
+* Get a single user by ID (excluding password)
+*/
 export const getUserById = async (id: number): Promise<Partial<User> | null> => {
-  return User.findByPk(id, {
-    attributes: ['id', 'username'],
-  });
+    return User.findByPk(id, {
+        attributes: ['id', 'username'],
+    });
 };
 
 /**
- * Create a new user with hashed password
- */
+* Create a new user with hashed password
+*/
 export const createUser = async (
-  username: string,
-  password: string
+    username: string,
+    password: string
 ): Promise<User> => {
-  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-  return User.create({
-    username,
-    password: hashedPassword,
-  });
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    return User.create({
+        username,
+        password: hashedPassword,
+    });
 };
 
 /**
- * Update an existing user, with optional password hashing
- */
+* Update an existing user, with optional password hashing
+*/
 export const updateUser = async (
-  id: number,
-  username?: string,
-  password?: string
+    id: number,
+    username?: string,
+    password?: string
 ): Promise<void> => {
-  const updateData: Partial<{ username: string; password: string }> = {};
-
-  if (username) updateData.username = username;
-  if (password) updateData.password = await bcrypt.hash(password, SALT_ROUNDS);
-
-  await User.update(updateData, {
-    where: { id },
-  });
+    const updateData: Partial<{ username: string; password: string }> = {};
+    
+    if (username) updateData.username = username;
+    if (password) updateData.password = await bcrypt.hash(password, SALT_ROUNDS);
+    
+    await User.update(updateData, {
+        where: { id },
+    });
 };
 
 /**
- * Delete a user
- */
+* Delete a user
+*/
 export const deleteUser = async (id: number): Promise<void> => {
-  await User.destroy({
-    where: { id },
-  });
+    await User.destroy({
+        where: { id },
+    });
 };
