@@ -22,6 +22,20 @@ export const getUserById = async (id: number): Promise<Partial<User> | null> => 
 };
 
 /**
+* Get a single user by ID including password (for authentication)
+*/
+export const getUserByIdWithPassword = async (id: number): Promise<User | null> => {
+    return User.findByPk(id);
+};
+
+/**
+* Get a single user by username including password (for authentication)
+*/
+export const getUserByUsername = async (username: string): Promise<User | null> => {
+    return User.findOne({ where: { username } });
+};
+
+/**
 * Create a new user with hashed password
 */
 export const createUser = async (
@@ -60,4 +74,14 @@ export const deleteUser = async (id: number): Promise<void> => {
     await User.destroy({
         where: { id },
     });
+};
+
+/**
+* Verify if a provided password matches the stored hashed password
+*/
+export const verifyPassword = async (
+    user: User,
+    password: string
+): Promise<boolean> => {
+    return bcrypt.compare(password, user.password);
 };

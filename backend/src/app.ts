@@ -1,5 +1,9 @@
 import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
+import session from 'express-session';
+import passport from 'passport';
+import './config/passport';
+
 import { initModels } from './models/init-models';
 import sequelize from './db/client';
 import ownedIngredientsRouter from './routes/ownedIngredients';
@@ -8,11 +12,22 @@ import ingredientsRouter from './routes/ingredients';
 import unitsRouter from './routes/units';
 import recipesRouter from './routes/recipes';
 import usersRouter from './routes/users';
+import authRouter from './routes/auth';
 
 const app: Express = express();
 
 app.use(express.json());
 app.use(cors());
+
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'secret',
+    resave: false,
+    saveUninitialized: false,
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 if(process.env.NODE_ENV !== 'test') {
     initModels(sequelize);
 }
@@ -48,7 +63,7 @@ app.use('/units', unitsRouter);
 app.use('/recipes', recipesRouter);
 app.use('/ingredients', ingredientsRouter);
 app.use('/users', usersRouter);
-
+app.use('/auth', authRouter);
 /**
  * @brief global error handler
  */
