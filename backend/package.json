@@ -11,7 +11,7 @@
     "start": "tsx index.ts",
     "dev": "tsx watch index.ts",
     "lint": "eslint .",
-    "sequelize": "dotenv sequelize-auto -o ./src/models -d $DB_NAME -h $PG_HOST -u $PG_USER -p $PG_PORT -x $PG_PASSWORD -e postgres -l ts --sg --cm p --cf c --cp c",
+    "sequelize": "dotenv -e .env -- sh -c 'sequelize-auto -o ./src/models -d $DB_NAME -h $PG_HOST -u $PG_USER -p $PG_PORT -x $PG_PASSWORD -e postgres -l ts --sg --cm p --cf c --cp c'",
     "seed": "tsx ./db_setup_scripts/seed/runSeed.ts"
   },
   "dependencies": {
