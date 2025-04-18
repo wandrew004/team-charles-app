@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import Sidebar from './Sidebar';
 import { useNavigate } from 'react-router-dom';
 import IngredientsBox from '../components/IngredientsBox';
@@ -56,13 +56,16 @@ const RecipeFormPage: React.FC = () => {
   const [ingredients, setIngredients] = useState<IngredientEntry[]>([
     { ingredientId: 0, quantity: 0, unitId: 0 },
   ]);
-  const [instructions, setInstructions] = useState<Array<{stepId: number; stepNumber: number; stepText: string}>>([{
+  const [instructions, setInstructions] = useState<Array<{stepId: number; stepNumber: number; stepText: string}>>([{ 
     stepId: 1,
     stepNumber: 1,
     stepText: ''
   }]);
   const headerImage = "/Brownie_Header.jpg";
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importTextModalOpen, setImportTextModalOpen] = useState(false);
+  const [importImageModalOpen, setImportImageModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const mutation = useSubmitRecipe();
@@ -113,21 +116,39 @@ const RecipeFormPage: React.FC = () => {
           <img src={headerImage} alt="Header" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-white opacity-30"></div>
         </div>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Recipe Title"
-          className="text-3xl font-bold mb-2 w-full p-2 rounded focus:outline-none"
-        />
+        {/* Title and Import Button */}
+        <div className="flex items-center mb-2 gap-4">
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="recipe title"
+            className="text-3xl font-bold w-full p-2 rounded focus:outline-none lowercase"
+          />
+          <Button
+            variant="outlined"
+            sx={{
+              textTransform: 'none',
+              color: '#7B8A64',
+              borderColor: '#7B8A64',
+              minWidth: '150px',
+              whiteSpace: 'nowrap'
+            }}
+            onClick={() => setImportModalOpen(true)}
+          >
+            import recipe
+          </Button>
+        </div>
+        {/* Description */}
         <input
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Recipe Description"
-          className="text-xl mb-2 w-full p-2 rounded focus:outline-none"
+          placeholder="recipe description"
+          className="text-xl mb-2 w-full p-2 rounded focus:outline-none lowercase"
         />
-        <div className="flex items-center gap-4 text-sm text-[#7B8A64] mb-4">
+        {/* Date and Link */}
+        <div className="flex items-center gap-4 text-sm text-[#7B8A64] mb-4 lowercase">
           <input
             type="text"
             value={date}
@@ -142,24 +163,81 @@ const RecipeFormPage: React.FC = () => {
                 onChange={(e) => setLink(e.target.value)}
                 onBlur={() => setIsEditingLink(false)}
                 placeholder="add link.."
-                className="underline bg-transparent focus:outline-none"
+                className="underline bg-transparent focus:outline-none lowercase"
               />
             ) : (
-              <span onClick={() => setIsEditingLink(true)} className="underline cursor-pointer">
+              <span onClick={() => setIsEditingLink(true)} className="underline cursor-pointer lowercase">
                 {link || 'add link..'}
               </span>
             )}
           </span>
         </div>
+        {/* Ingredient & Instructions */}
         <div className="flex flex-row gap-8">
           <IngredientsBox ingredients={ingredients} setIngredients={setIngredients} API_BASE={API_BASE} />
           <InstructionsBox instructions={instructions} setInstructions={setInstructions} />
         </div>
+        {/* Submit */}
         <Box mt={4}>
           <Button type="submit" variant="contained" fullWidth onClick={handleSubmit}>
-            Submit Recipe
+            submit recipe
           </Button>
         </Box>
+
+        {/* Import Option Modal */}
+        <Dialog open={importModalOpen} onClose={() => setImportModalOpen(false)}>
+          <DialogTitle sx={{ textTransform: 'none', color: '#7B8A64' }}>import recipe</DialogTitle>
+          <DialogContent className="flex flex-col gap-2">
+            <Button
+              variant="outlined"
+              sx={{ textTransform: 'none', color: '#7B8A64', borderColor: '#7B8A64' }}
+              onClick={() => { setImportTextModalOpen(true); setImportModalOpen(false); }}
+            >
+              import text
+            </Button>
+            <Button
+              variant="outlined"
+              sx={{ textTransform: 'none', color: '#7B8A64', borderColor: '#7B8A64' }}
+              onClick={() => { setImportImageModalOpen(true); setImportModalOpen(false); }}
+            >
+              import image
+            </Button>
+          </DialogContent>
+        </Dialog>
+
+        {/* Import Text Modal */}
+        <Dialog open={importTextModalOpen} onClose={() => setImportTextModalOpen(false)} fullWidth maxWidth="sm">
+          <DialogTitle sx={{ textTransform: 'none', color: '#7B8A64' }}>import text</DialogTitle>
+          <DialogContent>
+            <textarea
+              placeholder="paste recipe text here"
+              className="w-full h-40 p-2 border rounded focus:outline-none lowercase"
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button sx={{ textTransform: 'none', color: '#7B8A64' }} onClick={() => setImportTextModalOpen(false)}>
+              cancel
+            </Button>
+            <Button sx={{ textTransform: 'none', color: '#7B8A64' }} onClick={() => setImportTextModalOpen(false)}>
+              ok
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Import Image Modal */}
+        <Dialog open={importImageModalOpen} onClose={() => setImportImageModalOpen(false)} fullWidth maxWidth="sm">
+          <DialogTitle sx={{ textTransform: 'none', color: '#7B8A64' }}>upload images</DialogTitle>
+          <DialogContent>
+            <Box className="border-2 border-dashed h-40 flex items-center justify-center rounded text-[#7B8A64] lowercase">
+              upload images
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button sx={{ textTransform: 'none', color: '#7B8A64' }} onClick={() => setImportImageModalOpen(false)}>
+              close
+            </Button>
+          </DialogActions>
+        </Dialog>
       </main>
     </div>
   );
