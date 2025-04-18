@@ -48,8 +48,8 @@ describe('Recipe Controller', () => {
                     model: RecipeIngredient,
                     as: 'recipeIngredients',
                     include: [
-                        { model: Ingredient, as: 'ingredient', attributes: ['name'] },
-                        { model: Unit, as: 'unit', attributes: ['name'] },
+                        { model: Ingredient, as: 'ingredient', attributes: ['id', 'name'] },
+                        { model: Unit, as: 'unit', attributes: ['id', 'name'] },
                     ],
                     attributes: ['quantity'],
                 },

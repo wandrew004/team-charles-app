@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from '../../src/app';
-import { addIngredientToRecipe, addStepToRecipe, createIngredient, createRecipe, createStep, deleteRecipe, getRecipeById, getRecipes, getUnitById, updateRecipeWithRelations } from '../../src/controllers';
+import { addIngredientToRecipe, addStepToRecipe, createRecipe, createStep, deleteRecipe, getRecipeById, getRecipes, updateRecipeWithRelations } from '../../src/controllers';
 
 // Mock all controller functions
 jest.mock('../../src/controllers');
@@ -77,8 +77,8 @@ describe('Recipes Routes', () => {
                 name: 'Test Recipe',
                 description: 'Test Description',
                 ingredients: [
-                    { name: 'Ingredient 1', unit: 1, quantity: 2 },
-                    { name: 'Ingredient 2', unit: 1, quantity: 1 }
+                    { ingredientId: 1, unitId: 1, quantity: 2 },
+                    { ingredientId: 2, unitId: 2, quantity: 1 }
                 ],
                 steps: [
                     { stepNumber: 1, stepText: 'Step 1' },
@@ -92,16 +92,6 @@ describe('Recipes Routes', () => {
                 name: recipeData.name,
                 description: recipeData.description,
                 toJSON: () => ({ id: 1, name: recipeData.name, description: recipeData.description })
-            });
-            (createIngredient as jest.Mock).mockResolvedValue({
-                id: 1,
-                name: 'Ingredient 1',
-                toJSON: () => ({ id: 1, name: 'Ingredient 1' })
-            });
-            (getUnitById as jest.Mock).mockResolvedValue({
-                id: 1,
-                name: 'cup',
-                toJSON: () => ({ id: 1, name: 'cup' })
             });
             (createStep as jest.Mock).mockResolvedValue({
                 id: 1,
@@ -126,7 +116,7 @@ describe('Recipes Routes', () => {
                 name: 'Test Recipe',
                 description: 'Test Description',
                 ingredients: [
-                    { name: 'Ingredient 1', unit: 'invalid_unit', quantity: 2 }
+                    { ingredientId: 1, unitId: 999, quantity: 2 }
                 ],
                 steps: []
             };
@@ -137,12 +127,7 @@ describe('Recipes Routes', () => {
                 description: recipeData.description,
                 toJSON: () => ({ id: 1, name: recipeData.name, description: recipeData.description })
             });
-            (createIngredient as jest.Mock).mockResolvedValue({
-                id: 1,
-                name: 'Ingredient 1',
-                toJSON: () => ({ id: 1, name: 'Ingredient 1' })
-            });
-            (getUnitById as jest.Mock).mockResolvedValue(null);
+            (addIngredientToRecipe as jest.Mock).mockRejectedValue(new Error('Unit not found'));
 
             const response = await request(app)
                 .post('/recipes')

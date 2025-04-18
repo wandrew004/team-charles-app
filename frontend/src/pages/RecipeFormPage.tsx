@@ -1,13 +1,15 @@
-import React, { useState, KeyboardEvent } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { Box, Button } from '@mui/material';
 import Sidebar from './Sidebar';
 import { useNavigate } from 'react-router-dom';
+import IngredientsBox from '../components/IngredientsBox';
+import InstructionsBox from '../components/InstructionsBox';
 
 interface IngredientEntry {
-  name: string;
+  ingredientId: number;
   quantity: number;
-  unit: string;
+  unitId: number;
 }
 
 interface CreateRecipeData {
@@ -17,9 +19,9 @@ interface CreateRecipeData {
   link: string;
   headerImage: string;
   ingredients: {
-    name: string;
+    ingredientId: number;
     quantity: number;
-    unit: string
+    unitId: number;
   }[];
   steps: {
     stepNumber: number;
@@ -45,164 +47,6 @@ const useSubmitRecipe = () => {
   });
 };
 
-interface Unit {
-  unitID: number;
-  name: string;
-  type: string;
-}
-
-interface IngredientsBoxProps {
-  ingredients: IngredientEntry[];
-  setIngredients: (ings: IngredientEntry[]) => void;
-}
-
-const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredients }) => {
-  const fetchUnits = async (): Promise<Unit[]> => {
-    const response = await fetch(`${API_BASE}/units`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch units');
-    }
-    return response.json();
-  };
-
-  const { data: standardUnits, isLoading: unitsLoading, error: unitsError } = useQuery<Unit[]>({
-    queryKey: ['units'],
-    queryFn: fetchUnits,
-  });
-
-  const handleNameChange = (index: number, value: string) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index].name = value;
-    setIngredients(newIngredients);
-  };
-
-  const handleQuantityChange = (index: number, value: string) => {
-    const newIngredients = [...ingredients];
-    const numericValue = Number(value);
-    // Only update if the value is a valid number
-    if (!isNaN(numericValue)) {
-      newIngredients[index].quantity = numericValue;
-    }
-    setIngredients(newIngredients);
-  };
-
-  const handleUnitChange = (index: number, value: string) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index].unit = value;
-    setIngredients(newIngredients);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (ingredients[index].name.trim() !== '') {
-        setIngredients([...ingredients, { name: '', quantity: 0, unit: '' }]);
-        // Focus the new input after state update
-        setTimeout(() => {
-          const inputs = document.querySelectorAll('.ingredient-input');
-          if (inputs.length > 0) {
-            (inputs[inputs.length - 1] as HTMLInputElement).focus();
-          }
-        }, 0);
-      }
-    }
-  };
-
-  return (
-    <div className="relative bg-white rounded-lg shadow-lg p-4 mt-6 w-1/2 min-h-[70vh]">
-      <h2 className="text-xl font-bold mb-4">Ingredients</h2>
-      {ingredients.map((ingredient, index) => (
-        <div key={index} className="flex items-center mb-2">
-          <span className="mr-2 font-semibold">{index + 1}.)</span>
-          <input
-            type="text"
-            placeholder="add ingredient..."
-            value={ingredient.name}
-            onChange={(e) => handleNameChange(index, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            className="flex-1 p-2 rounded focus:outline-none ingredient-input"
-          />
-          <div className="flex items-center ml-2 border border-black rounded p-1">
-            <input
-              type="text"
-              placeholder="0"
-              value={ingredient.quantity === 0 ? '' : ingredient.quantity}
-              onChange={(e) => handleQuantityChange(index, e.target.value)}
-              className="w-12 p-1 outline-none"
-            />
-            <select
-              value={ingredient.unit}
-              onChange={(e) => handleUnitChange(index, e.target.value)}
-              className="p-1 outline-none"
-            >
-              <option value="">--</option>
-              {unitsLoading ? (
-                <option>Loading units...</option>
-              ) : unitsError ? (
-                <option>Error loading units</option>
-              ) : (
-                standardUnits?.map((unit: Unit) => (
-                  <option key={unit.unitID} value={unit.unitID}>
-                    {unit.name}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-interface InstructionsBoxProps {
-  instructions: string[];
-  setInstructions: (ins: string[]) => void;
-}
-
-const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInstructions }) => {
-  const handleInputChange = (index: number, value: string) => {
-    const newInstructions = [...instructions];
-    newInstructions[index] = value;
-    setInstructions(newInstructions);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (instructions[index].trim() !== '') {
-        setInstructions([...instructions, '']);
-        // Focus the new input after state update
-        setTimeout(() => {
-          const inputs = document.querySelectorAll('.instruction-input');
-          if (inputs.length > 0) {
-            (inputs[inputs.length - 1] as HTMLInputElement).focus();
-          }
-        }, 0);
-      }
-    }
-  };
-
-  return (
-    <div className="relative p-4 mt-6 w-1/2">
-      <h2 className="text-xl font-bold mb-4">Instructions</h2>
-      {instructions.map((step, index) => (
-        <div key={index} className="flex items-center mb-2">
-          <span className="mr-2 font-semibold">{index + 1}.)</span>
-          <input
-            type="text"
-            placeholder="add step..."
-            value={step}
-            onChange={(e) => handleInputChange(index, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            className="flex-1 p-2 rounded focus:outline-none bg-transparent instruction-input"
-          />
-        </div>
-      ))}
-    </div>
-  );
-};
-
 const RecipeFormPage: React.FC = () => {
   const [name, setName] = useState<string>('');
   const [description, setDescription] = useState<string>('');
@@ -210,9 +54,13 @@ const RecipeFormPage: React.FC = () => {
   const [link, setLink] = useState<string>('');
   const [isEditingLink, setIsEditingLink] = useState<boolean>(false);
   const [ingredients, setIngredients] = useState<IngredientEntry[]>([
-    { name: '', quantity: 0, unit: '' },
+    { ingredientId: 0, quantity: 0, unitId: 0 },
   ]);
-  const [instructions, setInstructions] = useState<string[]>(['']);
+  const [instructions, setInstructions] = useState<Array<{stepId: number; stepNumber: number; stepText: string}>>([{
+    stepId: 1,
+    stepNumber: 1,
+    stepText: ''
+  }]);
   const headerImage = "/Brownie_Header.jpg";
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
@@ -227,17 +75,17 @@ const RecipeFormPage: React.FC = () => {
       link,
       headerImage,
       ingredients: ingredients
-        .filter(ing => ing.name.trim() !== '')
+        .filter(ing => ing.ingredientId !== 0)
         .map(ing => ({
-          name: ing.name,
+          ingredientId: ing.ingredientId,
           quantity: Number(ing.quantity),
-          unit: ing.unit
+          unitId: ing.unitId
         })),
       steps: instructions
-        .filter(step => step.trim() !== '')
-        .map((stepText, index) => ({
-          stepNumber: index + 1,
-          stepText
+        .filter(step => step.stepText.trim() !== '')
+        .map(step => ({
+          stepNumber: step.stepNumber,
+          stepText: step.stepText
         }))
     };
     mutation.mutate(newRecipe, {
@@ -304,7 +152,7 @@ const RecipeFormPage: React.FC = () => {
           </span>
         </div>
         <div className="flex flex-row gap-8">
-          <IngredientsBox ingredients={ingredients} setIngredients={setIngredients} />
+          <IngredientsBox ingredients={ingredients} setIngredients={setIngredients} API_BASE={API_BASE} />
           <InstructionsBox instructions={instructions} setInstructions={setInstructions} />
         </div>
         <Box mt={4}>

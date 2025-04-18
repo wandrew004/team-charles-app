@@ -1,6 +1,4 @@
 import { Recipe, Ingredient, Step, RecipeIngredient, RecipeStep, Unit } from '../models/init-models';
-import { getIngredientByName, createIngredient } from './ingredient';
-import { getUnitByName, createUnit } from './unit';
 
 /**
  * Get all recipes (basic data)
@@ -24,12 +22,12 @@ export const getRecipeById = async (id: number): Promise<Recipe | null> => {
                     {
                         model: Ingredient,
                         as: 'ingredient',
-                        attributes: ['name'],
+                        attributes: ['id', 'name'],
                     },
                     {
                         model: Unit,
                         as: 'unit',
-                        attributes: ['name'],
+                        attributes: ['id', 'name'],
                     },
                 ],
                 attributes: ['quantity'],
@@ -101,9 +99,11 @@ export const updateRecipeWithRelations = async (
     recipeIngredients?: Array<{
         quantity: string;
         ingredient: {
+            id: number;
             name: string;
         };
         unit: {
+            id: number;
             name: string;
         };
     }>,
@@ -141,24 +141,12 @@ export const updateRecipeWithRelations = async (
 
             // Create new recipe ingredients
             for (const ing of recipeIngredients) {
-                // Find or create ingredient
-                let ingredient = await getIngredientByName(ing.ingredient.name);
-                if (!ingredient) {
-                    ingredient = await createIngredient(ing.ingredient.name);
-                }
-
-                // Find or create unit
-                let unit = await getUnitByName(ing.unit.name);
-                if (!unit) {
-                    unit = await createUnit(ing.unit.name, 'other'); // Default type
-                }
-
-                // Create recipe ingredient
+                // Create recipe ingredient with the provided IDs
                 await RecipeIngredient.create({
                     recipeId: id,
-                    ingredientId: ingredient.id,
+                    ingredientId: ing.ingredient.id,
                     quantity: parseFloat(ing.quantity),
-                    unitId: unit.id,
+                    unitId: ing.unit.id,
                 }, { transaction });
             }
         }

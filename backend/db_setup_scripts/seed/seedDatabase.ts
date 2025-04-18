@@ -26,7 +26,12 @@ async function seedIngredients() {
     console.log('Seeding ingredients...');
   
     for (const ingredient of commonIngredients) {
-        await createIngredient(ingredient.name, ingredient.description);
+        await createIngredient(
+            ingredient.name, 
+            ingredient.description,
+            ingredient.standardUnit,
+            ingredient.density
+        );
     }
   
     console.log(`Added ${commonIngredients.length} common ingredients`);
@@ -36,19 +41,17 @@ async function seedRecipes() {
     console.log('Seeding recipes...');
   
     for (const recipeData of sampleRecipes) {
-    // Create the recipe
+        // Create the recipe
         const recipe = await createRecipe(recipeData.name, recipeData.description);
         console.log(`Created recipe: ${recipe.name}`);
     
         // Add ingredients to the recipe
         for (const ingredientData of recipeData.ingredients) {
-            const existingIngredient = await createIngredient(ingredientData.name, '');
-      
             await addIngredientToRecipe(
                 recipe.id,
-                existingIngredient.id,
+                ingredientData.ingredientId,
                 ingredientData.quantity,
-                ingredientData.unit
+                ingredientData.unitId
             );
         }
     

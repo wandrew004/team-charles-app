@@ -1,13 +1,29 @@
-import React, { useState, useEffect, KeyboardEvent, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Box, Button, Snackbar, Alert } from '@mui/material';
 import Sidebar from './Sidebar';
+import IngredientsBox from '../components/IngredientsBox';
+import InstructionsBox from '../components/InstructionsBox';
+
+interface Unit {
+  id: number;
+  name: string;
+  type: string;
+}
+
+interface Ingredient {
+  id: number;
+  name: string;
+  description?: string;
+  standardUnit?: number;
+  density?: number;
+}
 
 interface IngredientEntry {
-  name: string;
+  ingredientId: number;
   quantity: number;
-  unit: string;
+  unitId: number;
 }
 
 interface RecipeData {
@@ -20,9 +36,11 @@ interface RecipeData {
   recipeIngredients: {
     quantity: string;
     ingredient: {
+      id: number;
       name: string;
     };
     unit: {
+      id: number;
       name: string;
     };
   }[];
@@ -39,32 +57,16 @@ interface RecipeData {
 const API_BASE = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001';
 
 const useFetchRecipe = (id: string) => {
-  const [recipe, setRecipe] = useState<RecipeData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  const fetchRecipe = useCallback(async () => {
-    try {
+  return useQuery({
+    queryKey: ['recipe', id],
+    queryFn: async () => {
       const response = await fetch(`${API_BASE}/recipes/${id}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch recipe');
+        throw new Error('Network response was not ok');
       }
-      const data = await response.json();
-      console.log('Fetched recipe data:', data);
-      setRecipe(data);
-    } catch (err: unknown) {
-      console.error('Error fetching recipe:', err);
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    fetchRecipe();
-  }, [id, fetchRecipe]);
-
-  return { recipe, loading, error, refetch: fetchRecipe };
+      return response.json();
+    },
+  });
 };
 
 const useUpdateRecipe = () => {
@@ -83,18 +85,12 @@ const useUpdateRecipe = () => {
   });
 };
 
-interface Unit {
-  unitID: number;
-  name: string;
-  type: string;
-}
+const RecipeUpdatePage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const { data: recipe, isLoading, error, refetch } = useFetchRecipe(id!);
+  const updateMutation = useUpdateRecipe();
+  const [showSuccess, setShowSuccess] = useState(false);
 
-interface IngredientsBoxProps {
-  ingredients: IngredientEntry[];
-  setIngredients: (ings: IngredientEntry[]) => void;
-}
-
-const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredients }) => {
   const fetchUnits = async (): Promise<Unit[]> => {
     const response = await fetch(`${API_BASE}/units`);
     if (!response.ok) {
@@ -103,157 +99,33 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
     return response.json();
   };
 
-  const { data: standardUnits, isLoading: unitsLoading, error: unitsError } = useQuery<Unit[]>({
+  const fetchIngredients = async (): Promise<Ingredient[]> => {
+    const response = await fetch(`${API_BASE}/ingredients`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch ingredients');
+    }
+    return response.json();
+  };
+
+  const { data: units, isLoading: unitsLoading } = useQuery<Unit[]>({
     queryKey: ['units'],
     queryFn: fetchUnits,
   });
 
-  const handleNameChange = (index: number, value: string) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index].name = value;
-    setIngredients(newIngredients);
-  };
-
-  const handleQuantityChange = (index: number, value: string) => {
-    const newIngredients = [...ingredients];
-    const numericValue = Number(value);
-    // Only update if the value is a valid number
-    if (!isNaN(numericValue)) {
-      newIngredients[index].quantity = numericValue;
-    }
-    setIngredients(newIngredients);
-  };
-
-  const handleUnitChange = (index: number, value: string) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index].unit = value;
-    setIngredients(newIngredients);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (ingredients[index].name.trim() !== '') {
-        setIngredients([...ingredients, { name: '', quantity: 0, unit: '' }]);
-        // Focus the new input after state update
-        setTimeout(() => {
-          const inputs = document.querySelectorAll('.ingredient-input');
-          if (inputs.length > 0) {
-            (inputs[inputs.length - 1] as HTMLInputElement).focus();
-          }
-        }, 0);
-      }
-    }
-  };
-
-  return (
-    <div className="relative bg-white rounded-lg shadow-lg p-4 mt-6 w-1/2 min-h-[70vh]">
-      <h2 className="text-xl font-bold mb-4">Ingredients</h2>
-      {ingredients.map((ingredient, index) => (
-        <div key={index} className="flex items-center mb-2">
-          <span className="mr-2 font-semibold">{index + 1}.)</span>
-          <input
-            type="text"
-            placeholder="add ingredient..."
-            value={ingredient.name}
-            onChange={(e) => handleNameChange(index, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            className="flex-1 p-2 rounded focus:outline-none ingredient-input"
-          />
-          <div className="flex items-center ml-2 border border-black rounded p-1">
-            <input
-              type="text"
-              placeholder='0'
-              value={ingredient.quantity === 0 ? '' : ingredient.quantity}
-              onChange={(e) => handleQuantityChange(index, e.target.value)}
-              className="w-12 p-1 outline-none"
-            />
-            <select
-              value={ingredient.unit}
-              onChange={(e) => handleUnitChange(index, e.target.value)}
-              className="p-1 outline-none"
-            >
-              <option value="">--</option>
-              {unitsLoading ? (
-                <option>Loading units...</option>
-              ) : unitsError ? (
-                <option>Error loading units</option>
-              ) : (
-                standardUnits?.map((unit: Unit) => (
-                  <option key={unit.unitID} value={unit.unitID}>
-                    {unit.name}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-interface InstructionsBoxProps {
-  instructions: string[];
-  setInstructions: (ins: string[]) => void;
-}
-
-const InstructionsBox: React.FC<InstructionsBoxProps> = ({ instructions, setInstructions }) => {
-  const handleInputChange = (index: number, value: string) => {
-    const newInstructions = [...instructions];
-    newInstructions[index] = value;
-    setInstructions(newInstructions);
-  };
-
-  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (instructions[index].trim() !== '') {
-        setInstructions([...instructions, '']);
-        // Focus the new input after state update
-        setTimeout(() => {
-          const inputs = document.querySelectorAll('.instruction-input');
-          if (inputs.length > 0) {
-            (inputs[inputs.length - 1] as HTMLInputElement).focus();
-          }
-        }, 0);
-      }
-    }
-  };
-
-  return (
-    <div className="relative p-4 mt-6 w-1/2">
-      <h2 className="text-xl font-bold mb-4">Instructions</h2>
-      {instructions.map((step, index) => (
-        <div key={index} className="flex items-center mb-2">
-          <span className="mr-2 font-semibold">{index + 1}.)</span>
-          <input
-            type="text"
-            placeholder="add step..."
-            value={step}
-            onChange={(e) => handleInputChange(index, e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, index)}
-            className="flex-1 p-2 rounded focus:outline-none bg-transparent instruction-input"
-          />
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const RecipeUpdatePage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const { recipe, loading, error, refetch } = useFetchRecipe(id!);
-  const updateMutation = useUpdateRecipe();
-  const [showSuccess, setShowSuccess] = useState(false);
+  const { data: availableIngredients, isLoading: ingredientsLoading } = useQuery<Ingredient[]>({
+    queryKey: ['ingredients'],
+    queryFn: fetchIngredients,
+  });
 
   const [name, setName] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [link, setLink] = useState<string>('');
   const [isEditingLink, setIsEditingLink] = useState<boolean>(false);
-  const [ingredients, setIngredients] = useState<IngredientEntry[]>([{ name: '', quantity: 0, unit: '' }]);
-  const [instructions, setInstructions] = useState<string[]>(['']);
+  const [ingredients, setIngredients] = useState<IngredientEntry[]>([
+    { ingredientId: 0, quantity: 0, unitId: 0 },
+  ]);
+  const [instructions, setInstructions] = useState<Array<{stepId: number; stepNumber: number; stepText: string}>>([]);
   const headerImage = recipe?.headerImage || "/default.jpg";
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -263,17 +135,21 @@ const RecipeUpdatePage: React.FC = () => {
       setDescription(recipe.description);
       setDate(recipe.date);
       setLink(recipe.link);
-      setIngredients(recipe.recipeIngredients.map(ing => ({
-        name: ing.ingredient.name,
+      setIngredients(recipe.recipeIngredients.map((ing: RecipeData['recipeIngredients'][0]) => ({
+        ingredientId: ing.ingredient.id,
         quantity: parseFloat(ing.quantity),
-        unit: ing.unit.name
+        unitId: ing.unit.id
       })));
-      setInstructions(recipe.recipeSteps.map(step => step.step.stepText));
+      setInstructions(recipe.recipeSteps.map((step: RecipeData['recipeSteps'][0]) => ({
+        stepId: step.stepId,
+        stepNumber: step.step.stepNumber,
+        stepText: step.step.stepText
+      })));
     }
   }, [recipe]);
 
   const handleUpdate = () => {
-    if (recipe) {
+    if (recipe && units && availableIngredients) {
       const updatedRecipe: RecipeData = {
         ...recipe,
         name,
@@ -282,24 +158,26 @@ const RecipeUpdatePage: React.FC = () => {
         link,
         headerImage,
         recipeIngredients: ingredients
-          .filter(ing => ing.name.trim() !== '')
+          .filter(ing => ing.ingredientId !== 0)
           .map(ing => ({
             quantity: ing.quantity.toString(),
             ingredient: {
-              name: ing.name
+              id: ing.ingredientId,
+              name: availableIngredients.find(i => i.id === ing.ingredientId)?.name || ''
             },
             unit: {
-              name: ing.unit
+              id: ing.unitId,
+              name: units.find(u => u.id === ing.unitId)?.name || ''
             }
           })),
         recipeSteps: instructions
-          .filter(step => step.trim() !== '')
-          .map((stepText, index) => ({
+          .filter(step => step.stepText.trim() !== '')
+          .map(step => ({
             recipeId: recipe.id,
-            stepId: index + 1,
+            stepId: step.stepId,
             step: {
-              stepNumber: index + 1,
-              stepText
+              stepNumber: step.stepNumber,
+              stepText: step.stepText
             }
           }))
       };
@@ -312,9 +190,9 @@ const RecipeUpdatePage: React.FC = () => {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
-  if (!recipe) return <p>Recipe not found.</p>;
+  if (isLoading || unitsLoading || ingredientsLoading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
+  if (!recipe || !units || !availableIngredients) return <p>Recipe not found.</p>;
 
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans text-[#7B8A64]">
@@ -368,7 +246,7 @@ const RecipeUpdatePage: React.FC = () => {
           </span>
         </div>
         <div className="flex flex-row gap-8">
-          <IngredientsBox ingredients={ingredients} setIngredients={setIngredients} />
+          <IngredientsBox ingredients={ingredients} setIngredients={setIngredients} API_BASE={API_BASE} />
           <InstructionsBox instructions={instructions} setInstructions={setInstructions} />
         </div>
         <Box mt={4}>
