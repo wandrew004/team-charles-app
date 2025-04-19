@@ -1,7 +1,12 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import passport from 'passport';
+import { User } from '../models/init-models';
 
 const router = Router();
+
+interface AuthError {
+    message: string;
+}
 
 /**
  * @brief Login route using passport local strategy
@@ -10,14 +15,14 @@ const router = Router();
  * @returns {Object} The authenticated user (excluding password)
  */
 router.post('/login', async (req: Request, res: Response, next: NextFunction) => {
-    passport.authenticate('local', async (err: Error, user: Express.User, info: { message: string }) => {
+    passport.authenticate('local', async (err: Error | null, user: User | false, info: AuthError) => {
         if (err) {
             return next(err);
         }
         if (!user) {
             return res.status(401).json({ error: info.message });
         }
-        req.logIn(user, (err) => {
+        req.logIn(user, (err: Error | null) => {
             if (err) {
                 return next(err);
             }
@@ -31,7 +36,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
  * @brief Logout route
  */
 router.post('/logout', (req: Request, res: Response, next: NextFunction) => {
-    req.logout((err) => {
+    req.logout((err: Error | null) => {
         if (err) {
             return next(err);
         }
@@ -42,13 +47,13 @@ router.post('/logout', (req: Request, res: Response, next: NextFunction) => {
 /**
  * @brief Get current user route
  */
-router.get('/me', async (req: Request, res: Response) : Promise<void> => {
+router.get('/me', async (req: Request, res: Response): Promise<void> => {
     if (!req.user) {
         res.status(401).json({ error: 'Not authenticated' });
         return;
     }
     // Don't send the password back
-    res.status(200).json( { username: req.user.username } );
+    res.status(200).json({ username: req.user.username });
 });
 
 export default router; 

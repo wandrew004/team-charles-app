@@ -1,10 +1,30 @@
 import React from 'react';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { Button, Card } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import theme from '../theme';
 
 const HomePage: React.FC = () => {
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        logout();
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   return (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
@@ -27,6 +47,20 @@ const HomePage: React.FC = () => {
               <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
                 <Link to="/aggregate">aggregate recipes</Link>
               </Button>
+              {!isAuthenticated ? (
+                <Button color="primary" variant="contained" className="min-w-[240px] !text-lg py-3">
+                  <Link to="/login">login</Link>
+                </Button>
+              ) : (
+                <Button 
+                  color="primary" 
+                  variant="contained" 
+                  className="min-w-[240px] !text-lg py-3"
+                  onClick={handleLogout}
+                >
+                  logout
+                </Button>
+              )}
             </div>
           </div>
 

@@ -12,7 +12,7 @@ declare global {
 }
 
 passport.use(new LocalStrategy(
-  async (username, password, done) => {
+  async (username: string, password: string, done: (error: Error | null, user?: User | false, info?: { message: string }) => void) => {
     try {
       const user = await getUserByUsername(username);
       if (!user) return done(null, false, { message: 'Incorrect username' });
@@ -22,20 +22,20 @@ passport.use(new LocalStrategy(
 
       return done(null, user);
     } catch (error) {
-      return done(error);
+      return done(error as Error);
     }
   }
 ));
 
-passport.serializeUser((user: Express.User, done) => {
+passport.serializeUser((user: Express.User, done: (err: Error | null, id?: number) => void) => {
   done(null, user.id);
 });
 
-passport.deserializeUser(async (id: number, done) => {
+passport.deserializeUser(async (id: number, done: (err: Error | null, user?: User | null) => void) => {
   try {
     const user = await getUserByIdWithPassword(id);
     done(null, user);
   } catch (error) {
-    done(error);
+    done(error as Error);
   }
 });
