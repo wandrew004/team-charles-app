@@ -7,9 +7,11 @@ import aggregationRouter from './routes/aggregation';
 import ingredientsRouter from './routes/ingredients';
 import unitsRouter from './routes/units';
 import recipesRouter from './routes/recipes';
+import aiRecipesRouter from './routes/aiRecipes';
 
 const app: Express = express();
 
+app.use(express.text({ type: 'text/plain' }));
 app.use(express.json());
 app.use(cors());
 if(process.env.NODE_ENV !== 'test') {
@@ -45,6 +47,7 @@ app.use('/ownedIngredients', ownedIngredientsRouter);
 app.use('/aggregation', aggregationRouter);
 app.use('/units', unitsRouter);
 app.use('/recipes', recipesRouter);
+app.use('/ai-recipes', aiRecipesRouter);
 app.use('/ingredients', ingredientsRouter);
 
 /**
