@@ -65,13 +65,13 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/api/auth', authRouter);
-app.use('/api/owned-ingredients', ownedIngredientsRouter);
-app.use('/api/aggregation', aggregationRouter);
-app.use('/api/ingredients', ingredientsRouter);
-app.use('/api/units', unitsRouter);
-app.use('/api/recipes', recipesRouter);
-app.use('/api/ai-recipes', aiRecipesRouter);
+app.use('/auth', authRouter);
+app.use('/owned-ingredients', ownedIngredientsRouter);
+app.use('/aggregation', aggregationRouter);
+app.use('/ingredients', ingredientsRouter);
+app.use('/units', unitsRouter);
+app.use('/recipes', recipesRouter);
+app.use('/ai-recipes', aiRecipesRouter);
 
 /**
  * @brief global error handler
