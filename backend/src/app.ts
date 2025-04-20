@@ -11,6 +11,7 @@ import unitsRouter from './routes/units';
 import recipesRouter from './routes/recipes';
 import aiRecipesRouter from './routes/aiRecipes';
 import authRouter from './routes/auth';
+import { errorHandler } from './middleware/error';
 
 const app: Express = express();
 
@@ -73,22 +74,7 @@ app.use('/units', unitsRouter);
 app.use('/recipes', recipesRouter);
 app.use('/ai-recipes', aiRecipesRouter);
 
-/**
- * @brief global error handler
- */
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    console.error(
-        '---------------------------------------------------\n' +
-        `Request errored: ${req.method} ${req.originalUrl}\n` +
-        `\t- Params: ${JSON.stringify(req.params)}\n` +
-        `\t- Query: ${JSON.stringify(req.query)}\n` +
-        `\t- Body: ${JSON.stringify(req.body)}\n` +
-        err.stack || err
-    );
-
-    res.status(500).json({ error: 'Internal Server Error' });
-    
-    next();
-});
+// Use the error handler middleware
+app.use(errorHandler);
 
 export default app;

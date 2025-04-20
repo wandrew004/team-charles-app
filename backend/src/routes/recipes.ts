@@ -68,6 +68,11 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
         // Create the base recipe
         const user = req.user as User | undefined;
+        if (!user) {
+            res.status(403).json({ error: 'You need to log in first' });
+            return;
+        }
+
         const recipe = await createRecipe(recipeData.name, recipeData.description, user?.id);
 
         // Associate ingredients with recipe
