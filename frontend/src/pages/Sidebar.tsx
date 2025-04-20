@@ -10,7 +10,9 @@ interface RecipeSummary {
 }
 
 const fetchRecipes = async (): Promise<RecipeSummary[]> => {
-  const response = await fetch(API_ENDPOINT);
+  const response = await fetch(API_ENDPOINT, {
+    credentials: 'include',
+  });
   if (!response.ok) {
     throw new Error('Failed to fetch recipes');
   }

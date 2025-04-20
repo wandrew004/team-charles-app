@@ -21,7 +21,7 @@ import theme from "../../theme";
 
 const BACKEND_HOST = import.meta.env.VITE_BACKEND_HOST || "http://localhost:3001";
 const INGREDIENTS_ENDPOINT = `${BACKEND_HOST}/ingredients`;
-const OWNED_INGREDIENTS_ENDPOINT = `${BACKEND_HOST}/ownedIngredients`;
+const OWNED_INGREDIENTS_ENDPOINT = `${BACKEND_HOST}/owned-ingredients`;
 
 interface Ingredient {
   id: number;
@@ -52,7 +52,9 @@ const useUnits = () =>
   useQuery<Unit[]>({
     queryKey: ["units"],
     queryFn: async () => {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_HOST || "http://localhost:3001"}/units`);
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_HOST || "http://localhost:3001"}/units`, {
+        credentials: 'include',
+      });
       if (!res.ok) throw new Error("Failed to fetch units");
       return res.json();
     },
@@ -62,7 +64,9 @@ const useIngredients = () =>
   useQuery<Ingredient[]>({
     queryKey: ["ingredients"],
     queryFn: async () => {
-      const res = await fetch(INGREDIENTS_ENDPOINT);
+      const res = await fetch(INGREDIENTS_ENDPOINT, {
+        credentials: 'include',
+      });
       if (!res.ok) throw new Error("Failed to fetch ingredients");
       return res.json();
     },
@@ -84,19 +88,21 @@ const useCreateIngredient = () =>
       const res = await fetch(INGREDIENTS_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify({ name, description, standardUnit, density }),
       });
       if (!res.ok) throw new Error("Failed to create ingredient");
-      return res.json(); // should return new ingredient with id
+      return res.json();
     },
   });
 
 const useSubmitOwnedIngredient = () =>
   useMutation({
-    mutationFn: async (data: { ingredientId: number; quantity: number }) => {
+    mutationFn: async (data: OwnedIngredientFormData) => {
       const res = await fetch(OWNED_INGREDIENTS_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("Failed to submit owned ingredient");

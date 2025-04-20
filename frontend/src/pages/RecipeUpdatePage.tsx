@@ -60,7 +60,11 @@ const useFetchRecipe = (id: string) => {
   return useQuery({
     queryKey: ['recipe', id],
     queryFn: async () => {
-      const response = await fetch(`${API_BASE}/recipes/${id}`);
+      const response = await fetch(`${API_BASE}/recipes/${id}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
@@ -75,6 +79,7 @@ const useUpdateRecipe = () => {
       const response = await fetch(`${API_BASE}/recipes/${data.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
       if (!response.ok) {

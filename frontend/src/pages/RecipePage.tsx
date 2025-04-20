@@ -17,6 +17,7 @@ const RecipePage: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
         });
 
         const data = await response.json();

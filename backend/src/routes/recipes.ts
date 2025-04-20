@@ -22,7 +22,11 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const recipes: Recipe[] = await getRecipes();
         const user = req.user as User | undefined;
-        const filteredRecipes = recipes.filter((recipe) => recipe.userId === user?.id || !recipe.userId || recipe.userId === -1);
+        
+        const filteredRecipes = recipes.filter((recipe) => {
+            console.log(recipe.userId, user?.id);
+            return recipe.userId === user?.id || !recipe.userId || recipe.userId === -1;
+        });
         res.status(200).json(filteredRecipes);
     } catch (error) {
         next(error);
@@ -48,7 +52,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
         }
 
         const user = req.user as User | undefined;
-        if (recipe.userId && recipe.userId !== user?.id) {
+        if (recipe.userId !== -1 && recipe.userId && recipe.userId !== user?.id) {
             res.status(403).json({ error: 'You are not authorized to access this recipe' });
             return;
         }
@@ -131,7 +135,14 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
             return;
         }
 
-        await updateRecipeWithRelations(recipeId, name, description, recipeIngredients, recipeSteps);
+        await updateRecipeWithRelations(
+            recipeId, 
+            name, 
+            description, 
+            user?.id,
+            recipeIngredients, 
+            recipeSteps
+        );
         const updatedRecipe = await getRecipeById(recipeId);
         res.status(200).json(updatedRecipe);
     } catch (error) {

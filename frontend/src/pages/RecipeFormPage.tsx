@@ -37,6 +37,7 @@ const useSubmitRecipe = () => {
       const response = await fetch(`${API_BASE}/recipes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
       if (!response.ok) {
