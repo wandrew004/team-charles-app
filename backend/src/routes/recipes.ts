@@ -22,7 +22,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const recipes: Recipe[] = await getRecipes();
         const user = req.user as User | undefined;
-        const filteredRecipes = recipes.filter((recipe) => recipe.userId === user?.id || !recipe.userId);
+        const filteredRecipes = recipes.filter((recipe) => recipe.userId === user?.id || !recipe.userId || recipe.userId === -1);
         res.status(200).json(filteredRecipes);
     } catch (error) {
         next(error);
