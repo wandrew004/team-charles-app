@@ -23,10 +23,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
         const recipes: Recipe[] = await getRecipes();
         const user = req.user as User | undefined;
         
-        const filteredRecipes = recipes.filter((recipe) => {
-            console.log(recipe.userId, user?.id);
-            return recipe.userId === user?.id || !recipe.userId || recipe.userId === -1;
-        });
+        const filteredRecipes = recipes.filter((recipe) => recipe.userId === user?.id || !recipe.userId || recipe.userId === -1);
         res.status(200).json(filteredRecipes);
     } catch (error) {
         next(error);

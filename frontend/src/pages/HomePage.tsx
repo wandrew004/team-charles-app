@@ -3,7 +3,7 @@ import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { Button, Card } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import theme from '../theme';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 const HomePage: React.FC = () => {
   const { isAuthenticated, username } = useAuth();

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Box, Button, TextField, Typography, Container, Paper } from '@mui/material';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import theme from '../theme';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -32,6 +32,7 @@ const LoginPage: React.FC = () => {
         setError(data.error || 'Login failed');
       }
     } catch (err) {
+      console.error(err);
       setError('An error occurred during login');
     }
   };

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Box, Button, TextField, Typography, Container, Paper } from '@mui/material';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import theme from '../theme';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 const SignupPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -56,6 +56,7 @@ const SignupPage: React.FC = () => {
         setError(data.message || 'Login failed after registration');
       }
     } catch (err) {
+      console.error(err);
       setError('An error occurred during signup');
     }
   };
