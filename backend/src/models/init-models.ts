@@ -63,11 +63,13 @@ export function initModels(sequelize: Sequelize) {
   const User = _User.initModel(sequelize);
 
   Ingredient.belongsToMany(Recipe, { as: 'recipeIdRecipes', through: RecipeIngredient, foreignKey: "ingredientId", otherKey: "recipeId" });
-  Recipe.belongsToMany(Ingredient, { as: 'ingredientIdIngredients', through: RecipeIngredient, foreignKey: "recipeId", otherKey: "ingredientId" });
+  Ingredient.belongsToMany(User, { as: 'userIdUsers', through: OwnedIngredient, foreignKey: "ingredientId", otherKey: "userId" });
+  Recipe.belongsToMany(Ingredient, { as: 'ingredientIdIngredientsRecipeIngredients', through: RecipeIngredient, foreignKey: "recipeId", otherKey: "ingredientId" });
   Recipe.belongsToMany(Step, { as: 'stepIdSteps', through: RecipeStep, foreignKey: "recipeId", otherKey: "stepId" });
   Step.belongsToMany(Recipe, { as: 'recipeIdRecipesRecipeSteps', through: RecipeStep, foreignKey: "stepId", otherKey: "recipeId" });
+  User.belongsToMany(Ingredient, { as: 'ingredientIdIngredients', through: OwnedIngredient, foreignKey: "userId", otherKey: "ingredientId" });
   OwnedIngredient.belongsTo(Ingredient, { as: "ingredient", foreignKey: "ingredientId"});
-  Ingredient.hasOne(OwnedIngredient, { as: "ownedIngredient", foreignKey: "ingredientId"});
+  Ingredient.hasMany(OwnedIngredient, { as: "ownedIngredients", foreignKey: "ingredientId"});
   RecipeIngredient.belongsTo(Ingredient, { as: "ingredient", foreignKey: "ingredientId"});
   Ingredient.hasMany(RecipeIngredient, { as: "recipeIngredients", foreignKey: "ingredientId"});
   RecipeIngredient.belongsTo(Recipe, { as: "recipe", foreignKey: "recipeId"});

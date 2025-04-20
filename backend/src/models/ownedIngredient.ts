@@ -6,18 +6,17 @@ import type { User, UserId } from './user';
 export interface OwnedIngredientAttributes {
   ingredientId: number;
   quantity: number;
-  userId?: number;
+  userId: number;
 }
 
-export type OwnedIngredientPk = "ingredientId";
+export type OwnedIngredientPk = "ingredientId" | "userId";
 export type OwnedIngredientId = OwnedIngredient[OwnedIngredientPk];
-export type OwnedIngredientOptionalAttributes = "userId";
-export type OwnedIngredientCreationAttributes = Optional<OwnedIngredientAttributes, OwnedIngredientOptionalAttributes>;
+export type OwnedIngredientCreationAttributes = OwnedIngredientAttributes;
 
 export class OwnedIngredient extends Model<OwnedIngredientAttributes, OwnedIngredientCreationAttributes> implements OwnedIngredientAttributes {
   ingredientId!: number;
   quantity!: number;
-  userId?: number;
+  userId!: number;
 
   // OwnedIngredient belongsTo Ingredient via ingredientId
   ingredient!: Ingredient;
@@ -49,7 +48,8 @@ export class OwnedIngredient extends Model<OwnedIngredientAttributes, OwnedIngre
     },
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
+      primaryKey: true,
       references: {
         model: 'users',
         key: 'id'
@@ -67,6 +67,7 @@ export class OwnedIngredient extends Model<OwnedIngredientAttributes, OwnedIngre
         unique: true,
         fields: [
           { name: "ingredient_id" },
+          { name: "user_id" },
         ]
       },
     ]

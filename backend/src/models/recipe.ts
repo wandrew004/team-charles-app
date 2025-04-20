@@ -25,17 +25,17 @@ export class Recipe extends Model<RecipeAttributes, RecipeCreationAttributes> im
   userId?: number;
 
   // Recipe belongsToMany Ingredient via recipeId and ingredientId
-  ingredientIdIngredients!: Ingredient[];
-  getIngredientIdIngredients!: Sequelize.BelongsToManyGetAssociationsMixin<Ingredient>;
-  setIngredientIdIngredients!: Sequelize.BelongsToManySetAssociationsMixin<Ingredient, IngredientId>;
-  addIngredientIdIngredient!: Sequelize.BelongsToManyAddAssociationMixin<Ingredient, IngredientId>;
-  addIngredientIdIngredients!: Sequelize.BelongsToManyAddAssociationsMixin<Ingredient, IngredientId>;
-  createIngredientIdIngredient!: Sequelize.BelongsToManyCreateAssociationMixin<Ingredient>;
-  removeIngredientIdIngredient!: Sequelize.BelongsToManyRemoveAssociationMixin<Ingredient, IngredientId>;
-  removeIngredientIdIngredients!: Sequelize.BelongsToManyRemoveAssociationsMixin<Ingredient, IngredientId>;
-  hasIngredientIdIngredient!: Sequelize.BelongsToManyHasAssociationMixin<Ingredient, IngredientId>;
-  hasIngredientIdIngredients!: Sequelize.BelongsToManyHasAssociationsMixin<Ingredient, IngredientId>;
-  countIngredientIdIngredients!: Sequelize.BelongsToManyCountAssociationsMixin;
+  ingredientIdIngredientsRecipeIngredients!: Ingredient[];
+  getIngredientIdIngredientsRecipeIngredients!: Sequelize.BelongsToManyGetAssociationsMixin<Ingredient>;
+  setIngredientIdIngredientsRecipeIngredients!: Sequelize.BelongsToManySetAssociationsMixin<Ingredient, IngredientId>;
+  addIngredientIdIngredientsRecipeIngredient!: Sequelize.BelongsToManyAddAssociationMixin<Ingredient, IngredientId>;
+  addIngredientIdIngredientsRecipeIngredients!: Sequelize.BelongsToManyAddAssociationsMixin<Ingredient, IngredientId>;
+  createIngredientIdIngredientsRecipeIngredient!: Sequelize.BelongsToManyCreateAssociationMixin<Ingredient>;
+  removeIngredientIdIngredientsRecipeIngredient!: Sequelize.BelongsToManyRemoveAssociationMixin<Ingredient, IngredientId>;
+  removeIngredientIdIngredientsRecipeIngredients!: Sequelize.BelongsToManyRemoveAssociationsMixin<Ingredient, IngredientId>;
+  hasIngredientIdIngredientsRecipeIngredient!: Sequelize.BelongsToManyHasAssociationMixin<Ingredient, IngredientId>;
+  hasIngredientIdIngredientsRecipeIngredients!: Sequelize.BelongsToManyHasAssociationsMixin<Ingredient, IngredientId>;
+  countIngredientIdIngredientsRecipeIngredients!: Sequelize.BelongsToManyCountAssociationsMixin;
   // Recipe hasMany RecipeIngredient via recipeId
   recipeIngredients!: RecipeIngredient[];
   getRecipeIngredients!: Sequelize.HasManyGetAssociationsMixin<RecipeIngredient>;

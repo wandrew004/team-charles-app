@@ -1,5 +1,6 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
+import type { Ingredient, IngredientId } from './ingredient';
 import type { OwnedIngredient, OwnedIngredientId } from './ownedIngredient';
 import type { Recipe, RecipeId } from './recipe';
 
@@ -19,6 +20,18 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
   username!: string;
   password!: string;
 
+  // User belongsToMany Ingredient via userId and ingredientId
+  ingredientIdIngredients!: Ingredient[];
+  getIngredientIdIngredients!: Sequelize.BelongsToManyGetAssociationsMixin<Ingredient>;
+  setIngredientIdIngredients!: Sequelize.BelongsToManySetAssociationsMixin<Ingredient, IngredientId>;
+  addIngredientIdIngredient!: Sequelize.BelongsToManyAddAssociationMixin<Ingredient, IngredientId>;
+  addIngredientIdIngredients!: Sequelize.BelongsToManyAddAssociationsMixin<Ingredient, IngredientId>;
+  createIngredientIdIngredient!: Sequelize.BelongsToManyCreateAssociationMixin<Ingredient>;
+  removeIngredientIdIngredient!: Sequelize.BelongsToManyRemoveAssociationMixin<Ingredient, IngredientId>;
+  removeIngredientIdIngredients!: Sequelize.BelongsToManyRemoveAssociationsMixin<Ingredient, IngredientId>;
+  hasIngredientIdIngredient!: Sequelize.BelongsToManyHasAssociationMixin<Ingredient, IngredientId>;
+  hasIngredientIdIngredients!: Sequelize.BelongsToManyHasAssociationsMixin<Ingredient, IngredientId>;
+  countIngredientIdIngredients!: Sequelize.BelongsToManyCountAssociationsMixin;
   // User hasMany OwnedIngredient via userId
   ownedIngredients!: OwnedIngredient[];
   getOwnedIngredients!: Sequelize.HasManyGetAssociationsMixin<OwnedIngredient>;
