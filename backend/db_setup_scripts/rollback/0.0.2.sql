@@ -28,7 +28,7 @@ DROP TABLE IF EXISTS ownedingredients;
 DROP TABLE IF EXISTS units;
 
 -- 7. Remove 0.0.2 from the DatabaseVersion Table, fails if something depends on it
-DELETE FROM DatabaseVersion
+DELETE FROM database_version
 WHERE Version = '0.0.2';
 
 COMMIT;
