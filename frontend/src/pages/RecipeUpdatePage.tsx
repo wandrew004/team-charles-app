@@ -83,7 +83,13 @@ const useUpdateRecipe = () => {
         body: JSON.stringify(data),
       });
       if (!response.ok) {
-        throw new Error('Failed to update recipe');
+        if (response.status === 403) {
+          throw new Error('You do not have permission to edit this recipe');
+        } else if (response.status === 404) {
+          throw new Error('Recipe not found');
+        } else {
+          throw new Error('Failed to update recipe. Please try again later.');
+        }
       }
       return response.json();
     },
@@ -95,6 +101,8 @@ const RecipeUpdatePage: React.FC = () => {
   const { data: recipe, isLoading, error, refetch } = useFetchRecipe(id!);
   const updateMutation = useUpdateRecipe();
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const fetchUnits = async (): Promise<Unit[]> => {
     const response = await fetch(`${API_BASE}/units`);
@@ -190,6 +198,10 @@ const RecipeUpdatePage: React.FC = () => {
         onSuccess: () => {
           refetch();
           setShowSuccess(true);
+        },
+        onError: (error) => {
+          setErrorMessage(error instanceof Error ? error.message : 'Failed to update recipe');
+          setShowError(true);
         }
       });
     }
@@ -268,6 +280,16 @@ const RecipeUpdatePage: React.FC = () => {
       >
         <Alert onClose={() => setShowSuccess(false)} severity="success" sx={{ width: '100%' }}>
           Recipe updated successfully!
+        </Alert>
+      </Snackbar>
+      <Snackbar 
+        open={showError} 
+        autoHideDuration={3000} 
+        onClose={() => setShowError(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowError(false)} severity="error" sx={{ width: '100%' }}>
+          {errorMessage}
         </Alert>
       </Snackbar>
     </div>
