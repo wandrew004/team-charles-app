@@ -26,16 +26,21 @@ export const getOwnedIngredients = async (): Promise<OwnedIngredient[]> => {
  * Get a single owned ingredient by ingredient ID.
  */
 export const getOwnedIngredientById = async (
-    ingredientId: number
+    ingredientId: number,
+    userId: number
 ): Promise<OwnedIngredient | null> => {
-    return OwnedIngredient.findByPk(ingredientId, {
+    return OwnedIngredient.findOne({
+        where: {
+            ingredientId,
+            userId
+        },
         include: [
             {
                 model: Ingredient,
                 as: 'ingredient',
                 attributes: ['name', 'description', 'standard_unit', 'density'],
             },
-        ],
+        ]
     });
 };
 
@@ -44,11 +49,13 @@ export const getOwnedIngredientById = async (
  */
 export const createOwnedIngredient = async (
     ingredientId: number,
-    quantity: number
+    quantity: number,
+    userId: number
 ): Promise<OwnedIngredient> => {
     return OwnedIngredient.create({
         ingredientId,
         quantity,
+        userId
     });
 };
 
@@ -57,12 +64,13 @@ export const createOwnedIngredient = async (
  */
 export const updateOwnedIngredient = async (
     ingredientId: number,
-    quantity: number
+    quantity: number,
+    userId: number
 ): Promise<void> => {
     await OwnedIngredient.update(
         { quantity },
         {
-            where: { ingredientId },
+            where: { ingredientId, userId },
             returning: true,
         }
     );
@@ -72,9 +80,10 @@ export const updateOwnedIngredient = async (
  * Delete an owned ingredient.
  */
 export const deleteOwnedIngredient = async (
-    ingredientId: number
+    ingredientId: number,
+    userId: number
 ): Promise<void> => {
     await OwnedIngredient.destroy({
-        where: { ingredientId },
+        where: { ingredientId, userId },
     });
 };

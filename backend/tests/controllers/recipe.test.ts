@@ -33,7 +33,7 @@ describe('Recipe Controller', () => {
         const recipes = await getRecipes();
 
         expect(recipes).toEqual(mockRecipes);
-        expect(Recipe.findAll).toHaveBeenCalledWith({ attributes: ['id', 'name', 'description'] });
+        expect(Recipe.findAll).toHaveBeenCalledWith({ attributes: ['id', 'name', 'description', 'userId'] });
     });
 
     test('getRecipeById returns a single detailed recipe by ID', async () => {
