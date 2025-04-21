@@ -58,4 +58,4 @@ npm run lint
 npx eslint . --fix
 ```
 
-This command will start the test runner in watch mode and execute all test files. 
+This command will start the test runner in watch mode and execute all test files.
