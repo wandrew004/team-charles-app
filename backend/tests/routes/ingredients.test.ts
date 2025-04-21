@@ -1,6 +1,4 @@
 import request from 'supertest';
-import express from 'express';
-import ingredientRouter from '../../src/routes/ingredients';
 import * as ingredientController from '../../src/controllers/ingredient';
 import app from '../../src/app';
 

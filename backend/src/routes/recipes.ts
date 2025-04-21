@@ -5,8 +5,6 @@ import {
     createRecipe, 
     deleteRecipe,
     updateRecipeWithRelations,
-    createIngredient,
-    getUnitByName,
     createStep,
     addIngredientToRecipe,
     addStepToRecipe,
@@ -62,26 +60,14 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         // Create the base recipe
         const recipe = await createRecipe(recipeData.name, recipeData.description);
 
-        // Create ingredients and associate with recipe
+        // Associate ingredients with recipe
         await Promise.all(
             recipeData.ingredients.map(async (ingredientData) => {
-                const ingredient = await createIngredient(
-                    ingredientData.name,
-                    '', // description
-                    undefined,
-                    undefined
-                );
-
-                const unitRecord = await getUnitByName(ingredientData.unit);
-                if (!unitRecord) {
-                    throw new Error(`Unit "${ingredientData.unit}" not found.`);
-                }
-
                 await addIngredientToRecipe(
                     recipe.id,
-                    ingredient.id,
+                    ingredientData.ingredientId,
                     ingredientData.quantity,
-                    unitRecord.id
+                    ingredientData.unitId
                 );
             })
         );
