@@ -8,7 +8,7 @@ until pg_isready -h $PG_HOST -p $PG_PORT -U $PG_USER; do
 done
 
 # Initialize the database
-if [ "$REINIT_DB" = "true" ]; then
+if [ "$REINIT_DB" = "true" ] || ! PGPASSWORD="$PG_PASSWORD" psql -U "$PG_USER" -h "$PG_HOST" -p "$PG_PORT" -tAc "SELECT 1 FROM pg_database WHERE datname='recipehub'" | grep -q 1; then
     # Initialize the database
     echo "Initializing database..."
     echo "db_setup_scripts/init_db.sh -U $PG_USER -d $PG_DB -h $PG_HOST -p $PG_PORT -P $PG_PASSWORD"
