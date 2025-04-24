@@ -62,22 +62,37 @@ const useFetchRecipe = (id: string) =>
   useQuery({
     queryKey: ['recipe', id],
     queryFn: async () => {
-      const res = await fetch(`${API_BASE}/recipes/${id}`);
-      if (!res.ok) throw new Error('Network response was not ok');
-      return res.json();
+      const response = await fetch(`${API_BASE}/recipes/${id}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
     },
   });
 
 const useUpdateRecipe = () =>
   useMutation({
     mutationFn: async (data: RecipeData) => {
-      const res = await fetch(`${API_BASE}/recipes/${data.id}`, {
+      const response = await fetch(`${API_BASE}/recipes/${data.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to update recipe');
-      return res.json();
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error('You do not have permission to edit this recipe');
+        } else if (response.status === 404) {
+          throw new Error('Recipe not found');
+        } else {
+          throw new Error('Failed to update recipe. Please try again later.');
+        }
+      }
+      return response.json();
     },
   });
 
@@ -86,6 +101,8 @@ const RecipeUpdatePage: React.FC = () => {
   const { data: recipe, isLoading, error, refetch } = useFetchRecipe(id!);
   const updateMutation = useUpdateRecipe();
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // import-dialog state
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -159,6 +176,49 @@ const RecipeUpdatePage: React.FC = () => {
   }, [recipe]);
 
   const handleUpdate = () => {
+    if (recipe && units && availableIngredients) {
+      const updatedRecipe: RecipeData = {
+        ...recipe,
+        name,
+        description,
+        date,
+        link,
+        headerImage,
+        recipeIngredients: ingredients
+          .filter(ing => ing.ingredientId !== 0)
+          .map(ing => ({
+            quantity: ing.quantity.toString(),
+            ingredient: {
+              id: ing.ingredientId,
+              name: availableIngredients.find(i => i.id === ing.ingredientId)?.name || ''
+            },
+            unit: {
+              id: ing.unitId,
+              name: units.find(u => u.id === ing.unitId)?.name || ''
+            }
+          })),
+        recipeSteps: instructions
+          .filter(step => step.stepText.trim() !== '')
+          .map(step => ({
+            recipeId: recipe.id,
+            stepId: step.stepId,
+            step: {
+              stepNumber: step.stepNumber,
+              stepText: step.stepText
+            }
+          }))
+      };
+      updateMutation.mutate(updatedRecipe, {
+        onSuccess: () => {
+          refetch();
+          setShowSuccess(true);
+        },
+        onError: (error) => {
+          setErrorMessage(error instanceof Error ? error.message : 'Failed to update recipe');
+          setShowError(true);
+        }
+      });
+    }
     if (!recipe || !units || !availableIngredients) return;
     const updated: RecipeData = {
       ...recipe,
@@ -198,6 +258,10 @@ const RecipeUpdatePage: React.FC = () => {
         refetch();
         setShowSuccess(true);
       },
+      onError: (error) => {
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to update recipe');
+        setShowError(true);
+      }
     });
   };
 
@@ -326,6 +390,16 @@ const RecipeUpdatePage: React.FC = () => {
           sx={{ width: '100%' }}
         >
           recipe updated successfully!
+        </Alert>
+      </Snackbar>
+      <Snackbar 
+        open={showError} 
+        autoHideDuration={3000} 
+        onClose={() => setShowError(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setShowError(false)} severity="error" sx={{ width: '100%' }}>
+          {errorMessage}
         </Alert>
       </Snackbar>
 

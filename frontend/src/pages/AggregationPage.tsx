@@ -59,7 +59,9 @@ const AggregationPage: React.FC = () => {
   const { data: recipes, isLoading: isLoadingRecipes } = useQuery({
     queryKey: ['recipes'],
     queryFn: async () => {
-      const response = await fetch(`${API_ENDPOINT}/recipes`);
+      const response = await fetch(`${API_ENDPOINT}/recipes`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch recipes');
       }
@@ -72,7 +74,9 @@ const AggregationPage: React.FC = () => {
     queryKey: ['aggregatedIngredients', selectedRecipes],
     queryFn: async () => {
       if (selectedRecipes.length === 0) return [];
-      const response = await fetch(`${API_ENDPOINT}/aggregation/ingredients?recipeIds=${selectedRecipes.join(',')}`);
+      const response = await fetch(`${API_ENDPOINT}/aggregation/ingredients?recipeIds=${selectedRecipes.join(',')}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch aggregated ingredients');
       }

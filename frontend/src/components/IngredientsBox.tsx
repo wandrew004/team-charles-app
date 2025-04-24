@@ -38,7 +38,9 @@ interface IngredientsBoxProps {
 const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredients, API_BASE }) => {
   const queryClient = useQueryClient();
   const fetchUnits = async (): Promise<Unit[]> => {
-    const response = await fetch(`${API_BASE}/units`);
+    const response = await fetch(`${API_BASE}/units`, {
+      credentials: 'include',
+    });
     if (!response.ok) {
       throw new Error('Failed to fetch units');
     }
@@ -46,7 +48,9 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
   };
 
   const fetchIngredients = async (): Promise<Ingredient[]> => {
-    const response = await fetch(`${API_BASE}/ingredients`);
+    const response = await fetch(`${API_BASE}/ingredients`, {
+      credentials: 'include',
+    });
     if (!response.ok) {
       throw new Error('Failed to fetch ingredients');
     }
@@ -147,6 +151,7 @@ const IngredientsBox: React.FC<IngredientsBoxProps> = ({ ingredients, setIngredi
       const response = await fetch(`${API_BASE}/ingredients`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           name: data.name,
           description: data.description,

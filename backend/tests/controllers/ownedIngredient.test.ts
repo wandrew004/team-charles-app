@@ -6,6 +6,7 @@ jest.mock('../../src/models/init-models');
 const mockOwnedIngredients = [
     {
         ingredientId: 1,
+        userId: 1,
         quantity: 500,
         ingredient: {
             name: 'Sugar',
@@ -17,6 +18,7 @@ const mockOwnedIngredients = [
     },
     {
         ingredientId: 2,
+        userId: 1,
         quantity: 1000,
         ingredient: {
             name: 'Flour',
@@ -60,12 +62,16 @@ describe('OwnedIngredient Controller', () => {
       
 
     test('getOwnedIngredientById returns a single owned ingredient by ID', async () => {
-        jest.spyOn(OwnedIngredient, 'findByPk').mockResolvedValue(mockOwnedIngredients[0] as OwnedIngredient);
+        jest.spyOn(OwnedIngredient, 'findOne').mockResolvedValue(mockOwnedIngredients[0] as OwnedIngredient);
 
-        const ingredient = await getOwnedIngredientById(1);
+        const ingredient = await getOwnedIngredientById(1, 1);
 
         expect(ingredient).toEqual(mockOwnedIngredients[0]);
-        expect(OwnedIngredient.findByPk).toHaveBeenCalledWith(1, {
+        expect(OwnedIngredient.findOne).toHaveBeenCalledWith({
+            where: {
+                ingredientId: 1,
+                userId: 1
+            },
             include: [{
                 model: Ingredient,
                 as: 'ingredient',
@@ -75,31 +81,31 @@ describe('OwnedIngredient Controller', () => {
     });
 
     test('createOwnedIngredient creates a new owned ingredient', async () => {
-        const newOwnedIngredient = { ingredientId: 3, quantity: 250 };
+        const newOwnedIngredient = { ingredientId: 3, userId: 1, quantity: 250 };
         jest.spyOn(OwnedIngredient, 'create').mockResolvedValue(newOwnedIngredient as OwnedIngredient);
 
-        const created = await createOwnedIngredient(3, 250);
+        const created = await createOwnedIngredient(3, 250, 1);
 
         expect(created).toEqual(newOwnedIngredient);
-        expect(OwnedIngredient.create).toHaveBeenCalledWith({ ingredientId: 3, quantity: 250 });
+        expect(OwnedIngredient.create).toHaveBeenCalledWith({ ingredientId: 3, quantity: 250, userId: 1 });
     });
 
     test('updateOwnedIngredient updates an owned ingredient quantity', async () => {
         jest.spyOn(OwnedIngredient, 'update').mockResolvedValue([1]);
 
-        await updateOwnedIngredient(1, 600);
+        await updateOwnedIngredient(1, 600, 1);
 
         expect(OwnedIngredient.update).toHaveBeenCalledWith(
             { quantity: 600 },
-            { where: { ingredientId: 1 }, returning: true }
+            { where: { ingredientId: 1, userId: 1 }, returning: true }
         );
     });
 
     test('deleteOwnedIngredient deletes an owned ingredient by ID', async () => {
         jest.spyOn(OwnedIngredient, 'destroy').mockResolvedValue(1);
 
-        await deleteOwnedIngredient(1);
+        await deleteOwnedIngredient(1, 1);
 
-        expect(OwnedIngredient.destroy).toHaveBeenCalledWith({ where: { ingredientId: 1 } });
+        expect(OwnedIngredient.destroy).toHaveBeenCalledWith({ where: { ingredientId: 1, userId: 1 } });
     });
 });

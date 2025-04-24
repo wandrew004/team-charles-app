@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { getOwnedIngredients, createOwnedIngredient, getOwnedIngredientById, updateOwnedIngredient, deleteOwnedIngredient } from '../controllers/ownedIngredient';
+import { User } from 'models/init-models';
 
 const router = Router();
 
@@ -9,7 +10,9 @@ const router = Router();
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const ingredients = await getOwnedIngredients();
-        res.status(200).json(ingredients);
+        const user = req.user as User | undefined;
+        const filteredIngredients = ingredients.filter((ingredient) => ingredient.userId === user?.id);
+        res.status(200).json(filteredIngredients);
     } catch (error) {
         next(error);
     }
@@ -20,6 +23,12 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
  */
 router.post('/', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+        const user = req.user as User | undefined;
+        if (!user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const { ingredientId, quantity } = req.body;
         if (!ingredientId || quantity === undefined) {
             res.status(400).json({ error: 'ingredientId and quantity are required' });
@@ -34,12 +43,12 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
         }
 
         // Check if ingredient is already owned
-        const existingIngredient = await getOwnedIngredientById(ingredientId);
+        const existingIngredient = await getOwnedIngredientById(ingredientId, user.id);
         if (existingIngredient) {
             // Update the quantity by adding the new quantity to the existing one
             const existingQuantity: number = Number(existingIngredient.quantity);
-            await updateOwnedIngredient(ingredientId, existingQuantity + numericQuantity);
-            const updatedIngredient = await getOwnedIngredientById(ingredientId);
+            await updateOwnedIngredient(ingredientId, existingQuantity + numericQuantity, user.id);
+            const updatedIngredient = await getOwnedIngredientById(ingredientId, user.id);
             res.status(200).json({ 
                 message: 'Ingredient quantity updated', 
                 ingredientId, 
@@ -49,7 +58,7 @@ router.post('/', async (req: Request, res: Response, next: NextFunction): Promis
         }
 
         // If ingredient doesn't exist, create a new one
-        const ownedIngredient = await createOwnedIngredient(ingredientId, numericQuantity);
+        const ownedIngredient = await createOwnedIngredient(ingredientId, numericQuantity, user.id);
         res.status(201).json(ownedIngredient);
     } catch (error) {
         next(error);
@@ -67,7 +76,13 @@ router.delete('/:ingredientId', async (req: Request, res: Response, next: NextFu
             return;
         }
 
-        await deleteOwnedIngredient(ingredientId);
+        const user = req.user as User | undefined;
+        if (!user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
+        await deleteOwnedIngredient(ingredientId, user.id);
         res.status(200).json({ message: 'Ingredient deleted successfully' });
     } catch (error) {
         next(error);
@@ -92,8 +107,14 @@ router.delete('/:ingredientId/quantity', async (req: Request, res: Response, nex
             return;
         }
 
+        const user = req.user as User | undefined;
+        if (!user) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+
         const numericQuantity = Number(quantity);
-        const existingIngredient = await getOwnedIngredientById(ingredientId);
+        const existingIngredient = await getOwnedIngredientById(ingredientId, user.id);
 
         if (!existingIngredient) {
             res.status(404).json({ error: 'Ingredient not found' });
@@ -104,14 +125,14 @@ router.delete('/:ingredientId/quantity', async (req: Request, res: Response, nex
 
         if (newQuantity <= 0) {
             // If the new quantity would be 0 or negative, delete the ingredient entirely
-            await deleteOwnedIngredient(ingredientId);
+            await deleteOwnedIngredient(ingredientId, user.id);
             res.status(200).json({ 
                 message: 'Ingredient deleted completely', 
                 ingredientId 
             });
         } else {
             // Update the quantity
-            await updateOwnedIngredient(ingredientId, newQuantity);
+            await updateOwnedIngredient(ingredientId, newQuantity, user.id);
             res.status(200).json({ 
                 message: 'Ingredient quantity updated', 
                 ingredientId, 

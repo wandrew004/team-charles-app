@@ -11,6 +11,7 @@ import {
 } from '../controllers';
 import { Recipe } from '../models/recipe';
 import { RecipeFormData } from '../types/recipeFormData';
+import { User } from 'models/init-models';
 
 const router = Router();
 
@@ -20,7 +21,10 @@ const router = Router();
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const recipes: Recipe[] = await getRecipes();
-        res.status(200).json(recipes);
+        const user = req.user as User | undefined;
+        
+        const filteredRecipes = recipes.filter((recipe) => recipe.userId === user?.id || !recipe.userId || recipe.userId === -1);
+        res.status(200).json(filteredRecipes);
     } catch (error) {
         next(error);
     }
@@ -44,6 +48,12 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction): Prom
             return;
         }
 
+        const user = req.user as User | undefined;
+        if (recipe.userId !== -1 && recipe.userId && recipe.userId !== user?.id) {
+            res.status(403).json({ error: 'You are not authorized to access this recipe' });
+            return;
+        }
+
         res.status(200).json(recipe);
     } catch (error) {
         next(error);
@@ -58,7 +68,13 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
         const recipeData: RecipeFormData = req.body;
 
         // Create the base recipe
-        const recipe = await createRecipe(recipeData.name, recipeData.description);
+        const user = req.user as User | undefined;
+        if (!user) {
+            res.status(403).json({ error: 'You need to log in first' });
+            return;
+        }
+
+        const recipe = await createRecipe(recipeData.name, recipeData.description, user?.id);
 
         // Associate ingredients with recipe
         await Promise.all(
@@ -91,11 +107,23 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
  */
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const id = Number(req.body.id);
+        const recipeId = parseInt(req.params.id, 10);
         const { name, description, recipeIngredients, recipeSteps } = req.body;
 
-        if (isNaN(id)) {
+        if (isNaN(recipeId)) {
             res.status(400).json({ error: 'Invalid recipe ID' });
+            return;
+        }
+
+        const recipe = await getRecipeById(recipeId);
+        if (!recipe) {
+            res.status(404).json({ error: 'Recipe not found' });
+            return;
+        }
+
+        const user = req.user as User | undefined;
+        if (!recipe.userId || recipe.userId !== user?.id) {
+            res.status(403).json({ error: 'You are not authorized to access this recipe' });
             return;
         }
 
@@ -104,8 +132,15 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
             return;
         }
 
-        await updateRecipeWithRelations(id, name, description, recipeIngredients, recipeSteps);
-        const updatedRecipe = await getRecipeById(id);
+        await updateRecipeWithRelations(
+            recipeId, 
+            name, 
+            description, 
+            user?.id,
+            recipeIngredients, 
+            recipeSteps
+        );
+        const updatedRecipe = await getRecipeById(recipeId);
         res.status(200).json(updatedRecipe);
     } catch (error) {
         next(error);
@@ -117,13 +152,25 @@ router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
  */
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const id = Number(req.params.id);
-        if (isNaN(id)) {
+        const recipeId = parseInt(req.params.id, 10);
+        if (isNaN(recipeId)) {
             res.status(400).json({ error: 'Invalid recipe ID' });
             return;
         }
 
-        await deleteRecipe(id);
+        const recipe = await getRecipeById(recipeId);
+        if (!recipe) {
+            res.status(404).json({ error: 'Recipe not found' });
+            return;
+        }
+
+        const user = req.user as User | undefined;
+        if (!recipe.userId || recipe.userId !== user?.id) {
+            res.status(403).json({ error: 'You are not authorized to access this recipe' });
+            return;
+        }
+
+        await deleteRecipe(recipeId);
         res.status(200).json({ message: 'Recipe deleted successfully' });
     } catch (error) {
         next(error);

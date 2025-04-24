@@ -37,6 +37,7 @@ const useSubmitRecipe = () => {
       const response = await fetch(`${API_BASE}/recipes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
       if (!response.ok) {
@@ -123,7 +124,7 @@ const RecipeFormPage: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="recipe title"
-            className="text-3xl font-bold w-full p-2 rounded focus:outline-none lowercase"
+            className="text-3xl font-bold w-full p-2 rounded focus:outline-none"
           />
           <Button
             variant="outlined"
