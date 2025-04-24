@@ -21,6 +21,7 @@ services:
       - PG_DB=postgres
       - PG_PASSWORD=example
       - PG_PORT=5432
+      - REINIT_DB=false
       - FRONTEND_URL=http://localhost:3000
       - GEMINI_API_KEY=...
     ports:

@@ -8,15 +8,18 @@ until pg_isready -h $PG_HOST -p $PG_PORT -U $PG_USER; do
 done
 
 # Initialize the database
-echo "Initializing database..."
-echo "db_setup_scripts/init_db.sh -U $PG_USER -d $PG_DB -h $PG_HOST -p $PG_PORT -P $PG_PASSWORD"
-sh db_setup_scripts/init_db.sh -U $PG_USER -d $PG_DB -h $PG_HOST -p $PG_PORT -P $PG_PASSWORD
+if [ "$REINIT_DB" = "true" ]; then
+    # Initialize the database
+    echo "Initializing database..."
+    echo "db_setup_scripts/init_db.sh -U $PG_USER -d $PG_DB -h $PG_HOST -p $PG_PORT -P $PG_PASSWORD"
+    sh db_setup_scripts/init_db.sh -U $PG_USER -d $PG_DB -h $PG_HOST -p $PG_PORT -P $PG_PASSWORD
 
-echo "Seeding database..."
-if npm run seed; then
-  echo "Seeding completed successfully."
-else
-  echo "Seeding failed. Continuing to start the application."
+    echo "Seeding database..."
+    if npm run seed; then
+      echo "Seeding completed successfully."
+    else
+      echo "Seeding failed. Continuing to start the application."
+  fi
 fi
 
 # Start the application
