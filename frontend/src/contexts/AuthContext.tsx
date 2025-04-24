@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { AuthContext } from '../types/authContext';
 
+const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}`;
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
 
   const checkAuth = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/status`, {
+      const response = await fetch(`${API_ENDPOINT}/auth/status`, {
         credentials: 'include',
       });
       const data = await response.json();
@@ -22,7 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/logout`, {
+      const response = await fetch(`${API_ENDPOINT}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });

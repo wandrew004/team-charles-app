@@ -52,7 +52,7 @@ const useUnits = () =>
   useQuery<Unit[]>({
     queryKey: ["units"],
     queryFn: async () => {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_HOST || "http://localhost:3001"}/units`, {
+      const res = await fetch(`${BACKEND_HOST}/units`, {
         credentials: 'include',
       });
       if (!res.ok) throw new Error("Failed to fetch units");

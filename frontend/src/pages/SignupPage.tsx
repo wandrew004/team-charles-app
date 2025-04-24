@@ -5,6 +5,8 @@ import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import theme from '../theme';
 import { useAuth } from '../hooks/useAuth';
 
+const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}`;
+
 const SignupPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -23,7 +25,7 @@ const SignupPage: React.FC = () => {
 
     try {
       // First, register the user
-      const registerResponse = await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/register`, {
+      const registerResponse = await fetch(`${API_ENDPOINT}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,7 +41,7 @@ const SignupPage: React.FC = () => {
       }
 
       // Then, log in the user
-      const loginResponse = await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/login`, {
+      const loginResponse = await fetch(`${API_ENDPOINT}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

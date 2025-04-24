@@ -5,6 +5,8 @@ import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import theme from '../theme';
 import { useAuth } from '../hooks/useAuth';
 
+const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}`;
+
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +17,7 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_HOST}/auth/login`, {
+      const response = await fetch(`${API_ENDPOINT}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
