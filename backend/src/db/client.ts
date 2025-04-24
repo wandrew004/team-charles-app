@@ -8,7 +8,8 @@ const config = {
     host: process.env.PG_HOST || 'localhost',
     database: process.env.DB_NAME || 'recipehub',
     password: process.env.PG_PASSWORD || '',
-    port: parseInt(process.env.PG_PORT || '5432')
+    port: parseInt(process.env.PG_PORT || '5432'),
+    ssl: process.env.PG_SSL === 'true',
 };
 
 let sequelize: Sequelize | null = null;
@@ -24,7 +25,15 @@ if (process.env.NODE_ENV !== 'test') {
         logging: console.log,
         define: {
             underscored: true // Automatically map camelCase attributes to snake_case columns
-        }
+        },
+        dialectOptions: config.ssl
+	    ? {
+		 ssl: {
+                    require: true,
+                    rejectUnauthorized:false,
+		   },
+            }
+	    : undefined,
     });
     
 
