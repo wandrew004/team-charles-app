@@ -4,25 +4,29 @@
 DATABASE="recipehub"
 USERNAME=""
 HOST=""
+PORT="5432"
+PASSWORD=""
 
 # Parse options
-while getopts "U:d:h:" opt; do
+while getopts "U:d:h:p:P:" opt; do
   case $opt in
     U) USERNAME=$OPTARG ;;
     d) DATABASE=$OPTARG ;;
     h) HOST=$OPTARG ;;
-    *) echo "Usage: $0 -U <username> -d <database> -h <host>" ; exit 1 ;;
+    p) PORT=$OPTARG ;;
+    P) PASSWORD=$OPTARG ;;
+    *) echo "Usage: $0 -U <username> -d <database> -h <host> -p <port> -P <pg_password>" ; exit 1 ;;
   esac
 done
 
 # Check if username was provided
-if [[ -z "$USERNAME" || -z "$HOST" ]]; then
-  echo "Usage: $0 -U <username> -d <database> -h <host>"
+if [ -z "$USERNAME" ] || [ -z "$HOST" ] || [ -z "$PASSWORD" ]; then
+  echo "Usage: $0 -U <username> -d <database> -h <host> -p <port> -P <pg_password>"
   exit 1
 fi
 
 # Create database_version table if it doesn't exist
-psql -U "$USERNAME" -h "$HOST" -d "$DATABASE" -c '
+PGPASSWORD="$PASSWORD" psql -U "$USERNAME" -h "$HOST" -d "$DATABASE" -p "$PORT" -c '
 CREATE TABLE IF NOT EXISTS database_version (
   version TEXT PRIMARY KEY,
   depends_on TEXT,
@@ -30,7 +34,7 @@ CREATE TABLE IF NOT EXISTS database_version (
 );'
 
 # Step 3: Get current version from the database_version table
-CURRENT_VERSION=$(psql -U "$USERNAME" -h "$HOST" -d "$DATABASE" -Atc "SELECT version FROM database_version ORDER BY applied_at DESC LIMIT 1;")
+CURRENT_VERSION=$(PGPASSWORD="$PASSWORD" psql -U "$USERNAME" -h "$HOST" -p "$PORT" -d "$DATABASE" -Atc "SELECT version FROM database_version ORDER BY applied_at DESC LIMIT 1;")
 echo "Current database version: ${CURRENT_VERSION:-none}"
 
 # Step 4: Apply newer updates
@@ -39,7 +43,7 @@ apply_version() {
 
   # Check if already applied
   local is_applied
-  is_applied=$(psql -U "$USERNAME" -h "$HOST" -d "$DATABASE" -Atc \
+  is_applied=$(PGPASSWORD="$PASSWORD" psql -U "$USERNAME" -h "$HOST" -p "$PORT" -d "$DATABASE" -Atc \
     "SELECT 1 FROM database_version WHERE version = '$version' AND applied_at IS NOT NULL LIMIT 1;")
 
   if [[ "$is_applied" == "1" ]]; then
@@ -49,7 +53,7 @@ apply_version() {
 
   # Get dependency
   local depends_on
-  depends_on=$(psql -U "$USERNAME" -h "$HOST" -d "$DATABASE" -Atc \
+  depends_on=$(PGPASSWORD="$PASSWORD" psql -U "$USERNAME" -h "$HOST" -p "$PORT" -d "$DATABASE" -Atc \
     "SELECT depends_on FROM database_version WHERE version = '$version' LIMIT 1;")
 
   # Recursively apply dependency first
@@ -67,7 +71,7 @@ apply_version() {
   fi
 
   echo "⚙️ Applying version $version..."
-  psql -U "$USERNAME" -h "$HOST" -d "$DATABASE" -f "$filepath"
+  PGPASSWORD="$PASSWORD" psql -U "$USERNAME" -h "$HOST" -p "$PORT" -d "$DATABASE" -f "$filepath"
 }
 
 # Loop through all version files and apply them if needed
