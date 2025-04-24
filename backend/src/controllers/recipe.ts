@@ -5,7 +5,7 @@ import { Recipe, Ingredient, Step, RecipeIngredient, RecipeStep, Unit } from '..
  */
 export const getRecipes = async (): Promise<Recipe[]> => {
     return Recipe.findAll({
-        attributes: ['id', 'name', 'description'],
+        attributes: ['id', 'name', 'description', 'userId'],
     });
 };
 
@@ -52,11 +52,13 @@ export const getRecipeById = async (id: number): Promise<Recipe | null> => {
  */
 export const createRecipe = async (
     name: string,
-    description?: string
+    description?: string,
+    userId?: number
 ): Promise<Recipe> => {
     return Recipe.create({
         name,
         description,
+        userId,
     });
 };
 
@@ -66,12 +68,14 @@ export const createRecipe = async (
 export const updateRecipe = async (
     id: number,
     name: string,
-    description?: string
+    description?: string,
+    userId?: number
 ): Promise<void> => {
     await Recipe.update(
         {
             name,
             description,
+            userId,
         },
         {
             where: { id },
@@ -96,6 +100,7 @@ export const updateRecipeWithRelations = async (
     id: number,
     name: string,
     description?: string,
+    userId?: number,
     recipeIngredients?: Array<{
         quantity: string;
         ingredient: {
@@ -124,6 +129,7 @@ export const updateRecipeWithRelations = async (
             {
                 name,
                 description,
+                userId,
             },
             {
                 where: { id },

@@ -2,13 +2,34 @@ import request from 'supertest';
 import express from 'express';
 import ownedIngredientsRouter from '../../src/routes/ownedIngredients';
 import * as ownedIngredientController from '../../src/controllers/ownedIngredient';
+import { User } from '../../src/models/init-models';
 
 // Mock the controller functions
 jest.mock('../../src/controllers/ownedIngredient');
 
 const app = express();
 app.use(express.json());
+
+// Mock authentication middleware
+app.use((req: any, res, next) => {
+    req.isAuthenticated = () => true;
+    req.user = { id: 1, username: 'testuser' } as User;
+    next();
+});
+
 app.use('/owned-ingredients', ownedIngredientsRouter);
+
+const unauthenticatedApp = express();
+unauthenticatedApp.use(express.json());
+
+// Mock authentication middleware
+unauthenticatedApp.use((req: any, res, next) => {
+    req.isAuthenticated = () => false;
+    req.user = undefined;
+    next();
+});
+
+unauthenticatedApp.use('/owned-ingredients', ownedIngredientsRouter);
 
 describe('Owned Ingredients Routes', () => {
     beforeEach(() => {
@@ -18,8 +39,8 @@ describe('Owned Ingredients Routes', () => {
     describe('GET /', () => {
         it('should return all owned ingredients', async () => {
             const mockIngredients = [
-                { ingredientId: 1, quantity: 5 },
-                { ingredientId: 2, quantity: 3 }
+                { ingredientId: 1, quantity: 5, userId: 1 },
+                { ingredientId: 2, quantity: 3, userId: 1 }
             ];
             (ownedIngredientController.getOwnedIngredients as jest.Mock).mockResolvedValue(mockIngredients);
 
@@ -41,25 +62,32 @@ describe('Owned Ingredients Routes', () => {
     });
 
     describe('POST /', () => {
-        it('should create a new owned ingredient', async () => {
-            const newIngredient = { ingredientId: 1, quantity: 5 };
+        it('should create a new owned ingredient for authenticated user', async () => {
+            const newIngredient = { ingredientId: 1, quantity: 5, userId: 1 };
+            
             (ownedIngredientController.getOwnedIngredientById as jest.Mock).mockResolvedValue(null);
             (ownedIngredientController.createOwnedIngredient as jest.Mock).mockResolvedValue(newIngredient);
 
             const response = await request(app)
                 .post('/owned-ingredients')
-                .send(newIngredient);
+                .send({ ingredientId: 1, quantity: 5 });
             
             expect(response.status).toBe(201);
             expect(response.body).toEqual(newIngredient);
-            expect(ownedIngredientController.createOwnedIngredient).toHaveBeenCalledWith(1, 5);
+            expect(ownedIngredientController.createOwnedIngredient).toHaveBeenCalledWith(1, 5, 1);
         });
 
         it('should update existing ingredient quantity', async () => {
-            const existingIngredient = { ingredientId: 1, quantity: 5 };
-            const updatedQuantity = 8;
-            (ownedIngredientController.getOwnedIngredientById as jest.Mock).mockResolvedValue(existingIngredient);
-            (ownedIngredientController.updateOwnedIngredient as jest.Mock).mockResolvedValue({ ...existingIngredient, quantity: updatedQuantity });
+            const existingIngredient = { ingredientId: 1, quantity: 5, userId: 1 };
+            const updatedQuantity = 8; // 5 (existing) + 3 (new) = 8
+            
+            // First call returns existing ingredient
+            (ownedIngredientController.getOwnedIngredientById as jest.Mock)
+                .mockResolvedValueOnce(existingIngredient)
+                // Second call returns updated ingredient
+                .mockResolvedValueOnce({ ...existingIngredient, quantity: updatedQuantity });
+            
+            (ownedIngredientController.updateOwnedIngredient as jest.Mock).mockResolvedValue(undefined);
 
             const response = await request(app)
                 .post('/owned-ingredients')
@@ -67,16 +95,36 @@ describe('Owned Ingredients Routes', () => {
             
             expect(response.status).toBe(200);
             expect(response.body.message).toBe('Ingredient quantity updated');
-            expect(ownedIngredientController.updateOwnedIngredient).toHaveBeenCalledWith(1, 8);
+            expect(response.body.ingredientId).toBe(1);
+            expect(response.body.newQuantity).toBe(updatedQuantity);
+            expect(ownedIngredientController.updateOwnedIngredient).toHaveBeenCalledWith(1, 8, 1);
         });
 
-        it('should return 400 for invalid input', async () => {
+        it('should return 400 for missing required fields', async () => {
             const response = await request(app)
                 .post('/owned-ingredients')
                 .send({ ingredientId: 1 }); // Missing quantity
             
             expect(response.status).toBe(400);
             expect(response.body.error).toBe('ingredientId and quantity are required');
+        });
+
+        it('should return 400 for invalid quantity', async () => {
+            const response = await request(app)
+                .post('/owned-ingredients')
+                .send({ ingredientId: 1, quantity: 'not a number' });
+            
+            expect(response.status).toBe(400);
+            expect(response.body.error).toBe('quantity must be a valid number');
+        });
+
+        it('should return 401 for unauthenticated user', async () => {
+            const response = await request(unauthenticatedApp)
+                .post('/owned-ingredients')
+                .send({ ingredientId: 1, quantity: 5 });
+            
+            expect(response.status).toBe(401);
+            expect(response.body.error).toBe('Unauthorized');
         });
     });
 
@@ -88,7 +136,7 @@ describe('Owned Ingredients Routes', () => {
             
             expect(response.status).toBe(200);
             expect(response.body.message).toBe('Ingredient deleted successfully');
-            expect(ownedIngredientController.deleteOwnedIngredient).toHaveBeenCalledWith(1);
+            expect(ownedIngredientController.deleteOwnedIngredient).toHaveBeenCalledWith(1, 1);
         });
 
         it('should return 400 for invalid ingredient ID', async () => {
@@ -115,9 +163,9 @@ describe('Owned Ingredients Routes', () => {
         });
 
         it('should delete ingredient when quantity becomes 0', async () => {
-            const existingIngredient = { ingredientId: 1, quantity: 5 };
+            const existingIngredient = { ingredientId: 1, quantity: 5, userId: 1 };
             (ownedIngredientController.getOwnedIngredientById as jest.Mock).mockResolvedValue(existingIngredient);
-            (ownedIngredientController.deleteOwnedIngredient as jest.Mock).mockResolvedValue(true);
+            (ownedIngredientController.deleteOwnedIngredient as jest.Mock).mockResolvedValue(undefined);
 
             const response = await request(app)
                 .delete('/owned-ingredients/1/quantity')
@@ -125,7 +173,8 @@ describe('Owned Ingredients Routes', () => {
             
             expect(response.status).toBe(200);
             expect(response.body.message).toBe('Ingredient deleted completely');
-            expect(ownedIngredientController.deleteOwnedIngredient).toHaveBeenCalledWith(1);
+            expect(response.body.ingredientId).toBe(1);
+            expect(ownedIngredientController.deleteOwnedIngredient).toHaveBeenCalledWith(1, 1);
         });
 
         it('should return 404 for non-existent ingredient', async () => {
