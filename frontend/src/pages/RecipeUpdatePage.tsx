@@ -107,11 +107,17 @@ const RecipeUpdatePage: React.FC = () => {
   const {
     data: units,
     isLoading: unitsLoading,
-  } = useQuery<Unit[]>(['units'], fetchUnits);
+  } = useQuery({
+    queryKey: ['units'],
+    queryFn: fetchUnits
+  });
   const {
     data: availableIngredients,
     isLoading: ingredientsLoading,
-  } = useQuery<Ingredient[]>(['ingredients'], fetchIngredients);
+  } = useQuery({
+    queryKey: ['ingredients'],
+    queryFn: fetchIngredients
+  });
 
   // form state
   const [name, setName] = useState<string>('');
