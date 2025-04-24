@@ -12,5 +12,7 @@ WORKDIR /
 COPY dockerfile/backend_entrypoint.sh /dockerfile/backend_entrypoint.sh
 COPY ./backend .
 
+RUN npm install
+
 RUN chmod +x /dockerfile/backend_entrypoint.sh
 ENTRYPOINT ["/dockerfile/backend_entrypoint.sh"]
