@@ -159,14 +159,14 @@ const RecipeUpdatePage: React.FC = () => {
       setDate(recipe.date);
       setLink(recipe.link);
       setIngredients(
-        recipe.recipeIngredients.map((ing) => ({
+        recipe.recipeIngredients.map((ing: any) => ({
           ingredientId: ing.ingredient.id,
           quantity: parseFloat(ing.quantity),
           unitId: ing.unit.id,
         }))
       );
       setInstructions(
-        recipe.recipeSteps.map((step) => ({
+        recipe.recipeSteps.map((step: any) => ({
           stepId: step.stepId,
           stepNumber: step.step.stepNumber,
           stepText: step.step.stepText,
