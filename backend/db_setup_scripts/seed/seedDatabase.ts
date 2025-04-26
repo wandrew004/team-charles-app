@@ -6,7 +6,7 @@ import {
     addIngredientToRecipe, 
     addStepToRecipe
 } from '../../src/controllers';
-import { Step, Recipe, Ingredient } from '../../src/models/init-models';
+import { Step, Recipe, Ingredient, RecipeIngredient, RecipeStep } from '../../src/models/init-models';
 import sequelize from '../../src/db/client';
 import { initModels } from '../../src/models/init-models';
 
@@ -18,6 +18,8 @@ async function clearDatabase() {
     await Step.destroy({ where: {} });
     await Recipe.destroy({ where: {} });
     await Ingredient.destroy({ where: {} });
+    await RecipeIngredient.destroy({ where: {} });
+    await RecipeStep.destroy({ where: {} });
   
     console.log('Database cleared successfully');
 }
