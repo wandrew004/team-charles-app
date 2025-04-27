@@ -81,7 +81,7 @@ const PantryView: React.FC = () => {
                       variant="h6" 
                       className="!text-[#7B8A64] !font-semibold !text-lg mb-2"
                     >
-                      {owned.ingredient.name} →
+                      {owned.ingredient.name} 
                     </Typography>
                     <Typography 
                       variant="body1" 

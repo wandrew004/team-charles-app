@@ -284,14 +284,14 @@ const RecipeUpdatePage: React.FC = () => {
           </button>
         )}
 
-        <div className="w-full h-64 mb-4 relative rounded-lg shadow-lg overflow-hidden">
+        {/* <div className="w-full h-64 mb-4 relative rounded-lg shadow-lg overflow-hidden">
           <img
             src={headerImage}
             alt="Header"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-white opacity-30" />
-        </div>
+        </div> */}
 
         {/* title + import button */}
         <Box className="flex items-center gap-4 mb-2">
@@ -324,7 +324,7 @@ const RecipeUpdatePage: React.FC = () => {
           className="text-xl mb-2 w-full p-2 rounded focus:outline-none"
         />
 
-        <div className="flex items-center gap-4 text-sm text-[#7B8A64] mb-4">
+        {/* <div className="flex items-center gap-4 text-sm text-[#7B8A64] mb-4">
           <input
             type="text"
             value={date}
@@ -350,7 +350,7 @@ const RecipeUpdatePage: React.FC = () => {
               </span>
             )}
           </span>
-        </div>
+        </div> */}
 
         <div className="flex flex-row gap-8">
           <IngredientsBox
