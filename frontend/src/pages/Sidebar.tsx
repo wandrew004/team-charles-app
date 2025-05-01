@@ -1,8 +1,8 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
-const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}/recipes`;
+const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}`;
 
 interface RecipeSummary {
   id: number;
@@ -10,7 +10,7 @@ interface RecipeSummary {
 }
 
 const fetchRecipes = async (): Promise<RecipeSummary[]> => {
-  const response = await fetch(API_ENDPOINT, {
+  const response = await fetch(`${API_ENDPOINT}/recipes`, {
     credentials: 'include',
   });
   if (!response.ok) {
@@ -29,11 +29,28 @@ const Sidebar: React.FC<SidebarProps> = ({ currentTitle }) => {
     queryFn: fetchRecipes,
   });
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    // Check authentication status
+    fetch(`${API_ENDPOINT}/auth/status`, {
+      credentials: 'include',
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.authenticated) {
+          navigate('/recipes');
+        } else {
+          navigate('/');
+        }
+      })
+      .catch(() => navigate('/'));
+  };
 
   return (
     <aside className="w-64 bg-gray-100 border-r p-4 min-h-screen">
       <div className="flex justify-between items-center mb-4">
-        <Link to="/recipes" className="text-xl">←</Link>
+        <button onClick={handleBack} className="text-xl cursor-pointer" title="Go back">←</button>
       </div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Recipes</h2>

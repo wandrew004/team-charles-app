@@ -1,4 +1,4 @@
-import { Recipe, Ingredient, Step, RecipeIngredient, RecipeStep, Unit } from '../models/init-models';
+import { Recipe, Ingredient, Step, RecipeIngredient, RecipeStep, Unit, User } from '../models/init-models';
 
 /**
  * Get all recipes (basic data)
@@ -6,6 +6,11 @@ import { Recipe, Ingredient, Step, RecipeIngredient, RecipeStep, Unit } from '..
 export const getRecipes = async (): Promise<Recipe[]> => {
     return Recipe.findAll({
         attributes: ['id', 'name', 'description', 'userId'],
+        include: [{
+            model: User,
+            as: 'user',
+            attributes: ['username'],
+        }],
     });
 };
 
