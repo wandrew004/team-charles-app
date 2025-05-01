@@ -86,10 +86,16 @@ const HomePage: React.FC = () => {
               ) : featuredRecipes && featuredRecipes.length > 0 ? (
                 <>
                   {featuredRecipes.slice(0, 3).map((recipe) => (
-                    <Card key={recipe.id} className="w-80 h-32">
-                      <p className="font-medium text-lg">{recipe.name} →</p>
-                      <p className="text-[#7B8A64] text-base mt-3">{recipe.description}</p>
-                    </Card>
+                    <Link 
+                      key={recipe.id} 
+                      to={`/update/${recipe.id}`}
+                      className="no-underline"
+                    >
+                      <Card className="w-80 h-32 hover:shadow-lg transition duration-200 cursor-pointer">
+                        <p className="font-medium text-lg">{recipe.name} →</p>
+                        <p className="text-[#7B8A64] text-base mt-3">{recipe.description}</p>
+                      </Card>
+                    </Link>
                   ))}
                   <Button className="!bg-gray-300 !text-gray-700 self-center text-lg min-w-[240px] py-3">
                     <Link to="/recipes">+ see more</Link>
