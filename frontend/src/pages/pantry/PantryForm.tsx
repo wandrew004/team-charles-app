@@ -16,7 +16,7 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import theme from "../../theme";
 
 const BACKEND_HOST = import.meta.env.VITE_BACKEND_HOST || "http://localhost:3001";
@@ -125,6 +125,7 @@ const PantryForm = () => {
   const [error, setError] = useState<string | null>(null);
   const createIngredient = useCreateIngredient();
   const submitOwnedIngredient = useSubmitOwnedIngredient();
+  const navigate = useNavigate();
 
   const onSubmit = async (data: OwnedIngredientFormData) => {
     setIsSubmitting(true);
@@ -167,7 +168,7 @@ const PantryForm = () => {
   return (
     <Container maxWidth="sm">
       <Box mb={4}>
-        <Button variant="contained" component={Link} to="/pantry">
+        <Button variant="contained" onClick={() => navigate(-1)}>
           ← Back to Pantry
         </Button>
       </Box>

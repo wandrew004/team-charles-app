@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, Typography, CircularProgress, Button, Box } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import theme from '../theme';
 
@@ -28,6 +28,7 @@ const Recipes: React.FC = () => {
     queryKey: ['recipes'],
     queryFn: fetchRecipes,
   });
+  const navigate = useNavigate();
 
   return (
     <StyledEngineProvider injectFirst>
@@ -35,8 +36,7 @@ const Recipes: React.FC = () => {
         <div className="min-h-screen bg-gray-100 px-8 py-12 font-sans">
           <Box className="flex justify-between items-center mb-12">
             <Button 
-              component={Link} 
-              to="/" 
+              onClick={() => navigate(-1)}
               className="!text-[#7B8A64] !text-lg"
             >
               ← back

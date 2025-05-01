@@ -14,7 +14,7 @@ import {
   ListItemText,
   CircularProgress
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import theme from '../theme';
 
@@ -54,6 +54,7 @@ const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3
 const AggregationPage: React.FC = () => {
   const [selectedRecipes, setSelectedRecipes] = useState<number[]>([]);
   const [numDropdowns, setNumDropdowns] = useState(1);
+  const navigate = useNavigate();
 
   // Fetch all recipes
   const { data: recipes, isLoading: isLoadingRecipes } = useQuery({
@@ -116,8 +117,7 @@ const AggregationPage: React.FC = () => {
         <Container maxWidth="md" className="py-8">
           <Box className="flex justify-between items-center mb-8">
             <Button 
-              component={Link} 
-              to="/" 
+              onClick={() => navigate(-1)}
               className="!text-[#7B8A64] !text-lg"
             >
               ← back

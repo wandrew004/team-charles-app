@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 
 const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}/recipes`;
@@ -29,11 +29,12 @@ const Sidebar: React.FC<SidebarProps> = ({ currentTitle }) => {
     queryFn: fetchRecipes,
   });
   const location = useLocation();
+  const navigate = useNavigate();
 
   return (
     <aside className="w-64 bg-gray-100 border-r p-4 min-h-screen">
       <div className="flex justify-between items-center mb-4">
-        <Link to="/recipes" className="text-xl">←</Link>
+        <button onClick={() => navigate(-1)} className="text-xl cursor-pointer" title="Go back">←</button>
       </div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Recipes</h2>
