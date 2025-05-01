@@ -36,7 +36,7 @@ const Recipes: React.FC = () => {
         <div className="min-h-screen bg-gray-100 px-8 py-12 font-sans">
           <Box className="flex justify-between items-center mb-12">
             <Button 
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/')}
               className="!text-[#7B8A64] !text-lg"
             >
               ← back
