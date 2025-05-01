@@ -174,7 +174,9 @@ const HomePage: React.FC = () => {
                     </Button>
                   </>
                 ) : (
-                  <div>No ingredients in your pantry yet. Add some ingredients!</div>
+                  <div>
+                    No ingredients in your pantry yet. <Link to="/pantry/create" className="text-[#7B8A64] hover:underline">Add your first ingredient</Link>
+                  </div>
                 )}
               </div>
             </section>
@@ -205,7 +207,9 @@ const HomePage: React.FC = () => {
                     </Button>
                   </>
                 ) : (
-                  <div>No recipes yet. Create your first recipe!</div>
+                  <div>
+                    No recipes yet. <Link to="/create" className="text-[#7B8A64] hover:underline">Create your first recipe</Link>
+                  </div>
                 )}
               </div>
             </section>
