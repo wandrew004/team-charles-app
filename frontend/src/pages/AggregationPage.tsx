@@ -14,7 +14,7 @@ import {
   ListItemText,
   CircularProgress
 } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import theme from '../theme';
 
