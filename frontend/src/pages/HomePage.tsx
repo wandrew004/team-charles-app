@@ -8,27 +8,41 @@ import { useAuth } from '../hooks/useAuth';
 
 const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}`;
 
-const fetchFeaturedRecipes = async (): Promise<{ id: number; name: string; description: string; userId: number | null }[]> => {
+interface Recipe {
+  id: number;
+  name: string;
+  description: string;
+  userId: number | null;
+  user?: {
+    username: string;
+  };
+}
+
+const fetchRecipes = async (): Promise<Recipe[]> => {
   const response = await fetch(`${API_ENDPOINT}/recipes`, {
     credentials: 'include',
   });
   if (!response.ok) {
     throw new Error('Failed to fetch recipes');
   }
-  const allRecipes = await response.json();
-  // Filter recipes to only include those with no user or user ID of -1
-  return allRecipes.filter((recipe: { userId: number | null }) => 
-    recipe.userId === null || recipe.userId === -1
-  );
+  return response.json();
 };
 
 const HomePage: React.FC = () => {
   const { isAuthenticated, username } = useAuth();
   const navigate = useNavigate();
-  const { data: featuredRecipes, isLoading } = useQuery({
-    queryKey: ['featured-recipes'],
-    queryFn: fetchFeaturedRecipes,
+  const { data: allRecipes, isLoading: isLoadingRecipes } = useQuery({
+    queryKey: ['recipes'],
+    queryFn: fetchRecipes,
   });
+
+  const featuredRecipes = allRecipes?.filter(recipe => 
+    recipe.userId === null || recipe.userId === -1
+  );
+
+  const userRecipes = allRecipes?.filter(recipe => 
+    recipe.user?.username === username
+  );
 
   return (
     <StyledEngineProvider injectFirst>
@@ -81,7 +95,7 @@ const HomePage: React.FC = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-[#7B8A64] mb-4">featured recipes</h2>
             <div className="flex flex-wrap gap-6">
-              {isLoading ? (
+              {isLoadingRecipes ? (
                 <div>Loading featured recipes...</div>
               ) : featuredRecipes && featuredRecipes.length > 0 ? (
                 <>
@@ -125,17 +139,36 @@ const HomePage: React.FC = () => {
             </div>
           </section>
 
-          <section>
-            <h2 className="text-2xl font-semibold text-gray-400 mb-4">friends recipes</h2>
-            <div className="flex flex-wrap gap-6">
-              <Card className="w-80 h-32 bg-gray-300" />
-              <Card className="w-80 h-32 bg-gray-300" />
-              <Card className="w-80 h-32 bg-gray-300" />
-              <Button className="!bg-gray-300 !text-gray-700 self-center text-lg min-w-[240px] py-3">
-                <Link to="#">+ see more</Link>
-              </Button>
-            </div>
-          </section>
+          {isAuthenticated && (
+            <section>
+              <h2 className="text-2xl font-semibold text-[#7B8A64] mb-4">your recipes</h2>
+              <div className="flex flex-wrap gap-6">
+                {isLoadingRecipes ? (
+                  <div>Loading your recipes...</div>
+                ) : userRecipes && userRecipes.length > 0 ? (
+                  <>
+                    {userRecipes.slice(0, 3).map((recipe) => (
+                      <Link 
+                        key={recipe.id} 
+                        to={`/update/${recipe.id}`}
+                        className="no-underline"
+                      >
+                        <Card className="w-80 h-32 hover:shadow-lg transition duration-200 cursor-pointer">
+                          <p className="font-medium text-lg">{recipe.name} →</p>
+                          <p className="text-[#7B8A64] text-base mt-3">{recipe.description}</p>
+                        </Card>
+                      </Link>
+                    ))}
+                    <Button className="!bg-gray-300 !text-gray-700 self-center text-lg min-w-[240px] py-3">
+                      <Link to="/recipes">+ see more</Link>
+                    </Button>
+                  </>
+                ) : (
+                  <div>No recipes yet. Create your first recipe!</div>
+                )}
+              </div>
+            </section>
+          )}
         </div>
       </ThemeProvider>
     </StyledEngineProvider>
