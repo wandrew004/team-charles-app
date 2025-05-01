@@ -2,12 +2,33 @@ import React from 'react';
 import { ThemeProvider, StyledEngineProvider } from '@mui/material/styles';
 import { Button, Card } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import theme from '../theme';
 import { useAuth } from '../hooks/useAuth';
+
+const API_ENDPOINT = `${import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001'}`;
+
+const fetchFeaturedRecipes = async (): Promise<{ id: number; name: string; description: string; userId: number | null }[]> => {
+  const response = await fetch(`${API_ENDPOINT}/recipes`, {
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch recipes');
+  }
+  const allRecipes = await response.json();
+  // Filter recipes to only include those with no user or user ID of -1
+  return allRecipes.filter((recipe: { userId: number | null }) => 
+    recipe.userId === null || recipe.userId === -1
+  );
+};
 
 const HomePage: React.FC = () => {
   const { isAuthenticated, username } = useAuth();
   const navigate = useNavigate();
+  const { data: featuredRecipes, isLoading } = useQuery({
+    queryKey: ['featured-recipes'],
+    queryFn: fetchFeaturedRecipes,
+  });
 
   return (
     <StyledEngineProvider injectFirst>
@@ -60,21 +81,23 @@ const HomePage: React.FC = () => {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold text-[#7B8A64] mb-4">featured recipes</h2>
             <div className="flex flex-wrap gap-6">
-              <Card className="w-80 h-32">
-                <p className="font-medium text-lg">My Brownie Recipe →</p>
-                <p className="text-red-500 text-base mt-3">don't have all ingredients!</p>
-              </Card>
-              <Card className="w-80 h-32">
-                <p className="font-medium text-lg">Oven Baked Salmon →</p>
-                <p className="text-green-600 text-base mt-3">all ingredients present</p>
-              </Card>
-              <Card className="w-80 h-32">
-                <p className="font-medium text-lg">My Brownie Recipe →</p>
-                <p className="text-red-500 text-base mt-3">don't have all ingredients!</p>
-              </Card>
-              <Button className="!bg-gray-300 !text-gray-700 self-center text-lg min-w-[240px] py-3">
-                <Link to="/recipes">+ see more</Link>
-              </Button>
+              {isLoading ? (
+                <div>Loading featured recipes...</div>
+              ) : featuredRecipes && featuredRecipes.length > 0 ? (
+                <>
+                  {featuredRecipes.slice(0, 3).map((recipe) => (
+                    <Card key={recipe.id} className="w-80 h-32">
+                      <p className="font-medium text-lg">{recipe.name} →</p>
+                      <p className="text-[#7B8A64] text-base mt-3">{recipe.description}</p>
+                    </Card>
+                  ))}
+                  <Button className="!bg-gray-300 !text-gray-700 self-center text-lg min-w-[240px] py-3">
+                    <Link to="/recipes">+ see more</Link>
+                  </Button>
+                </>
+              ) : (
+                <div>No featured recipes available</div>
+              )}
             </div>
           </section>
 
