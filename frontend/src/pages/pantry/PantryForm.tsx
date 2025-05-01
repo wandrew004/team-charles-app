@@ -167,9 +167,12 @@ const PantryForm = () => {
 
   return (
     <Container maxWidth="sm">
-      <Box mb={4}>
+      <Box mb={4} sx={{ display: 'flex', gap: 2 }}>
         <Button variant="contained" onClick={() => navigate(-1)}>
-          ← Back to Pantry
+          ← Back
+        </Button>
+        <Button variant="contained" component={Link} to="/pantry">
+          Go to Pantry
         </Button>
       </Box>
 
