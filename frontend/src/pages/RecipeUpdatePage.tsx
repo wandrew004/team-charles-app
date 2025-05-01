@@ -182,12 +182,12 @@ const RecipeUpdatePage: React.FC = () => {
         }))
       );
       // Check if user is authorized to edit this recipe
-      fetch(`${API_BASE}/auth/me`, {
+      fetch(`${API_BASE}/auth/status`, {
         credentials: 'include',
       })
         .then(res => res.json())
-        .then(user => {
-          setIsAuthorized(recipe.userId === user.id);
+        .then(data => {
+          setIsAuthorized(data.authenticated && recipe.userId === data.user.id);
         })
         .catch(() => setIsAuthorized(false));
     }
