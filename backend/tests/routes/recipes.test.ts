@@ -1,5 +1,6 @@
 import request from 'supertest';
-import express, { Request, Response, NextFunction } from 'express';
+// import express, { Request, Response, NextFunction } from 'express'; -- commented out for live demo
+import express from 'express';
 import recipesRouter from '../../src/routes/recipes';
 import { addIngredientToRecipe, addStepToRecipe, createRecipe, createStep, deleteRecipe, getRecipeById, getRecipes, updateRecipeWithRelations } from '../../src/controllers';
 import { User } from '../../src/models/init-models';

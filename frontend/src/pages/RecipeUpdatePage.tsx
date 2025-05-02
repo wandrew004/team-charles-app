@@ -141,7 +141,7 @@ const RecipeUpdatePage: React.FC = () => {
   const [description, setDescription] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [link, setLink] = useState<string>('');
-  const [isEditingLink, setIsEditingLink] = useState(false);
+  // const [isEditingLink, setIsEditingLink] = useState(false); -- commented out for live demo
   const [ingredients, setIngredients] = useState<IngredientEntry[]>([
     { ingredientId: 0, quantity: 0, unitId: 0 },
   ]);
@@ -159,14 +159,22 @@ const RecipeUpdatePage: React.FC = () => {
       setDate(recipe.date);
       setLink(recipe.link);
       setIngredients(
-        recipe.recipeIngredients.map((ing: any) => ({
+        recipe.recipeIngredients.map((ing: {
+          quantity: string;
+          ingredient: { id: number; name: string };
+          unit: { id: number; name: string };
+        }) => ({
           ingredientId: ing.ingredient.id,
           quantity: parseFloat(ing.quantity),
           unitId: ing.unit.id,
         }))
       );
       setInstructions(
-        recipe.recipeSteps.map((step: any) => ({
+        recipe.recipeSteps.map((step: {
+          recipeId: number;
+          stepId: number;
+          step: { stepNumber: number; stepText: string };
+        }) => ({
           stepId: step.stepId,
           stepNumber: step.step.stepNumber,
           stepText: step.step.stepText,

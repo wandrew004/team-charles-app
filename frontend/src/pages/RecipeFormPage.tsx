@@ -51,9 +51,11 @@ const useSubmitRecipe = () => {
 const RecipeFormPage: React.FC = () => {
   const [name, setName] = useState<string>('');
   const [description, setDescription] = useState<string>('');
-  const [date, setDate] = useState<string>(new Date().toLocaleDateString());
-  const [link, setLink] = useState<string>('');
-  const [isEditingLink, setIsEditingLink] = useState<boolean>(false);
+  // const [date, setDate] = useState<string>(new Date().toLocaleDateString()); -- commented out for live demo
+  // const [link, setLink] = useState<string>(''); -- commented out for live demo
+  const [date] = useState<string>(new Date().toLocaleDateString());
+  const [link] = useState<string>('');
+  // const [isEditingLink, setIsEditingLink] = useState<boolean>(false); -- commented out for live demo
   const [ingredients, setIngredients] = useState<IngredientEntry[]>([
     { ingredientId: 0, quantity: 0, unitId: 0 },
   ]);
