@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Alert, Snackbar } from '@mui/material';
 import Sidebar from './Sidebar';
 import { useNavigate } from 'react-router-dom';
@@ -48,6 +48,12 @@ interface CreatedIngredient {
   name: string;
   description: string;
   standardUnit: number;
+}
+
+interface Unit {
+  id: number;
+  name: string;
+  type: string;
 }
 
 const API_BASE = import.meta.env.VITE_BACKEND_HOST || 'http://localhost:3001';
@@ -134,6 +140,18 @@ const RecipeFormPage: React.FC = () => {
   const mutation = useSubmitRecipe();
   const extractMutation = useExtractRecipe();
   const createIngredientMutation = useCreateIngredient();
+  const { data: units } = useQuery<Unit[]>({
+    queryKey: ['units'],
+    queryFn: async () => {
+      const response = await fetch(`${API_BASE}/units`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch units');
+      }
+      return response.json();
+    },
+  });
 
   const handleExtractRecipe = async () => {
     try {
@@ -351,7 +369,7 @@ const RecipeFormPage: React.FC = () => {
           <DialogTitle sx={{ textTransform: 'none', color: '#7B8A64' }}>Confirm Ingredients</DialogTitle>
           <DialogContent>
             {extractedRecipe?.ingredients.map((ingredient) => (
-              <Box key={ingredient.name} className="flex items-center gap-2 mb-2">
+              <Box key={ingredient.name} className="flex items-center gap-1 mb-2">
                 <TextField
                   label={ingredient.name}
                   type="number"
@@ -363,7 +381,9 @@ const RecipeFormPage: React.FC = () => {
                   size="small"
                   sx={{ flex: 1 }}
                 />
-                <span className="text-[#7B8A64]">units</span>
+                <span className="text-[#7B8A64] w-12 text-right overflow-hidden text-ellipsis whitespace-nowrap">
+                  {units?.find(unit => unit.id === ingredient.unit)?.name || 'unit'}
+                </span>
               </Box>
             ))}
           </DialogContent>
