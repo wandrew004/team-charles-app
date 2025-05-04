@@ -37,6 +37,8 @@ Format the response as a JSON object with the following structure:
   ]
 }
 
+Please do not provide duplicate ingredients.
+
 Recipe text:
 {recipeText}
 `;
