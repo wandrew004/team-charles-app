@@ -359,9 +359,9 @@ const RecipeFormPage: React.FC = () => {
         {/* Ingredient Confirmation Modal */}
         <Dialog open={showIngredientConfirm} onClose={() => setShowIngredientConfirm(false)} fullWidth maxWidth="sm">
           <DialogTitle sx={{ textTransform: 'none', color: '#7B8A64' }}>Confirm Ingredients</DialogTitle>
-          <DialogContent>
-            {extractedRecipe?.ingredients.map((ingredient) => (
-              <Box key={ingredient.name} className="flex items-center gap-1 mb-2">
+          <DialogContent sx={{ py: 2 }}>
+            {extractedRecipe?.ingredients.map((ingredient, index) => (
+              <Box key={ingredient.name} className={`flex items-center gap-1 ${index === 0 ? 'mt-2' : ''} mb-2`}>
                 <TextField
                   label={ingredient.name}
                   type="number"
