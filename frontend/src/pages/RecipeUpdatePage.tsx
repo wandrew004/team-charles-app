@@ -103,6 +103,7 @@ const RecipeUpdatePage: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   // import-dialog state
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -180,6 +181,15 @@ const RecipeUpdatePage: React.FC = () => {
           stepText: step.step.stepText,
         }))
       );
+      // Check if user is authorized to edit this recipe
+      fetch(`${API_BASE}/auth/status`, {
+        credentials: 'include',
+      })
+        .then(res => res.json())
+        .then(data => {
+          setIsAuthorized(data.authenticated && recipe.userId === data.user.id);
+        })
+        .catch(() => setIsAuthorized(false));
     }
   }, [recipe]);
 
@@ -373,15 +383,17 @@ const RecipeUpdatePage: React.FC = () => {
         </div>
 
         <Box mt={4}>
-          <Button
-            type="button"
-            variant="contained"
-            fullWidth
-            onClick={handleUpdate}
-            sx={{ textTransform: 'none' }}
-          >
-            update recipe
-          </Button>
+          {isAuthorized && (
+            <Button
+              type="button"
+              variant="contained"
+              fullWidth
+              onClick={handleUpdate}
+              sx={{ textTransform: 'none' }}
+            >
+              update recipe
+            </Button>
+          )}
         </Box>
       </main>
 

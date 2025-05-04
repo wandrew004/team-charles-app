@@ -1,11 +1,25 @@
 import { getRecipes, getRecipeById, createRecipe, updateRecipe, deleteRecipe } from '../../src/controllers/recipe';
-import { Recipe, RecipeIngredient, RecipeStep, Ingredient, Unit, Step } from '../../src/models/init-models';
+import { Recipe, RecipeIngredient, RecipeStep, Ingredient, Unit, Step, User } from '../../src/models/init-models';
 
 jest.mock('../../src/models/init-models');
 
 const mockRecipes = [
-    { id: 1, name: 'Cake', description: 'Delicious cake' },
-    { id: 2, name: 'Bread', description: 'Fresh bread' },
+    { 
+        id: 1, 
+        name: 'Cake', 
+        description: 'Delicious cake',
+        userId: 1,
+        user: {
+            username: 'testuser'
+        }
+    },
+    { 
+        id: 2, 
+        name: 'Bread', 
+        description: 'Fresh bread',
+        userId: null,
+        user: null
+    },
 ];
 
 const mockRecipeDetail = {
@@ -27,13 +41,20 @@ describe('Recipe Controller', () => {
         jest.clearAllMocks();
     });
 
-    test('getRecipes returns all recipes', async () => {
+    test('getRecipes returns all recipes with user information', async () => {
         jest.spyOn(Recipe, 'findAll').mockResolvedValue(mockRecipes as Recipe[]);
 
         const recipes = await getRecipes();
 
         expect(recipes).toEqual(mockRecipes);
-        expect(Recipe.findAll).toHaveBeenCalledWith({ attributes: ['id', 'name', 'description', 'userId'] });
+        expect(Recipe.findAll).toHaveBeenCalledWith({
+            attributes: ['id', 'name', 'description', 'userId'],
+            include: [{
+                model: User,
+                as: 'user',
+                attributes: ['username'],
+            }],
+        });
     });
 
     test('getRecipeById returns a single detailed recipe by ID', async () => {
