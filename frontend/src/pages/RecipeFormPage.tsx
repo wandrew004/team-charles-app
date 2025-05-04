@@ -127,7 +127,6 @@ const RecipeFormPage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importTextModalOpen, setImportTextModalOpen] = useState(false);
-  const [importImageModalOpen, setImportImageModalOpen] = useState(false);
   const [recipeText, setRecipeText] = useState<string>('');
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -333,13 +332,6 @@ const RecipeFormPage: React.FC = () => {
             >
               import text
             </Button>
-            <Button
-              variant="outlined"
-              sx={{ textTransform: 'none', color: '#7B8A64', borderColor: '#7B8A64' }}
-              onClick={() => { setImportImageModalOpen(true); setImportModalOpen(false); }}
-            >
-              import image
-            </Button>
           </DialogContent>
         </Dialog>
 
@@ -412,21 +404,6 @@ const RecipeFormPage: React.FC = () => {
             {errorMessage}
           </Alert>
         </Snackbar>
-
-        {/* Import Image Modal */}
-        <Dialog open={importImageModalOpen} onClose={() => setImportImageModalOpen(false)} fullWidth maxWidth="sm">
-          <DialogTitle sx={{ textTransform: 'none', color: '#7B8A64' }}>upload images</DialogTitle>
-          <DialogContent>
-            <Box className="border-2 border-dashed h-40 flex items-center justify-center rounded text-[#7B8A64] lowercase">
-              upload images
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button sx={{ textTransform: 'none', color: '#7B8A64' }} onClick={() => setImportImageModalOpen(false)}>
-              close
-            </Button>
-          </DialogActions>
-        </Dialog>
       </main>
     </div>
   );
