@@ -302,7 +302,7 @@ const RecipeUpdatePage: React.FC = () => {
             placeholder="Recipe Title"
             className="text-3xl font-bold w-full p-2 rounded focus:outline-none"
           />
-          <Button
+          {/* <Button
             onClick={() => setImportDialogOpen(true)}
             variant="contained"
             sx={{
@@ -313,7 +313,7 @@ const RecipeUpdatePage: React.FC = () => {
             }}
           >
             import recipe
-          </Button>
+          </Button> */}
         </Box>
 
         <input
